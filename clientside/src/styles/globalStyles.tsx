@@ -39,7 +39,7 @@ input, button {
 
 @media (min-width: ${(props) => props.theme.breakPoints.widescreen}px) {
     html {
-        font-size: 20px;
+        font-size: 24px;
     }
 }
 

@@ -6,18 +6,27 @@ import baseStyled, {
 
 const theme = {
     colors: {
-        primary: {
-            100: "rgba(97, 198, 255, 0.2)",
-            200: "rgba(97, 198, 255, 0.4)",
-            300: "#61C6FF",
+        square: {
+            player: {
+                circle: "#61C6FF",
+                background: {
+                    light: "rgba(97, 198, 255, 0.2)",
+                    medium: "rgba(97, 198, 255, 0.4)",
+                },
+            },
+            enemy: {
+                circle: "rgba(53, 56, 57, 0.5)",
+                background: {
+                    light: "rgba(157, 157, 157, 0.2)",
+                    medium: "rgba(157, 157, 157, 0.4)",
+                },
+            },
         },
-        neutral: {
-            100: "rgba(157, 157, 157, 0.2)",
-            200: "rgba(157, 157, 157, 0.4)",
-            300: "rgba(53, 56, 57, 0.5)",
+        text: {
+            position: "rgba(113, 124, 150, 0.7)",
         },
         danger: {
-            100: "#FF0055",
+            main: "#FF0055",
         },
     },
     breakPoints: {
