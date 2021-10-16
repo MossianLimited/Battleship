@@ -1,26 +1,28 @@
-import React from 'react';
-import logo from './logo.svg';
-import './App.css';
+import styled, { ThemeProvider } from "styled-components";
+import Board from "./features/board";
+import { theme } from "./styles/theme";
+import GlobalStyles from "./styles/globalStyles";
 
-function App() {
-  return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.tsx</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
-  );
-}
+const App = () => {
+    return (
+        <ThemeProvider theme={theme}>
+            <GlobalStyles theme={theme} />
+            <BoardContainer>
+                <Board boardType="player" />
+                <Board boardType="enemy" />
+            </BoardContainer>
+        </ThemeProvider>
+    );
+};
+
+const BoardContainer = styled.div`
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 5.25rem;
+
+    height: 100vh;
+    width: 100vw;
+`;
 
 export default App;
