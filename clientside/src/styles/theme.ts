@@ -7,7 +7,7 @@ import baseStyled, {
 const theme = {
     colors: {
         square: {
-            player: {
+            ally: {
                 circle: "#61C6FF",
                 background: {
                     light: "rgba(97, 198, 255, 0.2)",

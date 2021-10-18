@@ -1,13 +1,14 @@
 import { useState } from "react";
 import styled from "../../../styles/theme";
-import { ISquare, SquareType } from "../types/square";
+import { ISquare } from "../types/square";
+import { Side } from "../types/utility"; 
 
 interface Props {
-    squareType?: SquareType;
+    squareType?: Side;
     position?: ISquare["position"];
 }
 
-const Square: React.FC<Props> = ({ squareType = "player", position }) => {
+const Square: React.FC<Props> = ({ squareType = "ally", position }) => {
     const [selected, setSelected] = useState<boolean>(false); // temporary for mvp testing
 
     return (
@@ -28,7 +29,7 @@ const Square: React.FC<Props> = ({ squareType = "player", position }) => {
     );
 };
 
-const Container = styled.div<{ squareType: SquareType }>`
+const Container = styled.div<{ squareType: Side }>`
     position: relative;
 
     background: ${(props) =>
@@ -70,7 +71,7 @@ const RowNumber = styled.div`
     left: -2rem;
 `;
 
-const Circle = styled.div<{ squareType: SquareType }>`
+const Circle = styled.div<{ squareType: Side }>`
     width: 1rem;
     height: 1rem;
     border-radius: 50%;

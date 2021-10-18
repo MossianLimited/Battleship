@@ -8,7 +8,7 @@ const App = () => {
         <ThemeProvider theme={theme}>
             <GlobalStyles theme={theme} />
             <BoardContainer>
-                <Board boardType="player" />
+                <Board boardType="ally" />
                 <Board boardType="enemy" />
             </BoardContainer>
         </ThemeProvider>

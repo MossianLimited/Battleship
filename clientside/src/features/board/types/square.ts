@@ -4,5 +4,3 @@ export interface ISquare {
         col: number;
     };
 }
-
-export type SquareType = "player" | "enemy";
