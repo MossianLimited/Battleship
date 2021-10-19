@@ -1,11 +1,11 @@
 import { useState } from "react";
 import styled from "../../../styles/theme";
-import { ISquare } from "../types/square";
+import { BoardSquare } from "../types/board";
 import { Side } from "../types/utility"; 
 
 interface Props {
     squareType?: Side;
-    position?: ISquare["position"];
+    position?: BoardSquare["position"];
 }
 
 const Square: React.FC<Props> = ({ squareType = "ally", position }) => {
