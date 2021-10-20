@@ -1,14 +1,21 @@
 import { useState } from "react";
 import styled from "../../../styles/theme";
+import ShipPart from "./Ship";
+import { BattleshipPartRdState } from "../types/battleship";
 import { BoardSquare } from "../types/board";
-import { Side } from "../types/utility"; 
+import { Side } from "../types/utility";
 
 interface Props {
     squareType?: Side;
     position?: BoardSquare["position"];
+    battleshipPart?: BattleshipPartRdState;
 }
 
-const Square: React.FC<Props> = ({ squareType = "ally", position }) => {
+const Square: React.FC<Props> = ({
+    squareType = Side.Ally,
+    position,
+    battleshipPart,
+}) => {
     const [selected, setSelected] = useState<boolean>(false); // temporary for mvp testing
 
     return (
@@ -23,6 +30,12 @@ const Square: React.FC<Props> = ({ squareType = "ally", position }) => {
             )}
             {position?.col === 1 && (
                 <RowNumber className="positional">{position.row}</RowNumber>
+            )}
+            {battleshipPart && (
+                <ShipPart
+                    part={battleshipPart.partType}
+                    direction={battleshipPart.battleship.direction}
+                ></ShipPart>
             )}
             {selected && <Circle squareType={squareType} />}
         </Container>
@@ -72,8 +85,10 @@ const RowNumber = styled.div`
 `;
 
 const Circle = styled.div<{ squareType: Side }>`
-    width: 1rem;
-    height: 1rem;
+    width: 0.875rem;
+    height: 0.875rem;
+    position: absolute;
+    z-index: 2;
     border-radius: 50%;
 
     background: ${(props) =>
