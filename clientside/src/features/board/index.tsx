@@ -8,6 +8,7 @@ import {
     BattleshipDirection,
     BattleshipPartRdState,
     BattleshipPartType,
+    BattleshipStatus,
     BattleshipYard,
 } from "./types/battleship";
 
@@ -41,71 +42,73 @@ interface EnemyProps {
 const Board: React.FC<Props> = ({ board, boardType, shipYard }) => {
     const mappedBattleshipPart = useMemo(() => {
         const map: Map<string, BattleshipPartRdState | undefined> = new Map();
-        if (boardType === Side.Ally) {
-            (shipYard as BattleshipAllyYard)?.forEach((battleship) => {
-                const { length, direction } = battleship;
-                const position = { ...battleship.position };
 
-                for (let i = 0; i < length; i++) {
-                    if (map.has(posToString(position)))
-                        throw Error(
-                            "The ally grid has overlapped battleships."
-                        );
+        const filteredShipYard =
+            boardType === Side.Ally
+                ? shipYard
+                : shipYard.filter(
+                      ({ status }) => status !== BattleshipStatus.Hidden
+                  );
 
-                    for (let j = 0; j < 9; j++) {
-                        const rowOffset = Math.floor(j / 3) - 1;
-                        const colOffset = (j % 3) - 1;
+        (filteredShipYard as BattleshipAllyYard)?.forEach((battleship) => {
+            const { length, direction } = battleship;
+            const position = { ...battleship.position };
 
-                        if (rowOffset === 0 && colOffset === 0) continue;
+            for (let i = 0; i < length; i++) {
+                if (map.has(posToString(position)))
+                    throw Error("The ally grid has overlapped battleships.");
 
-                        const targetPosition = {
-                            col: position.col + colOffset,
-                            row: position.row + rowOffset,
-                        };
+                for (let j = 0; j < 9; j++) {
+                    const rowOffset = Math.floor(j / 3) - 1;
+                    const colOffset = (j % 3) - 1;
 
-                        const potentialAdjacent = map.get(
-                            posToString(targetPosition)
-                        );
-                        if (
-                            potentialAdjacent &&
-                            potentialAdjacent.battleship !== battleship
-                        )
-                            throw Error(
-                                "Two ships are too close to each other."
-                            );
-                    }
+                    if (rowOffset === 0 && colOffset === 0) continue;
 
-                    let partType: BattleshipPartType;
+                    const targetPosition = {
+                        col: position.col + colOffset,
+                        row: position.row + rowOffset,
+                    };
 
-                    if (i === 0) partType = BattleshipPartType.Front;
-                    else if (i === length - 1)
-                        partType = BattleshipPartType.Back;
-                    else partType = BattleshipPartType.Middle;
-
-                    if (length === 1) partType = BattleshipPartType.Single;
-
-                    map.set(posToString(position), {
-                        battleship,
-                        partType,
-                    });
-
-                    switch (direction) {
-                        case BattleshipDirection.Vertical:
-                            position.row++;
-                            break;
-                        case BattleshipDirection.Horizontal:
-                            position.col++;
-                            break;
-                        case BattleshipDirection.VerticalRev:
-                            position.row--;
-                            break;
-                        case BattleshipDirection.HorizontalRev:
-                            position.col--;
-                            break;
-                    }
+                    const potentialAdjacent = map.get(
+                        posToString(targetPosition)
+                    );
+                    if (
+                        potentialAdjacent &&
+                        potentialAdjacent.battleship !== battleship
+                    )
+                        throw Error("Two ships are too close to each other.");
                 }
-            });
-        }
+
+                let partType: BattleshipPartType;
+
+                if (i === 0) partType = BattleshipPartType.Front;
+                else if (i === length - 1) partType = BattleshipPartType.Back;
+                else partType = BattleshipPartType.Middle;
+
+                if (length === 1) partType = BattleshipPartType.Single;
+
+                map.set(posToString(position), {
+                    battleship,
+                    partType,
+                });
+
+                switch (direction) {
+                    case BattleshipDirection.Vertical:
+                        position.row++;
+                        break;
+                    case BattleshipDirection.Horizontal:
+                        position.col++;
+                        break;
+                    case BattleshipDirection.VerticalRev:
+                        position.row--;
+                        break;
+                    case BattleshipDirection.HorizontalRev:
+                        position.col--;
+                        break;
+                }
+            }
+        });
+
         return map;
     }, [shipYard, boardType]);
 
@@ -116,12 +119,14 @@ const Board: React.FC<Props> = ({ board, boardType, shipYard }) => {
                 key={key}
                 squareType={boardType}
                 position={position}
-                battleshipPart={mappedBattleshipPart.get(key) || undefined}
+                part={mappedBattleshipPart.get(key) || undefined}
             />
         );
     });
 
-    return <Container size={Math.sqrt(board.length)}>{renderedSquares}</Container>;
+    return (
+        <Container size={Math.sqrt(board.length)}>{renderedSquares}</Container>
+    );
 };
 
 function posToString({ row, col }: Position): string {

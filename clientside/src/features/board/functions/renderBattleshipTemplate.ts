@@ -25,7 +25,7 @@ const DEFAULT_ALLY_SHIPYARD: BattleshipAllyYard = [
         name: "3x1",
         length: 3,
         position: { row: 1, col: 7 },
-        status: BattleshipStatus.Default,
+        status: BattleshipStatus.Sunken,
         direction: BattleshipDirection.Vertical,
     },
     {
@@ -55,7 +55,9 @@ const DEFAULT_ENEMY_SHIPYARD: BattleshipYard = [
     {
         name: "5x1",
         length: 5,
-        status: BattleshipStatus.Hidden,
+        position: { row: 7, col: 7 },
+        status: BattleshipStatus.Sunken,
+        direction: BattleshipDirection.VerticalRev,
     },
     {
         name: "4x1",
@@ -65,7 +67,9 @@ const DEFAULT_ENEMY_SHIPYARD: BattleshipYard = [
     {
         name: "3x1",
         length: 3,
-        status: BattleshipStatus.Hidden,
+        position: { row: 9, col: 4 },
+        direction: BattleshipDirection.Horizontal,
+        status: BattleshipStatus.Sunken,
     },
     {
         name: "2x1(1)",

@@ -1,22 +1,23 @@
 import { useState } from "react";
 import styled from "../../../styles/theme";
 import ShipPart from "./Ship";
-import { BattleshipPartRdState } from "../types/battleship";
+import { BattleshipPartRdState, BattleshipStatus } from "../types/battleship";
 import { BoardSquare } from "../types/board";
 import { Side } from "../types/utility";
 
 interface Props {
     squareType?: Side;
     position?: BoardSquare["position"];
-    battleshipPart?: BattleshipPartRdState;
+    part?: BattleshipPartRdState;
 }
 
 const Square: React.FC<Props> = ({
     squareType = Side.Ally,
     position,
-    battleshipPart,
+    part,
 }) => {
     const [selected, setSelected] = useState<boolean>(false); // temporary for mvp testing
+    const isSunken = part && part.battleship.status === BattleshipStatus.Sunken;
 
     return (
         <Container
@@ -31,13 +32,15 @@ const Square: React.FC<Props> = ({
             {position?.col === 1 && (
                 <RowNumber className="positional">{position.row}</RowNumber>
             )}
-            {battleshipPart && (
+            {part && (
                 <ShipPart
-                    part={battleshipPart.partType}
-                    direction={battleshipPart.battleship.direction}
+                    part={part.partType}
+                    direction={part.battleship.direction}
+                    color={isSunken ? "#ff00556f" : undefined}
                 ></ShipPart>
             )}
             {selected && <Circle squareType={squareType} />}
+            {isSunken && <Circle squareType={squareType} hit={true} />}
         </Container>
     );
 };
@@ -84,15 +87,18 @@ const RowNumber = styled.div`
     left: -2rem;
 `;
 
-const Circle = styled.div<{ squareType: Side }>`
+const Circle = styled.div<{ squareType: Side, hit?: boolean }>`
     width: 0.875rem;
     height: 0.875rem;
     position: absolute;
     z-index: 2;
     border-radius: 50%;
 
-    background: ${(props) =>
-        (props.theme.colors.square as any)[props.squareType].circle};
+    background: ${(props) => {
+        if (props.hit) 
+            return props.theme.colors.danger.main;
+        return (props.theme.colors.square as any)[props.squareType].circle;
+    }};
 `;
 
 export default Square;
