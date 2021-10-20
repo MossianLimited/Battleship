@@ -461,7 +461,7 @@ socket.on("adminGetRoomList", () => {
         socket.emit("adminGetRoomListResponse", "Completed", roomList);
 
     } else {
-        socket.emithis.hostReady = false;t("adminGetRoomListResponse", "Connection Not Verified");
+        socket.emit("adminGetRoomListResponse", "Connection Not Verified");
     }
 })
 
