@@ -1,16 +1,17 @@
 import { Position, Side } from "./utility";
 
 export enum BoardSquareStatus {
-    Default = 0,
     Missed,
     Hit,
 }
 
-export interface BoardSquare {
+export interface ContactedBoardSquare {
     position: Position;
     status: BoardSquareStatus;
 }
 
-export type UniBoardState = BoardSquare[];
+export type UniBoardState = Record<string, ContactedBoardSquare>; // key = posToString(position)
 
-export type BoardState = Record<Side, UniBoardState>;
+export type BoardState = {
+    gridSize: number;
+} & Record<Side, UniBoardState>;

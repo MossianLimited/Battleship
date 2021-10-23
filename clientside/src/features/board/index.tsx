@@ -1,8 +1,6 @@
 import { useMemo } from "react";
 import styled from "styled-components";
 import Square from "./components/Square";
-import { Side } from "./types/utility";
-import { UniBoardState } from "./types/board";
 import mapPosToBattleshipPart from "./functions/mapPosToBattleshipPart";
 import posToString from "./functions/posToString";
 import {
@@ -10,6 +8,9 @@ import {
     BattleshipStatus,
     BattleshipYard,
 } from "./types/battleship";
+import { Side } from "./types/utility";
+import { useGameStateContext } from "../game/contexts/gameStateContext";
+import generateArrayOfNumbers from "./functions/generateArrayOfNumbers";
 
 /**
  * Overall Game State
@@ -27,18 +28,18 @@ import {
 type Props = AllyProps | EnemyProps;
 
 interface AllyProps {
-    board: UniBoardState;
     boardType: Side.Ally;
     shipYard: BattleshipAllyYard;
 }
 
 interface EnemyProps {
-    board: UniBoardState;
     boardType: Side.Enemy;
     shipYard: BattleshipYard;
 }
 
-const Board: React.FC<Props> = ({ board, boardType, shipYard }) => {
+const Board: React.FC<Props> = ({ boardType, shipYard }) => {
+    const { board } = useGameStateContext().state;
+
     const mappedBattleshipPart = useMemo(() => {
         if (boardType === Side.Ally)
             return mapPosToBattleshipPart(shipYard as BattleshipAllyYard);
@@ -49,32 +50,38 @@ const Board: React.FC<Props> = ({ board, boardType, shipYard }) => {
         );
     }, [shipYard, boardType]);
 
-    const renderedSquares = board.map(({ position }) => {
-        const key = posToString(position);
-        return (
-            <Square
-                key={key}
-                squareType={boardType}
-                position={position}
-                part={mappedBattleshipPart.get(key) || undefined}
-            />
+    const renderedSquares = useMemo(() => {
+        return generateArrayOfNumbers(board.gridSize).map((row) =>
+            generateArrayOfNumbers(board.gridSize).map((col) => {
+                const position = { row, col };
+                const key = posToString(position);
+                return (
+                    <Square
+                        key={key}
+                        squareType={boardType}
+                        position={position}
+                        part={mappedBattleshipPart.get(key) || undefined}
+                    />
+                );
+            })
         );
-    });
+    }, [board.gridSize, boardType, mappedBattleshipPart]);
 
-    return (
-        <Container size={Math.sqrt(board.length)}>{renderedSquares}</Container>
-    );
+    return <Container gridSize={board.gridSize}>{renderedSquares}</Container>;
 };
 
 interface ContainerProps {
-    size: number;
+    gridSize: number;
 }
 
 const Container = styled.div<ContainerProps>`
     z-index: 0;
     display: grid;
-    grid-template-columns: repeat(${({ size }) => `${size}`}, min-content);
-    grid-template-rows: repeat(${({ size }) => `${size}`}, min-content);
+    grid-template-columns: repeat(
+        ${({ gridSize }) => `${gridSize}`},
+        min-content
+    );
+    grid-template-rows: repeat(${({ gridSize }) => `${gridSize}`}, min-content);
 `;
 
 export default Board;

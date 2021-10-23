@@ -30,8 +30,6 @@ const ShipPart: FC<Props> = ({
         case BattleshipPartType.Front:
             renderedShip = (
                 <svg
-                    width={size}
-                    height={size}
                     viewBox="0 0 32 32"
                     fill="none"
                     xmlns="http://www.w3.org/2000/svg"
@@ -46,8 +44,6 @@ const ShipPart: FC<Props> = ({
         case BattleshipPartType.Middle:
             renderedShip = (
                 <svg
-                    width={size}
-                    height={size}
                     viewBox="0 0 32 32"
                     fill="none"
                     xmlns="http://www.w3.org/2000/svg"
@@ -59,8 +55,6 @@ const ShipPart: FC<Props> = ({
         case BattleshipPartType.Back:
             renderedShip = (
                 <svg
-                    width={size}
-                    height={size}
                     viewBox="0 0 32 32"
                     fill="none"
                     xmlns="http://www.w3.org/2000/svg"
@@ -76,13 +70,18 @@ const ShipPart: FC<Props> = ({
             renderedShip = <SingleShip style={{ backgroundColor: color }} />;
     }
 
-    return <Wrapper rotate={rotateDeg}>{renderedShip}</Wrapper>;
+    return (
+        <Wrapper rotate={rotateDeg} size={size}>
+            {renderedShip}
+        </Wrapper>
+    );
 };
 
 export default ShipPart;
 
 interface WrapperProps {
     rotate: number;
+    size: number;
 }
 
 const Wrapper = styled.div<WrapperProps>`
@@ -90,16 +89,22 @@ const Wrapper = styled.div<WrapperProps>`
     display: flex;
     align-items: center;
     justify-content: center;
-    width: 32px;
-    height: 32px;
+    width: 2rem;
+    height: 2rem;
     transform-origin: center center;
     opacity: 0.5;
-    transform: translate(-2px, -2px) rotate(${({ rotate }) => `${rotate}`}deg);
+    transform: translate(-0.125rem, -0.125rem)
+        rotate(${({ rotate }) => `${rotate}`}deg);
     cursor: grab;
+
+    & > svg {
+        height: ${({ size }) => `${size / 16}rem`};
+        width: ${({ size }) => `${size / 16}rem`};
+    }
 `;
 
 const SingleShip = styled.div`
-    width: 28px;
-    height: 28px;
-    border-radius: 10px;
+    width: 1.75rem;
+    height: 1.75rem;
+    border-radius: 0.625rem;
 `;

@@ -21,12 +21,43 @@ const theme = {
                     medium: "rgba(157, 157, 157, 0.4)",
                 },
             },
-        },
-        text: {
-            position: "rgba(113, 124, 150, 0.7)",
+            text: {
+                position: "rgba(113, 124, 150, 0.7)",
+            },
         },
         danger: {
             main: "#FF0055",
+        },
+        lobby: {
+            backdrop: {
+                medium: "#7B61FF",
+                shadedLight: "#F8F7FF",
+                light: "#FFFFFF",
+            },
+            button: {
+                background: {
+                    dark: "#302B4A",
+                    primary: "#6D51FD",
+                    secondary: "#F0EDFF",
+                    mediumAlt: "#947EFF",
+                },
+                text: {
+                    primary: "#FFFFFF",
+                    secondary: "#6D51FD",
+                },
+            },
+            input: {
+                background: {
+                    light: "#F5F3FC",
+                },
+                text: {
+                    placeholder: "#bcb7e2",
+                },
+            },
+            info: {
+                heading: "#1E088E",
+                label: "#9591a4",
+            },
         },
     },
     breakPoints: {
