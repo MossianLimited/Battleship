@@ -1,3 +1,4 @@
+import { useHistory } from "react-router";
 import styled from "styled-components";
 import { HeaderText, WhiteBox } from "../components/base.styled";
 import BasicButton from "../components/basicButton";
@@ -6,6 +7,8 @@ import LabelWrapper from "../wrappers/labelWrapper";
 import LobbyLayoutWrapper from "../wrappers/lobbyLayoutWrapper";
 
 const WelcomePage = () => {
+    const history = useHistory();
+
     return (
         <LobbyLayoutWrapper>
             <Container>
@@ -18,10 +21,18 @@ const WelcomePage = () => {
                         <BasicInput placeholder="Tofu, Dinger, Wasu, or etc." />
                     </LabelWrapper>
                     <ButtonContainer>
-                        <BasicButton type="button" variant="secondary">
+                        <BasicButton
+                            type="button"
+                            variant="secondary"
+                            onClick={() => history.push("/rooms")}
+                        >
                             Join Room
                         </BasicButton>
-                        <BasicButton type="button" variant="primary">
+                        <BasicButton
+                            type="button"
+                            variant="primary"
+                            onClick={() => history.push("/new-room")}
+                        >
                             Create Room
                         </BasicButton>
                     </ButtonContainer>

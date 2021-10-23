@@ -47,12 +47,13 @@ const Slider = styled.span<{ isChecked: boolean }>`
         border-radius: 0.3125rem;
         background-color: ${(props) =>
             props.theme.colors.lobby.slider.background.light};
-        transform: translateX(0.25rem) translateY(0.25rem);
+        transform: translateX(0.25rem);
+        top: 1.25rem;
 
         ${(props) =>
             props.isChecked &&
             `
-                    transform: translateX(4rem) translateY(0.25rem);
+                    transform: translateX(4rem);
                     width: 3.6rem;`}
     }
 `;

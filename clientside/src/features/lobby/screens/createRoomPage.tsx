@@ -56,6 +56,8 @@ const Guidelines = styled.p`
     font-size: 1rem;
     line-height: 1.75rem;
 
+    user-select: none;
+
     color: ${(props) => props.theme.colors.lobby.info.guidelines};
 `;
 

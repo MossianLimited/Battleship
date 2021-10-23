@@ -19,7 +19,7 @@ export const HeaderText = styled.h1`
     font-size: 1rem;
     line-height: 1.3125rem;
 
-    cursor: pointer;
+    user-select: none;
 
     color: ${(props) => props.theme.colors.lobby.info.heading};
 `;
