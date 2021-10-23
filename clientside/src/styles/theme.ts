@@ -38,7 +38,7 @@ const theme = {
                 background: {
                     primary: "#6D51FD",
                     secondary: "#F0EDFF",
-                    mediumAlt: "#947EFF",
+                    room: "#947EFF",
                 },
                 text: {
                     primary: "#FFFFFF",

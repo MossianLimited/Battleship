@@ -15,9 +15,11 @@ export const HeaderText = styled.h1`
     margin: 0;
     padding: 0;
 
-    font-weight: 600;
-    font-size: 1.5rem;
-    line-height: 1.8125rem;
+    font-weight: 500;
+    font-size: 1rem;
+    line-height: 1.3125rem;
+
+    cursor: pointer;
 
     color: ${(props) => props.theme.colors.lobby.info.heading};
 `;
@@ -31,6 +33,5 @@ export const WhiteBox = styled.div`
     display: flex;
     flex-flow: column;
 
-    margin: auto 0;
     overflow: hidden;
 `;

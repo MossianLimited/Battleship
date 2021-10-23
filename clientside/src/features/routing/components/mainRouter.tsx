@@ -1,6 +1,7 @@
 import { BrowserRouter as Router, Switch } from "react-router-dom";
 import GamePage from "../../game/screens/gamePage";
 import CreateRoomPage from "../../lobby/screens/createRoomPage";
+import JoinRoomPage from "../../lobby/screens/joinRoomPage";
 import WelcomePage from "../../lobby/screens/welcomePage";
 import LobbyRoute from "./lobbyRoute";
 
@@ -11,8 +12,11 @@ const MainRouter = () => {
                 <LobbyRoute path="/test">
                     <GamePage />
                 </LobbyRoute>
-                <LobbyRoute path="/cr1">
+                <LobbyRoute path="/cr">
                     <CreateRoomPage />
+                </LobbyRoute>
+                <LobbyRoute path="/jr">
+                    <JoinRoomPage />
                 </LobbyRoute>
                 <LobbyRoute path="/">
                     <WelcomePage />

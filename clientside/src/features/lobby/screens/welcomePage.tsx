@@ -51,6 +51,10 @@ const Title = styled(HeaderText)`
     display: flex;
     justify-content: space-between;
 
+    font-weight: 600;
+    font-size: 1.5rem;
+    line-height: 1.8125rem;
+
     margin-bottom: 1.6875rem;
     font-family: "Montserrat", sans-serif;
 `;
