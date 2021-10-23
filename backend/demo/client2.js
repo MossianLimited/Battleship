@@ -69,7 +69,7 @@ ioClient.on("disconnect", () => console.info(`Disconnected from Server`));
 
 username = "testGuest";
 password = "password123";
-roomID = 0
+roomID = "000000";
 
 if (password != "") {
     roomHashedPass = cryptojs.MD5(password).toString();
