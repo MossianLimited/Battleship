@@ -151,7 +151,7 @@ class Room {
         this.guestReady = false;
         this.hostScore = 0;
         this.guestScore = 0;
-        this.turnCount = 1;
+        this.turnCount = 0;
 
         
         roomIterator += 1;
