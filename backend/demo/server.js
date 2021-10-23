@@ -138,7 +138,7 @@ function shoot(socket, room, location) {
 class Room {
     constructor(hostUsername, hashedRoomPass, hostSocketID, hostIP, locked) {
 
-        this.roomID = roomIterator;
+        this.roomID = (("000000" + roomIterator).slice(-6));
         this.locked = locked;
         this.hashedRoomPass = hashedRoomPass;
         this.hostUsername = hostUsername;
@@ -155,6 +155,7 @@ class Room {
 
         
         roomIterator += 1;
+        if (roomIterator >= 1000000) roomIterator = 0;
     }
 
     
@@ -317,22 +318,22 @@ socket.on("shoot", (location) => {
     if (room.guestSocketID === socket.id) {
                 
         if (room.turn === "Host") {
-            socket.emit("ShootResponse", "Wrong Turn");
+            socket.emit("shootResponse", "Wrong Turn");
             return;
         }
         if (room.guestShot.includes(location)) {
-            socket.emit("ShootResponse", "Duplicated Shot");
+            socket.emit("shootResponse", "Duplicated Shot");
             return;
         }
 
     } else if (room.hostSocketID === socket.id) {
 
         if (room.turn === "Guest") {socket.emit("adminGetRoomIDResponse", "Completed", roomIDList);
-            socket.emit("ShootResponse", "Wrong Turn");
+            socket.emit("shootResponse", "Wrong Turn");
             return;
         }
         if (room.hostShot.includes(location)) {
-            socket.emit("ShootResponse", "Duplicated Shot");
+            socket.emit("shootResponse", "Duplicated Shot");
             return;
         }
     
