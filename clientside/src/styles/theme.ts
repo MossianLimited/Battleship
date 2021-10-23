@@ -36,7 +36,6 @@ const theme = {
             },
             button: {
                 background: {
-                    dark: "#302B4A",
                     primary: "#6D51FD",
                     secondary: "#F0EDFF",
                     mediumAlt: "#947EFF",
@@ -44,6 +43,16 @@ const theme = {
                 text: {
                     primary: "#FFFFFF",
                     secondary: "#6D51FD",
+                },
+            },
+            slider: {
+                background: {
+                    dark: "#302B4A",
+                    light: "#FFFFFF",
+                },
+                text: {
+                    selected: "#7b61ff",
+                    default: "#D1CCEA",
                 },
             },
             input: {
@@ -57,6 +66,11 @@ const theme = {
             info: {
                 heading: "#1E088E",
                 label: "#9591a4",
+                guidelines: "#b0aace",
+            },
+            credits: {
+                light: "#9a86ff",
+                medium: "#C0B4F9",
             },
         },
     },

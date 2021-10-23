@@ -1,7 +1,13 @@
 import styled from "../../../styles/theme";
+import CreditsBox from "../components/creditsBox";
 
 const LobbyLayoutWrapper: React.FC = ({ children }) => {
-    return <Container>{children}</Container>;
+    return (
+        <Container>
+            {children}
+            <CreditsBox />
+        </Container>
+    );
 };
 
 const Container = styled.div`

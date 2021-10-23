@@ -1,4 +1,5 @@
 import styled from "styled-components";
+import { HeaderText, WhiteBox } from "../components/base.styled";
 import BasicButton from "../components/basicButton";
 import BasicInput from "../components/basicInput";
 import LabelWrapper from "../wrappers/labelWrapper";
@@ -9,7 +10,10 @@ const WelcomePage = () => {
         <LobbyLayoutWrapper>
             <Container>
                 <FormBox>
-                    <Title>Battleship</Title>
+                    <Title>
+                        <span>Battleship</span>
+                        <span>🚢</span>
+                    </Title>
                     <LabelWrapper label="Enter your display name">
                         <BasicInput placeholder="Tofu, Dinger, Wasu, or etc." />
                     </LabelWrapper>
@@ -34,18 +38,7 @@ const WelcomePage = () => {
     );
 };
 
-const Container = styled.div`
-    background: ${(props) => props.theme.colors.lobby.backdrop.light};
-    border-radius: 0.75rem;
-
-    width: 28.6875rem;
-
-    display: flex;
-    flex-flow: column;
-
-    margin: auto 0;
-    overflow: hidden;
-`;
+const Container = styled(WhiteBox)``;
 
 const FormBox = styled.form`
     display: flex;
@@ -54,18 +47,12 @@ const FormBox = styled.form`
     padding: 1.75rem 2rem 0;
 `;
 
-const Title = styled.h1`
-    margin: 0;
+const Title = styled(HeaderText)`
+    display: flex;
+    justify-content: space-between;
+
     margin-bottom: 1.6875rem;
-    padding: 0;
-
-    font-weight: 600;
-    font-size: 1.5rem;
-    line-height: 1.8125rem;
-
     font-family: "Montserrat", sans-serif;
-
-    color: ${(props) => props.theme.colors.lobby.info.heading};
 `;
 
 const ButtonContainer = styled.div`
