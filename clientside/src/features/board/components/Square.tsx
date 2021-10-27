@@ -1,13 +1,15 @@
-import { useState } from "react";
 import styled from "../../../styles/theme";
 import ShipPart from "./Ship";
 import { BattleshipPartRdState, BattleshipStatus } from "../types/battleship";
-import { BoardSquare } from "../types/board";
-import { Side } from "../types/utility";
+import { BoardSquareStatus } from "../types/board";
+import { Position, Side } from "../types/utility";
+import { useGameStateContext } from "../../game/contexts/gameStateContext";
+import posToString from "../functions/posToString";
+import { useCallback } from "react";
 
 interface Props {
     squareType?: Side;
-    position?: BoardSquare["position"];
+    position?: Position;
     part?: BattleshipPartRdState;
 }
 
@@ -16,14 +18,29 @@ const Square: React.FC<Props> = ({
     position,
     part,
 }) => {
-    const [selected, setSelected] = useState<boolean>(false); // temporary for mvp testing
+    const { state, dispatch } = useGameStateContext();
+
+    const status =
+        position && state.board[squareType][posToString(position)]?.status;
     const isSunken = part && part.battleship.status === BattleshipStatus.Sunken;
 
+    const handleSelectClick = useCallback(() => {
+        if (position) {
+            // should be replaced with call to api
+
+            dispatch({
+                type: "MARK_SQUARE",
+                payload: {
+                    side: squareType,
+                    position,
+                    status: BoardSquareStatus.Missed,
+                },
+            });
+        }
+    }, [dispatch, position, squareType]);
+
     return (
-        <Container
-            squareType={squareType}
-            onClick={() => setSelected(!selected)}
-        >
+        <Container squareType={squareType} onClick={handleSelectClick}>
             {position?.row === 1 && (
                 <ColumnAlphabet className="positional">
                     {String.fromCharCode(65 + position?.col - 1)}
@@ -39,7 +56,9 @@ const Square: React.FC<Props> = ({
                     color={isSunken ? "#ff00556f" : undefined}
                 ></ShipPart>
             )}
-            {selected && <Circle squareType={squareType} />}
+            {status === BoardSquareStatus.Missed && (
+                <Circle squareType={squareType} />
+            )}
             {isSunken && <Circle squareType={squareType} hit={true} />}
         </Container>
     );
@@ -71,7 +90,7 @@ const Container = styled.div<{ squareType: Side }>`
         display: grid;
         place-items: center;
 
-        color: ${(props) => props.theme.colors.text.position};
+        color: ${(props) => props.theme.colors.square.text.position};
 
         user-select: none;
     }
@@ -87,7 +106,7 @@ const RowNumber = styled.div`
     left: -2rem;
 `;
 
-const Circle = styled.div<{ squareType: Side, hit?: boolean }>`
+const Circle = styled.div<{ squareType: Side; hit?: boolean }>`
     width: 0.875rem;
     height: 0.875rem;
     position: absolute;
@@ -95,8 +114,7 @@ const Circle = styled.div<{ squareType: Side, hit?: boolean }>`
     border-radius: 50%;
 
     background: ${(props) => {
-        if (props.hit) 
-            return props.theme.colors.danger.main;
+        if (props.hit) return props.theme.colors.danger.main;
         return (props.theme.colors.square as any)[props.squareType].circle;
     }};
 `;

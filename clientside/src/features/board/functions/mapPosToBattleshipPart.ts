@@ -6,7 +6,9 @@ import {
     BattleshipPartRdState,
 } from "../types/battleship";
 
-function mapPosToBattleshipPart(shipYard: BattleshipAllyYard) {
+function mapPosToBattleshipPart(
+    shipYard: BattleshipAllyYard
+): Map<string, BattleshipPartRdState | undefined> {
     const map: Map<string, BattleshipPartRdState | undefined> = new Map();
 
     shipYard.forEach((battleship) => {
@@ -69,4 +71,4 @@ function mapPosToBattleshipPart(shipYard: BattleshipAllyYard) {
     return map;
 }
 
-export default mapPosToBattleshipPart; 
+export default mapPosToBattleshipPart;
