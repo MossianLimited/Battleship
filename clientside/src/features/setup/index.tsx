@@ -25,7 +25,11 @@ const RefreshIcon: FC = () => {
     );
 };
 
-const Ship: FC = () => {
+interface ShipProps {
+    id: number; 
+}
+
+const Ship: FC<ShipProps> = ({ id }) => {
     return (
         <ShipWrapper>
             <ShipPart
@@ -48,6 +52,7 @@ const Ship: FC = () => {
                 direction={BattleshipDirection.Vertical}
                 translateFixed={false}
             ></ShipPart>
+            <ShipNumber>{id}</ShipNumber>
         </ShipWrapper>
     );
 };
@@ -66,13 +71,17 @@ const SetupModal: FC = (_) => {
             <BodyWrapper>
                 <ShipyardWrapper>
                     <ShipyardText>Shipyard</ShipyardText>
-                    <Ship />
-                    <Ship />
-                    <Ship />
-                    <Ship />
+                    <Ship id={1} />
+                    <Ship id={2} />
+                    <Ship id={3} />
+                    <Ship id={4} />
                 </ShipyardWrapper>
                 <BoardWrapper>
-                    <Board selectable={false} boardType={Side.Ally} shipYard={[]}></Board>
+                    <Board
+                        selectable={false}
+                        boardType={Side.Ally}
+                        shipYard={[]}
+                    ></Board>
                 </BoardWrapper>
             </BodyWrapper>
             <Spacer />
@@ -151,11 +160,10 @@ const ShipyardWrapper = styled.div`
     flex-grow: 1;
     height: 100%;
     margin-right: 3rem;
-    padding-top: 0.125rem;
     align-items: center;
     align-content: center;
+    justify-content: center;
     width: 6rem;
-    padding: 0.5rem 0; 
     background: #7b61ff;
     border-radius: 12px;
 `;
@@ -174,8 +182,18 @@ const BoardWrapper = styled.div``;
 const ShipWrapper = styled.div`
     display: flex;
     flex-flow: column nowrap;
+    align-items: center;
+    justify-content: center;
     height: min-content;
     margin: 0.375rem 1px 0;
+`;
+
+const ShipNumber = styled.span`
+    position: absolute;
+    font-size: 1.75rem;
+    color: #bbb1e9;
+    font-weight: 700; 
+    z-index: 2; 
 `;
 
 const ReadyButton = styled.button`
