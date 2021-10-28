@@ -8,29 +8,30 @@ const theme = {
     colors: {
         square: {
             ally: {
-                circle: "#61C6FF",
+                circle: "#6745FF",
                 background: {
-                    light: "rgba(97, 198, 255, 0.2)",
-                    medium: "rgba(97, 198, 255, 0.4)",
+                    light: "#947EFF",
+                    medium: "#947EFF",
                 },
             },
             enemy: {
-                circle: "rgba(53, 56, 57, 0.5)",
+                circle: "#6745FF",
                 background: {
-                    light: "rgba(157, 157, 157, 0.2)",
-                    medium: "rgba(157, 157, 157, 0.4)",
+                    light: "#947EFF",
+                    medium: "#947EFF",
                 },
             },
             text: {
-                position: "rgba(113, 124, 150, 0.7)",
+                position: "white",
             },
         },
         danger: {
-            main: "#FF0055",
+            main: "#D91818",
         },
         lobby: {
             backdrop: {
                 medium: "#7B61FF",
+                dark: "#674DEF",
                 shadedLight: "#F8F7FF",
                 light: "#FFFFFF",
             },

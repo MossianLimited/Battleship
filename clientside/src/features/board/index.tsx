@@ -30,14 +30,16 @@ type Props = AllyProps | EnemyProps;
 interface AllyProps {
     boardType: Side.Ally;
     shipYard: BattleshipAllyYard;
+    selectable?: boolean; 
 }
 
 interface EnemyProps {
     boardType: Side.Enemy;
     shipYard: BattleshipYard;
+    selectable?: boolean; 
 }
 
-const Board: React.FC<Props> = ({ boardType, shipYard }) => {
+const Board: React.FC<Props> = ({ boardType, shipYard, selectable }) => {
     const { board } = useGameStateContext().state;
 
     const mappedBattleshipPart = useMemo(() => {
@@ -59,13 +61,14 @@ const Board: React.FC<Props> = ({ boardType, shipYard }) => {
                     <Square
                         key={key}
                         squareType={boardType}
+                        selectable={selectable}
                         position={position}
                         part={mappedBattleshipPart.get(key) || undefined}
                     />
                 );
             })
         );
-    }, [board.gridSize, boardType, mappedBattleshipPart]);
+    }, [board.gridSize, boardType, mappedBattleshipPart, selectable]);
 
     return <Container gridSize={board.gridSize}>{renderedSquares}</Container>;
 };

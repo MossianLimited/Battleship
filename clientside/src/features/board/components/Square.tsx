@@ -11,12 +11,14 @@ interface Props {
     squareType?: Side;
     position?: Position;
     part?: BattleshipPartRdState;
+    selectable?: boolean;
 }
 
 const Square: React.FC<Props> = ({
     squareType = Side.Ally,
     position,
     part,
+    selectable = true,
 }) => {
     const { state, dispatch } = useGameStateContext();
 
@@ -25,7 +27,7 @@ const Square: React.FC<Props> = ({
     const isSunken = part && part.battleship.status === BattleshipStatus.Sunken;
 
     const handleSelectClick = useCallback(() => {
-        if (position) {
+        if (position && selectable) {
             // should be replaced with call to api
 
             dispatch({
@@ -37,7 +39,7 @@ const Square: React.FC<Props> = ({
                 },
             });
         }
-    }, [dispatch, position, squareType]);
+    }, [dispatch, position, selectable, squareType]);
 
     return (
         <Container squareType={squareType} onClick={handleSelectClick}>
@@ -53,7 +55,7 @@ const Square: React.FC<Props> = ({
                 <ShipPart
                     part={part.partType}
                     direction={part.battleship.direction}
-                    color={isSunken ? "#ff00556f" : undefined}
+                    color={isSunken ? "#ff3d3dc7" : undefined}
                 ></ShipPart>
             )}
             {status === BoardSquareStatus.Missed && (
@@ -70,7 +72,8 @@ const Container = styled.div<{ squareType: Side }>`
     background: ${(props) =>
         (props.theme.colors.square as any)[props.squareType].background.light};
 
-    border: 0.125rem solid white;
+    border: 0.125rem solid
+        ${(props) => props.theme.colors.lobby.backdrop.medium};
     border-radius: 0.25rem;
 
     width: 2rem;

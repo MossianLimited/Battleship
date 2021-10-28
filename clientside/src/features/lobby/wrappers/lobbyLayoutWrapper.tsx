@@ -4,8 +4,8 @@ import CreditsBox from "../components/creditsBox";
 const LobbyLayoutWrapper: React.FC = ({ children }) => {
     return (
         <Container>
-            {children}
             <CreditsBox />
+            {children}
         </Container>
     );
 };

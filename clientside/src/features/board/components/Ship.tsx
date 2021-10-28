@@ -1,5 +1,5 @@
 import { FC } from "react";
-import styled from "styled-components";
+import styled, { css } from "styled-components";
 import {
     BattleshipDirection,
     BattleshipPartType,
@@ -11,6 +11,8 @@ const ROTATE_DEG_MAP = [0, 270, 180, 90];
 export interface Props {
     size?: number;
     color?: string;
+    zIndex?: number;
+    translateFixed?: boolean;
     part: BattleshipPartType;
     direction: BattleshipDirection;
     type?: BattleshipType;
@@ -20,7 +22,9 @@ const ShipPart: FC<Props> = ({
     part,
     direction,
     size = 32,
-    color = "#a9d5fd",
+    zIndex = 1,
+    translateFixed = true,
+    color = "rgba(100%, 100%, 100%)",
     type = BattleshipType.Default,
 }) => {
     let rotateDeg = ROTATE_DEG_MAP[direction];
@@ -71,7 +75,12 @@ const ShipPart: FC<Props> = ({
     }
 
     return (
-        <Wrapper rotate={rotateDeg} size={size}>
+        <Wrapper
+            rotate={rotateDeg}
+            size={size}
+            style={{ zIndex }}
+            fixed={translateFixed}
+        >
             {renderedShip}
         </Wrapper>
     );
@@ -82,20 +91,26 @@ export default ShipPart;
 interface WrapperProps {
     rotate: number;
     size: number;
+    fixed: boolean;
 }
 
 const Wrapper = styled.div<WrapperProps>`
-    z-index: 1;
     display: flex;
     align-items: center;
     justify-content: center;
     width: 2rem;
     height: 2rem;
+    opacity: 0.9;
     transform-origin: center center;
-    opacity: 0.5;
-    transform: translate(-0.125rem, -0.125rem)
-        rotate(${({ rotate }) => `${rotate}`}deg);
     cursor: grab;
+
+    ${({ fixed, rotate }) =>
+        !fixed
+            ? ""
+            : css`
+                  transform: translate(-0.125rem, -0.125rem)
+                      rotate(${rotate}deg);
+              `}
 
     & > svg {
         height: ${({ size }) => `${size / 16}rem`};

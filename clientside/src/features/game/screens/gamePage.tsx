@@ -9,6 +9,8 @@ import { initialGameState } from "../constants/state";
 import { GameStateContext } from "../contexts/gameStateContext";
 import gameStateReducer from "../reducers/gameStateReducer";
 import { useUserContext } from "../../lobby/contexts/userContext";
+import SetupModal from "../../setup";
+import { MetaPhase } from "../types/state";
 
 const GamePage = () => {
     const [state, dispatch] = useReducer(gameStateReducer, initialGameState);
@@ -48,6 +50,8 @@ const GamePage = () => {
                     shipYard={state.battleship.enemy}
                 />
             </BoardContainer>
+            {state.meta.phase === MetaPhase.Setup && <Backdrop />}
+            {state.meta.phase === MetaPhase.Setup && <SetupModal />}
         </GameStateContext.Provider>
     );
 };
@@ -61,5 +65,14 @@ const BoardContainer = styled.div`
     height: 100vh;
     width: 100vw;
 `;
+
+const Backdrop = styled.div`
+    position: fixed; 
+    top: 0; 
+    left: 0; 
+    width: 100vw; 
+    height: 100vh; 
+    background-color: rgba(0, 0, 0, 0.6);
+`; 
 
 export default GamePage;
