@@ -21,28 +21,10 @@ const checkDestroyed = (
 			if (index !== -1) {
 				ships[i].splice(index, 1);
 				if (ships[i].length === 0) {
-					const shipLength = playerShips[i].length;
-					const startColumn = playerShips[i][0][0];
-					const endColumn = playerShips[i][shipLength - 1][0];
-					let direction: string;
-					if (startColumn === endColumn) direction = 'vertical';
-					else direction = 'horizontal';
-					socket.emit(
-						'shipDestroyed',
-						shipDestroyed,
-						playerShips[i][0],
-						direction,
-						shipLength
-					);
+					socket.emit('shipDestroyed', shipDestroyed, playerShips[i]);
 					socket
 						.to(opponentSocketId)
-						.emit(
-							'shipDestroyed',
-							shipDestroyed,
-							playerShips[i][0],
-							direction,
-							shipLength
-						);
+						.emit('shipDestroyed', shipDestroyed, playerShips[i]);
 				}
 			}
 		}
