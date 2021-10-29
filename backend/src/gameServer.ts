@@ -2,7 +2,7 @@ import * as express from 'express';
 import { Server, Socket } from 'socket.io';
 import { createServer, Server as ServerType } from 'http';
 import { Room, Admin } from './class';
-import { createRoom, getRoomList, joinRoom } from './controllers/room';
+import { createRoom, getRoomList, joinRoom, changeLock } from './controllers/room';
 import { setup, shoot, withdraw, disconnect } from './controllers/game';
 import {
 	adminClose,
@@ -72,6 +72,9 @@ export class GameServer {
 					joinRoom(socket, username, roomID, address, this.roomList);
 				}
 			);
+			socket.on('changeLock', () => {
+				changeLock(socket, this.roomList);
+			});
 			socket.on('setup', (coordinates: string[]) => {
 				setup(socket, this.roomList, coordinates);
 			});
