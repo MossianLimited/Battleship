@@ -61,7 +61,7 @@ export class GameServer {
 				createRoom(
 					socket,
 					username,
-					roomIterator,
+					roomIterator++,
 					address,
 					this.roomList
 				);

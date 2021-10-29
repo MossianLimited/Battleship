@@ -10,6 +10,7 @@ export const disconnect = (
 	console.log(`Client gone [id=${socket.id}]`);
 	roomList.forEach((room) => {
 		const opponentSocketId = findOpponentSocketId(room, socket.id);
+		if (!opponentSocketId) return;
 		let winner: string = 'None';
 		if (room.guestReady === true && room.hostReady === true) {
 			winner = room.guestSocketID === socket.id ? 'Host' : 'Guest';
