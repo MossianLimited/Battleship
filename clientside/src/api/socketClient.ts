@@ -20,9 +20,9 @@ class SocketClient {
         }
     }
 
-    public createRoom(username: string, password: string) {
+    public createRoom(username: string) {
         if (this.socket) {
-            this.socket.emit(SOCKET_EVENT.CREATE_ROOM, { username, password });
+            this.socket.emit(SOCKET_EVENT.CREATE_ROOM, username, "");
         }
     }
 
@@ -39,7 +39,7 @@ class SocketClient {
 
     public joinRoom(username: string, roomId: string) {
         if (this.socket) {
-            this.socket.emit(SOCKET_EVENT.JOIN_ROOM, { username, roomId });
+            this.socket.emit(SOCKET_EVENT.JOIN_ROOM, username, roomId, "");
         }
     }
 

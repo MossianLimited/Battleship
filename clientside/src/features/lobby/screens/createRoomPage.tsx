@@ -10,7 +10,7 @@ const CreateRoomPage = () => {
     const [roomId, setRoomId] = useState<string>("");
 
     useEffect(() => {
-        socketClient.createRoom(username, "");
+        socketClient.createRoom(username);
         socketClient.subscribeToRoomCreated((roomId) => {
             setRoomId(roomId);
         });
