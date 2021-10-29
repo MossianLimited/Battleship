@@ -9,14 +9,11 @@ export const createRoom = (
 	address: string,
 	roomList: Room[]
 ) => {
-	// Logging
 	console.log(
 		`Room creation asked from ${username} with ${address} with room password of ${roomPass}`
 	);
 	console.log('Creating room...');
-	// Check if the Room should be Public
 	const locked = roomPass ? true : false;
-	// Add the Room to the List and Send back room ID to Host
 	roomList.push(
 		new Room(username, roomPass, socket.id, address, locked, roomIterator)
 	);
