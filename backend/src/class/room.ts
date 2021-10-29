@@ -18,8 +18,8 @@ export class Room {
 	public guestHitCount: number;
 	public turnCount: number;
 	public turn: string;
-	public guestShips: string[];
-	public hostShips: string[];
+	public guestShips: string[][];
+	public hostShips: string[][];
 	public guestShot: string[];
 	public hostShot: string[];
 	public timer: NodeJS.Timeout;

@@ -3,6 +3,51 @@ import { Room } from '../class';
 import { timePerRound } from '../config';
 import { findOpponentSocketId, randomShoot, resetRoom } from '.';
 
+const checkDestroyed = (
+	socket: Socket,
+	shot: string[],
+	playerShips: string[][],
+	opponentSocketId: string,
+	currentTurn: string
+) => {
+	const ships = [...playerShips];
+	let shipDestroyed: string;
+	if (currentTurn === 'Guest') shipDestroyed = 'Host';
+	else shipDestroyed = 'Guest';
+	shot.forEach((location) => {
+		for (let i = 0; i < ships.length; i++) {
+			const index = ships[i].findIndex((coordinate) => coordinate === location);
+
+			if (index !== -1) {
+				ships[i].splice(index, 1);
+				if (ships[i].length === 0) {
+					const shipLength = playerShips[i].length;
+					const startColumn = playerShips[i][0][0];
+					const endColumn = playerShips[i][shipLength - 1][0];
+					let direction: string;
+					if (startColumn === endColumn) direction = 'vertical';
+					else direction = 'horizontal';
+					socket.emit(
+						'shipDestroyed',
+						shipDestroyed,
+						playerShips[i][0],
+						direction,
+						shipLength
+					);
+					socket
+						.to(opponentSocketId)
+						.emit(
+							'shipDestroyed',
+							shipDestroyed,
+							playerShips[i][0],
+							direction,
+							shipLength
+						);
+				}
+			}
+		}
+	});
+};
 export const shoot = (socket: Socket, room: Room, location: string) => {
 	// Get Current Turn Player, Update Turn Number, and Logging
 	const currentTurn = room.turn;
@@ -14,17 +59,33 @@ export const shoot = (socket: Socket, room: Room, location: string) => {
 
 	// Check if guest hits hosts or host hits guest
 	if (
-		(currentTurn == 'Guest' && room.hostShips.includes(location)) ||
-		(currentTurn == 'Host' && room.guestShips.includes(location))
+		(currentTurn == 'Guest' &&
+			room.hostShips.some((ship) => ship.includes(location))) ||
+		(currentTurn == 'Host' &&
+			room.guestShips.some((ship) => ship.includes(location)))
 	) {
 		// Add Hit Count and Add Shot Location
 		console.log(currentTurn + ' hits at ' + location);
 		if (currentTurn === 'Guest') {
 			room.guestHitCount += 1;
 			room.guestShot.push(location);
+			checkDestroyed(
+				socket,
+				room.guestShot,
+				room.hostShips,
+				opponentSocketId,
+				currentTurn
+			);
 		} else if (currentTurn === 'Host') {
 			room.hostHitCount += 1;
 			room.hostShot.push(location);
+			checkDestroyed(
+				socket,
+				room.hostShot,
+				room.guestShips,
+				opponentSocketId,
+				currentTurn
+			);
 		}
 		shootStatus = 'Hit';
 	} else {

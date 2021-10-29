@@ -1,3 +1,4 @@
+import { validColumns, validRows } from '../../config';
 import { Room } from '../../class';
 import { Socket } from 'socket.io';
 import { randomShoot } from '../../utils/randomShoot';
@@ -7,13 +8,28 @@ import { findOpponentSocketId } from '../../utils';
 export const setup = (
 	socket: Socket,
 	roomList: Room[],
-	coordinates: string[]
+	coordinates: string[][]
 ) => {
 	// Setup the request owner board and set the player ready
 	const room = roomList.find(
 		(room) =>
 			room.hostSocketID === socket.id || room.guestSocketID === socket.id
 	);
+	coordinates.forEach((ship) => {
+		ship.forEach((coordinate) => {
+			const column = coordinate[0];
+			const row = coordinate.substring(1);
+			if (!(validColumns.includes(column) && validRows.includes(row))) {
+				socket.emit(
+					'setupResponse',
+					'Invalid Placement',
+					room.hostReady,
+					room.guestReady
+				);
+			}
+			return;
+		});
+	});
 
 	if (room.guestSocketID === socket.id) {
 		room.guestShips = coordinates;
