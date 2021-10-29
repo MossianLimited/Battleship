@@ -91,7 +91,6 @@ export class GameServer {
 			socket.on('adminGetRoomList', () => {
 				adminGetRoomList(socket, this.roomList, this.adminList);
 			});
-			// Response to admin room ID
 			socket.on('adminGetRoomID', (filterType, filter) => {
 				adminGetRoomID(
 					socket,
