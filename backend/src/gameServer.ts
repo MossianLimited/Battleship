@@ -3,7 +3,14 @@ import { Server, Socket } from 'socket.io';
 import { createServer, Server as ServerType } from 'http';
 import { Room, Admin } from './class';
 import { createRoom, getRoomList, joinRoom } from './controllers/room';
-import { setup, shoot, withdraw, disconnect } from './controllers/game';
+import {
+	setup,
+	shoot,
+	withdraw,
+	disconnect,
+	chat,
+	randomShip
+} from './controllers/game';
 import {
 	adminClose,
 	adminGetRoomID,
@@ -73,8 +80,14 @@ export class GameServer {
 					joinRoom(socket, username, roomID, roomPass, address, this.roomList);
 				}
 			);
-			socket.on('setup', (coordinates: string[]) => {
+			socket.on('chat', (msg: string) => {
+				chat(socket, msg, this.roomList);
+			});
+			socket.on('setup', (coordinates: string[][]) => {
 				setup(socket, this.roomList, coordinates);
+			});
+			socket.on('randomShip', (numOfShips: number, shipLength: number) => {
+				randomShip(socket, numOfShips, shipLength);
 			});
 			socket.on('shoot', (location: string) => {
 				shoot(socket, this.roomList, location);
