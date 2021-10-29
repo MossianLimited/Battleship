@@ -31,12 +31,15 @@ const Container = styled.div`
     background: #302b4a;
     border-radius: 0.375rem;
 
+    position: relative;
+
     cursor: pointer;
 `;
 
 const Slider = styled.span<{ isChecked: boolean }>`
-    position: relative;
+    position: absolute;
     cursor: pointer;
+    top: -1rem;
 
     &::before {
         position: absolute;

@@ -32,6 +32,7 @@ input, button {
     box-sizing: border-box;
 }
 
+
 @media (min-width: ${(props) => props.theme.breakPoints.desktop}px) {
     html {
         font-size: 18px;
