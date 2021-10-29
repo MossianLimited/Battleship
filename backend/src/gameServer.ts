@@ -57,11 +57,10 @@ export class GameServer {
 			socket.on('getRoomList', () => {
 				getRoomList(socket, this.roomList);
 			});
-			socket.on('createRoom', (username: string, roomPass: string) => {
+			socket.on('createRoom', (username: string) => {
 				createRoom(
 					socket,
 					username,
-					roomPass,
 					roomIterator,
 					address,
 					this.roomList
@@ -69,8 +68,8 @@ export class GameServer {
 			});
 			socket.on(
 				'joinRoom',
-				(username: string, roomID: string, roomPass: string) => {
-					joinRoom(socket, username, roomID, roomPass, address, this.roomList);
+				(username: string, roomID: string) => {
+					joinRoom(socket, username, roomID, address, this.roomList);
 				}
 			);
 			socket.on('setup', (coordinates: string[]) => {
