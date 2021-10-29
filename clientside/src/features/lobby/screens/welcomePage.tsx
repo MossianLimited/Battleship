@@ -3,35 +3,59 @@ import styled from "styled-components";
 import { HeaderText, WhiteBox } from "../components/base.styled";
 import BasicButton from "../components/basicButton";
 import BasicInput from "../components/basicInput";
+import { useUserContext } from "../contexts/userContext";
 import LabelWrapper from "../wrappers/labelWrapper";
 import LobbyLayoutWrapper from "../wrappers/lobbyLayoutWrapper";
 
 const WelcomePage = () => {
     const history = useHistory();
+    const { username, setUsername } = useUserContext();
+
+    const validateUsername = () => {
+        if (!username) {
+            alert("You need to fill in a username");
+            return false;
+        }
+        return true;
+    };
 
     return (
         <LobbyLayoutWrapper>
             <Container>
-                <FormBox>
+                <FormBox
+                    onSubmit={() =>
+                        validateUsername() && history.push("/new-room")
+                    }
+                >
                     <Title>
                         <span>Battleship</span>
                         <span>🚢</span>
                     </Title>
                     <LabelWrapper label="Enter your display name">
-                        <BasicInput placeholder="Tofu, Dinger, Wasu, or etc." />
+                        <BasicInput
+                            value={username}
+                            onChange={(e) => setUsername(e.target.value)}
+                            placeholder="Tofu, Dinger, Wasu, or etc."
+                        />
                     </LabelWrapper>
                     <ButtonContainer>
                         <BasicButton
                             type="button"
                             variant="secondary"
-                            onClick={() => history.push("/rooms")}
+                            name="rooms"
+                            onClick={() =>
+                                validateUsername() && history.push("/rooms")
+                            }
                         >
                             Join Room
                         </BasicButton>
                         <BasicButton
                             type="button"
                             variant="primary"
-                            onClick={() => history.push("/new-room")}
+                            name="newRoom"
+                            onClick={() =>
+                                validateUsername() && history.push("/new-room")
+                            }
                         >
                             Create Room
                         </BasicButton>

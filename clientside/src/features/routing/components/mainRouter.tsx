@@ -12,10 +12,10 @@ const MainRouter = () => {
                 <LobbyRoute path="/test">
                     <GamePage />
                 </LobbyRoute>
-                <LobbyRoute path="/new-room">
+                <LobbyRoute path="/new-room" userRequired>
                     <CreateRoomPage />
                 </LobbyRoute>
-                <LobbyRoute path="/rooms">
+                <LobbyRoute path="/rooms" userRequired>
                     <JoinRoomPage />
                 </LobbyRoute>
                 <LobbyRoute path="/">

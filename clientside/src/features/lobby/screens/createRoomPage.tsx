@@ -1,8 +1,21 @@
+import { useEffect, useState } from "react";
+import socketClient from "../../../api/socketClient";
 import styled from "../../../styles/theme";
 import { HeaderText, WhiteBox } from "../components/base.styled";
 import RoomModeSlider from "../components/roomModeSlider";
+import { useUserContext } from "../contexts/userContext";
 
 const CreateRoomPage = () => {
+    const { username } = useUserContext();
+    const [roomId, setRoomId] = useState<string>("");
+
+    useEffect(() => {
+        socketClient.createRoom(username, "");
+        socketClient.subscribeToRoomCreated((roomId) => {
+            setRoomId(roomId);
+        });
+    }, [username]);
+
     return (
         <Container>
             <InfoBox>
@@ -19,7 +32,7 @@ const CreateRoomPage = () => {
                     <span>and enter the code.</span>
                 </Guidelines>
             </InfoBox>
-            <GameCode>NET-CNT</GameCode>
+            <GameCode>{roomId && roomId.toUpperCase()}</GameCode>
         </Container>
     );
 };
