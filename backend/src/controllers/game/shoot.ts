@@ -1,6 +1,7 @@
 import { Socket } from 'socket.io';
 import { Room } from '../../class';
 import { shoot as Shoot } from '../../utils/';
+import { validColumns, validRows } from '../../config';
 
 export const shoot = (socket: Socket, roomList: Room[], location: string) => {
 	const room = roomList.find(
@@ -28,7 +29,15 @@ export const shoot = (socket: Socket, roomList: Room[], location: string) => {
 			return;
 		}
 	}
-
+	if (
+		!(
+			validColumns.includes(location[0]) &&
+			validRows.includes(location.substring(1))
+		)
+	) {
+		socket.emit('shootResponse', 'Wrong Location');
+		return;
+	}
 	// If valid, stop autoshoot timer and shoot manually
 	clearTimeout(room.timer);
 	Shoot(socket, room, location);
