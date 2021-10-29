@@ -3,7 +3,6 @@ import { Server } from 'socket.io';
 export class Room {
 	public roomID: string;
 	public locked: boolean;
-	public hashedRoomPass: string;
 	public hostUsername: string;
 	public hostSocketID: string;
 	private hostIP: string;
@@ -27,15 +26,12 @@ export class Room {
 
 	constructor(
 		hostUsername: string,
-		hashedRoomPass: string,
 		hostSocketID: string,
 		hostIP: string,
-		locked: boolean,
 		roomIterator: number
 	) {
 		this.roomID = ('000000' + roomIterator).slice(-6);
-		this.locked = locked;
-		this.hashedRoomPass = hashedRoomPass;
+		this.locked = false;
 		this.hostUsername = hostUsername;
 		this.hostSocketID = hostSocketID;
 		this.hostIP = hostIP;

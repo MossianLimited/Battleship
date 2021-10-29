@@ -2,7 +2,7 @@ import * as express from 'express';
 import { Server, Socket } from 'socket.io';
 import { createServer, Server as ServerType } from 'http';
 import { Room, Admin } from './class';
-import { createRoom, getRoomList, joinRoom } from './controllers/room';
+import { createRoom, getRoomList, joinRoom, changeLock } from './controllers/room';
 import {
 	setup,
 	shoot,
@@ -64,22 +64,24 @@ export class GameServer {
 			socket.on('getRoomList', () => {
 				getRoomList(socket, this.roomList);
 			});
-			socket.on('createRoom', (username: string, roomPass: string) => {
+			socket.on('createRoom', (username: string) => {
 				createRoom(
 					socket,
 					username,
-					roomPass,
-					roomIterator,
+					roomIterator++,
 					address,
 					this.roomList
 				);
 			});
 			socket.on(
 				'joinRoom',
-				(username: string, roomID: string, roomPass: string) => {
-					joinRoom(socket, username, roomID, roomPass, address, this.roomList);
+				(username: string, roomID: string) => {
+					joinRoom(socket, username, roomID, address, this.roomList);
 				}
 			);
+			socket.on('changeLock', () => {
+				changeLock(socket, this.roomList);
+			});
 			socket.on('chat', (msg: string) => {
 				chat(socket, msg, this.roomList);
 			});
