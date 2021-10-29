@@ -7,11 +7,7 @@ export const adminGetRoomList = (
 	roomList: Room[],
 	adminList: Admin[]
 ) => {
-	// Check privilege
-	if (checkAdmin(socket.id, adminList)) {
-		// Send all rooms
+	if (checkAdmin(socket.id, adminList))
 		socket.emit('adminGetRoomListResponse', 'Completed', roomList);
-	} else {
-		socket.emit('adminGetRoomListResponse', 'Connection Not Verified');
-	}
+	else socket.emit('adminGetRoomListResponse', 'Connection Not Verified');
 };

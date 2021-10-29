@@ -5,7 +5,7 @@ export const getRoomList = (socket: Socket, roomList: Room[]) => {
 	// Create a list and store open rooms with only Host Username and Room ID properties
 	const openRoomList: openRoom[] = [];
 	roomList
-		.filter((room) => room.locked === false)
+		.filter((room) => !room.locked)
 		.forEach((room) =>
 			openRoomList.push(new openRoom(room.hostUsername, room.roomID))
 		);

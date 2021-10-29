@@ -12,7 +12,6 @@ export const adminGetRoomID = (
 	// Check privilege
 	if (checkAdmin(socket.id, adminList)) {
 		const roomIDList: string[] = [];
-
 		// Check if the username is in any rooom
 		if (filterType === 'username') {
 			roomList
@@ -25,7 +24,5 @@ export const adminGetRoomID = (
 				});
 		}
 		socket.emit('adminGetRoomIDResponse', 'Completed', roomIDList);
-	} else {
-		socket.emit('adminGetRoomListResponse', 'Connection Not Verified');
-	}
+	} else socket.emit('adminGetRoomListResponse', 'Connection Not Verified');
 };

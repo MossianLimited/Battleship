@@ -11,12 +11,8 @@ export const adminSpectate = (
 	// Check privilege
 	if (checkAdmin(socket.id, adminList)) {
 		// Check if the admin is already spectating any game. If not, subscribe admin to the room
-		if (adminList.find((admin) => admin.socketID === socket.id).isSpectating) {
+		if (adminList.find((admin) => admin.socketID === socket.id).isSpectating)
 			socket.emit('adminSpectateResponse', 'Already Spectating');
-		} else {
-			roomList.find((room) => room.roomID == roomID).spectator = socket.id;
-		}
-	} else {
-		socket.emit('adminSpectateResponse', 'Connection Not Verified');
-	}
+		else roomList.find((room) => room.roomID == roomID).spectator = socket.id;
+	} else socket.emit('adminSpectateResponse', 'Connection Not Verified');
 };

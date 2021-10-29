@@ -41,7 +41,7 @@ export class GameServer {
 	}
 
 	private initSocket(): void {
-		this.io = new Server(this.server);
+		this.io = new Server(this.server, { cors: { origin: '*' } });
 		if (useEncryption) this.io.use(encrypt('secretKey'));
 	}
 
@@ -52,7 +52,7 @@ export class GameServer {
 
 		this.io.on('connection', (socket: Socket) => {
 			const address = socket.handshake.address;
-			console.log('Connected, socketId: %s, address: %s', socket.id, address);
+			console.log('Connected, socketID: %s, address: %s', socket.id, address);
 			socket.emit('SocketID', socket.id);
 			socket.on('getRoomList', () => {
 				getRoomList(socket, this.roomList);

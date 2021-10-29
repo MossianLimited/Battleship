@@ -2,6 +2,7 @@ import { Room } from '../../class';
 import { Socket } from 'socket.io';
 import { randomShoot } from '../../utils/randomShoot';
 import { timePerRound } from '../../config';
+import { findOpponentSocketId } from '../../utils';
 
 export const setup = (
 	socket: Socket,
@@ -23,11 +24,9 @@ export const setup = (
 	}
 
 	// Notify Both Players of each other Status
+	const opponentSocketId = findOpponentSocketId(room, socket.id);
 	socket
-		.to(room.hostSocketID)
-		.emit('setupResponse', 'Completed', room.hostReady, room.guestReady);
-	socket
-		.to(room.guestSocketID)
+		.to(opponentSocketId)
 		.emit('setupResponse', 'Completed', room.hostReady, room.guestReady);
 	socket.emit('setupResponse', 'Completed', room.hostReady, room.guestReady);
 	console.log(room);
@@ -42,12 +41,9 @@ export const setup = (
 		if (randomInt === 0) room.turn = 'Host';
 		else room.turn = 'Guest';
 
-		// Notify both players that the hame has started and whose turn it is
+		// Notify both players that the game has started and whose turn it is
 		socket
-			.to(room.hostSocketID)
-			.emit('gameStartResponse', 'Completed', room.turn);
-		socket
-			.to(room.guestSocketID)
+			.to(opponentSocketId)
 			.emit('gameStartResponse', 'Completed', room.turn);
 		socket.emit('gameStartResponse', 'Completed', room.turn);
 

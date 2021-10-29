@@ -11,20 +11,20 @@ export const shoot = (socket: Socket, roomList: Room[], location: string) => {
 	// Check if it is a valid shoot command
 	if (room.guestSocketID === socket.id) {
 		if (room.turn === 'Host') {
-			socket.emit('shootResponse', 'Wrong Turn', '', '', '', '', '', '');
+			socket.emit('shootResponse', 'Wrong Turn');
 			return;
 		}
 		if (room.guestShot.includes(location)) {
-			socket.emit('shootResponse', 'Duplicated Shot', '', '', '', '', '', '');
+			socket.emit('shootResponse', 'Duplicated Shot');
 			return;
 		}
 	} else if (room.hostSocketID === socket.id) {
 		if (room.turn === 'Guest') {
-			socket.emit('shootResponse', 'Wrong Turn', '', '', '', '', '', '');
+			socket.emit('shootResponse', 'Wrong Turn');
 			return;
 		}
 		if (room.hostShot.includes(location)) {
-			socket.emit('shootResponse', 'Duplicated Shot', '', '', '', '', '', '');
+			socket.emit('shootResponse', 'Duplicated Shot');
 			return;
 		}
 	}

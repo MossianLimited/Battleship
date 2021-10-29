@@ -1,6 +1,6 @@
 import { Socket } from 'socket.io';
 import { Room, Admin } from '../../class';
-import { checkAdmin } from '../../utils';
+import { checkAdmin, findOpponentSocketId } from '../../utils';
 export const disconnect = (
 	socket: Socket,
 	roomList: Room[],
@@ -9,82 +9,39 @@ export const disconnect = (
 	// Find room with matching socket id, let the other player wins, and delete the room from the room list
 	console.log(`Client gone [id=${socket.id}]`);
 	roomList.forEach((room) => {
+		const opponentSocketId = findOpponentSocketId(room, socket.id);
+		let winner: string = 'None';
 		if (room.guestReady === true && room.hostReady === true) {
-			if (room.guestSocketID === socket.id) {
-				room.hostScore += 1;
-				socket
-					.to(room.hostSocketID)
-					.emit(
-						'endResponse',
-						'Abandoned',
-						'Host',
-						room.hostScore,
-						room.guestScore
-					);
-				roomList.splice(
-					roomList.findIndex((room) => room.guestSocketID === socket.id, 1)
-				);
-				console.log('Host Wins');
-				console.log(`room ${room.roomID} deleted`);
-				if (room.timer != undefined) {
-					clearTimeout(room.timer);
-				}
-			} else if (room.hostSocketID === socket.id) {
-				room.guestScore += 1;
-				socket
-					.to(room.guestSocketID)
-					.emit(
-						'endResponse',
-						'Abandoned',
-						'Guest',
-						room.hostScore,
-						room.guestScore
-					);
-				roomList.splice(
-					roomList.findIndex((room) => room.hostSocketID === socket.id, 1)
-				);
-				console.log('Guest Wins');
-				console.log(`room ${room.roomID} deleted`);
-				if (room.timer != undefined) {
-					clearTimeout(room.timer);
-				}
-			}
-		} else {
-			let opponentSocketId: string;
-			if (room.hostSocketID === socket.id)
-				opponentSocketId = room.guestSocketID;
-			else if (room.guestSocketID === socket.id)
-				opponentSocketId = room.hostSocketID;
-			socket
-				.to(opponentSocketId)
-				.emit(
-					'endResponse',
-					'Abandoned',
-					'None',
-					room.hostScore,
-					room.guestScore
-				);
-			socket.emit(
+			winner = room.guestSocketID === socket.id ? 'Host' : 'Guest';
+			if (room.guestSocketID === socket.id) room.hostScore += 1;
+			else room.guestScore += 1;
+			console.log(`${winner} Wins`);
+		}
+		socket
+			.to(opponentSocketId)
+			.emit(
 				'endResponse',
 				'Abandoned',
-				'None',
+				winner,
 				room.hostScore,
 				room.guestScore
 			);
-
-			roomList.splice(
-				roomList.findIndex(
-					(room) =>
-						room.hostSocketID === socket.id ||
-						room.hostSocketID === opponentSocketId,
-					1
-				)
-			);
-			if (room.timer) {
-				clearTimeout(room.timer);
-			}
-			console.log(`room ${room.roomID} deleted`);
-		}
+		socket.emit(
+			'endResponse',
+			'Abandoned',
+			winner,
+			room.hostScore,
+			room.guestScore
+		);
+		if (room.timer) clearTimeout(room.timer);
+		roomList.splice(
+			roomList.findIndex(
+				(room) =>
+					room.guestSocketID === socket.id || room.hostSocketID === socket.id,
+				1
+			)
+		);
+		console.log(`room ${room.roomID} deleted`);
 	});
 
 	// Check if the socket belongs to admin. If yes, remove the instance from adminList

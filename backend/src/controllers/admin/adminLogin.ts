@@ -12,7 +12,5 @@ export const adminLogin = (
 		adminList.push(new Admin(socket.id));
 		console.log('An admin logs in');
 		socket.emit('adminLoginResponse', 'Completed');
-	} else {
-		socket.emit('adminLoginResponse', 'Wrong Password');
-	}
+	} else socket.emit('adminLoginResponse', 'Wrong Password');
 };

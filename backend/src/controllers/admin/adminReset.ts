@@ -1,6 +1,6 @@
 import { Socket } from 'socket.io';
 import { Room, Admin } from '../../class';
-import { checkAdmin } from '../../utils';
+import { checkAdmin, resetRoom } from '../../utils';
 
 export const adminReset = (
 	socket: Socket,
@@ -39,18 +39,7 @@ export const adminReset = (
 							room.guestScore
 						);
 
-					room.guestReady = false;
-					room.hostReady = false;
-					room.guestScore = 0;
-					room.hostScore = 0;
-					room.guestHitCount = 0;
-					room.hostHitCount = 0;
-					room.turn = undefined;
-					room.hostShips = [];
-					room.guestShips = [];
-					room.hostShot = [];
-					room.guestShot = [];
-					if (room.timer) clearTimeout(room.timer);
+					resetRoom(room);
 				});
 
 			// Check Using Room ID
@@ -59,25 +48,24 @@ export const adminReset = (
 			const room = roomList.find((room) => room.roomID === filter);
 			socket
 				.to(room.hostSocketID)
-				.emit('endResponse', 'Reset by Admin', room.hostScore, room.guestScore);
+				.emit(
+					'endResponse',
+					'Reset by Admin',
+					'None',
+					room.hostScore,
+					room.guestScore
+				);
 			socket
 				.to(room.guestSocketID)
-				.emit('endResponse', 'Reset by Admin', room.hostScore, room.guestScore);
+				.emit(
+					'endResponse',
+					'Reset by Admin',
+					'None',
+					room.hostScore,
+					room.guestScore
+				);
 
-			room.guestReady = false;
-			room.hostReady = false;
-			room.guestScore = 0;
-			room.hostScore = 0;
-			room.guestHitCount = 0;
-			room.hostHitCount = 0;
-			room.turn = undefined;
-			room.hostShips = [];
-			room.guestShips = [];
-			room.hostShot = [];
-			room.guestShot = [];
-			if (room.timer != undefined) {
-				clearTimeout(room.timer);
-			}
+			resetRoom(room);
 		}
 		socket.emit('adminResetResponse', 'Completed');
 	} else {

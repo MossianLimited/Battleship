@@ -57,10 +57,10 @@ export class Room {
 
 // OpenRoom Class for Open Guest
 export class openRoom {
-	private hostName: string;
+	private hostUsername: string;
 	private roomID: string;
-	constructor(hostName: string, roomID: string) {
-		this.hostName = hostName;
+	constructor(hostUsername: string, roomID: string) {
+		this.hostUsername = hostUsername;
 		this.roomID = roomID;
 	}
 }
