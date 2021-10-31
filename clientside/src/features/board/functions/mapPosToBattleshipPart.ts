@@ -7,7 +7,8 @@ import {
 } from "../types/battleship";
 
 function mapPosToBattleshipPart(
-    shipYard: BattleshipAllyYard
+    shipYard: BattleshipAllyYard, 
+    validate: boolean = true, 
 ): Map<string, BattleshipPartRdState | undefined> {
     const map: Map<string, BattleshipPartRdState | undefined> = new Map();
 
@@ -16,26 +17,28 @@ function mapPosToBattleshipPart(
         const position = { ...battleship.position };
 
         for (let i = 0; i < length; i++) {
-            if (map.has(posToString(position)))
-                throw Error("The ally grid has overlapped battleships.");
-
-            for (let j = 0; j < 9; j++) {
-                const rowOffset = Math.floor(j / 3) - 1;
-                const colOffset = (j % 3) - 1;
-
-                if (rowOffset === 0 && colOffset === 0) continue;
-
-                const targetPosition = {
-                    col: position.col + colOffset,
-                    row: position.row + rowOffset,
-                };
-
-                const potentialAdjacent = map.get(posToString(targetPosition));
-                if (
-                    potentialAdjacent &&
-                    potentialAdjacent.battleship !== battleship
-                )
-                    throw Error("Two ships are too close to each other.");
+            if (validate) {
+                if (map.has(posToString(position)))
+                    throw Error("The ally grid has overlapped battleships.");
+    
+                for (let j = 0; j < 9; j++) {
+                    const rowOffset = Math.floor(j / 3) - 1;
+                    const colOffset = (j % 3) - 1;
+    
+                    if (rowOffset === 0 && colOffset === 0) continue;
+    
+                    const targetPosition = {
+                        col: position.col + colOffset,
+                        row: position.row + rowOffset,
+                    };
+    
+                    const potentialAdjacent = map.get(posToString(targetPosition));
+                    if (
+                        potentialAdjacent &&
+                        potentialAdjacent.battleship !== battleship
+                    )
+                        throw Error("Two ships are too close to each other.");
+                }
             }
 
             let partType: BattleshipPartType;

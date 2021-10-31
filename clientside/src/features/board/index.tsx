@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { MouseEvent, useMemo } from "react";
 import styled from "styled-components";
 import Square from "./components/Square";
 import mapPosToBattleshipPart from "./functions/mapPosToBattleshipPart";
@@ -8,7 +8,7 @@ import {
     BattleshipStatus,
     BattleshipYard,
 } from "./types/battleship";
-import { Side } from "./types/utility";
+import { Position, Side } from "./types/utility";
 import { useGameStateContext } from "../game/contexts/gameStateContext";
 import generateArrayOfNumbers from "./functions/generateArrayOfNumbers";
 
@@ -30,27 +30,47 @@ type Props = AllyProps | EnemyProps;
 interface AllyProps {
     boardType: Side.Ally;
     shipYard: BattleshipAllyYard;
-    selectable?: boolean; 
+    selectable?: boolean;
+    validate?: boolean;
+    onSquareHoverStart?: (p: Position, e: MouseEvent) => void;
+    onSquareHoverEnd?: (p: Position, e: MouseEvent) => void;
+    onSquareClick?: (p: Position, e: MouseEvent) => void;
 }
 
 interface EnemyProps {
     boardType: Side.Enemy;
     shipYard: BattleshipYard;
-    selectable?: boolean; 
+    selectable?: boolean;
+    validate?: boolean;
+    onSquareHoverStart?: (p: Position, e: MouseEvent) => void;
+    onSquareHoverEnd?: (p: Position, e: MouseEvent) => void;
+    onSquareClick?: (p: Position, e: MouseEvent) => void;
 }
 
-const Board: React.FC<Props> = ({ boardType, shipYard, selectable }) => {
+const Board: React.FC<Props> = ({
+    boardType,
+    shipYard,
+    selectable,
+    validate,
+    onSquareHoverEnd,
+    onSquareHoverStart,
+    onSquareClick,
+}) => {
     const { board } = useGameStateContext().state;
 
     const mappedBattleshipPart = useMemo(() => {
         if (boardType === Side.Ally)
-            return mapPosToBattleshipPart(shipYard as BattleshipAllyYard);
+            return mapPosToBattleshipPart(
+                shipYard as BattleshipAllyYard,
+                validate
+            );
         return mapPosToBattleshipPart(
             shipYard.filter(
                 ({ status }) => status !== BattleshipStatus.Hidden
-            ) as BattleshipAllyYard
+            ) as BattleshipAllyYard,
+            validate
         );
-    }, [shipYard, boardType]);
+    }, [shipYard, boardType, validate]);
 
     const renderedSquares = useMemo(() => {
         return generateArrayOfNumbers(board.gridSize).map((row) =>
@@ -64,11 +84,29 @@ const Board: React.FC<Props> = ({ boardType, shipYard, selectable }) => {
                         selectable={selectable}
                         position={position}
                         part={mappedBattleshipPart.get(key) || undefined}
+                        onClick={(e) =>
+                            onSquareClick && onSquareClick(position, e)
+                        }
+                        onHoverStart={(e) =>
+                            onSquareHoverStart &&
+                            onSquareHoverStart(position, e)
+                        }
+                        onHoverEnd={(e) =>
+                            onSquareHoverEnd && onSquareHoverEnd(position, e)
+                        }
                     />
                 );
             })
         );
-    }, [board.gridSize, boardType, mappedBattleshipPart, selectable]);
+    }, [
+        board.gridSize,
+        boardType,
+        mappedBattleshipPart,
+        selectable,
+        onSquareClick,
+        onSquareHoverEnd,
+        onSquareHoverStart,
+    ]);
 
     return <Container gridSize={board.gridSize}>{renderedSquares}</Container>;
 };

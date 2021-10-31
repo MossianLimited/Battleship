@@ -1,69 +1,153 @@
-import { FC } from "react";
+import { FC, MouseEvent, useState, useEffect } from "react";
 import styled from "styled-components";
 import Board from "../board";
-import ShipPart from "../board/components/Ship";
+import { Position, Side } from "../board/types/utility";
+import Ship from "./components/ship";
+import Refresh from "./components/refresh";
+import { INIT_PLACEMENT_LIST } from "./constants/list";
+import { PlacementList, PlacementStatus } from "./types/placement";
 import {
+    BattleshipAllyYard,
+    BattleshipBase,
     BattleshipDirection,
-    BattleshipPartType,
+    BattleshipStatus,
 } from "../board/types/battleship";
-import { Side } from "../board/types/utility";
-
-const RefreshIcon: FC = () => {
-    return (
-        <RandomSvg
-            width="25"
-            height="25"
-            viewBox="0 0 25 25"
-            fill="none"
-            xmlns="http://www.w3.org/2000/svg"
-        >
-            <path
-                d="M17.6596 6.4216C16.2085 4.97273 14.2178 4.07427 12.0078 4.07599C7.58782 4.07941 4.0206 7.66218 4.02403 12.0822C4.02746 16.5022 7.60023 20.0794 12.0202 20.076C15.7502 20.0731 18.8582 17.5207 19.7456 14.07L17.6656 14.0716C16.8474 16.4022 14.6287 18.074 12.0187 18.076C8.70868 18.0785 6.01659 15.3906 6.01403 12.0806C6.01146 8.77064 8.69937 6.07855 12.0094 6.07599C13.6694 6.0747 15.1499 6.76355 16.2307 7.85271L13.0132 11.0752L20.0132 11.0698L20.0078 4.06978L17.6596 6.4216Z"
-                fill="#D0C9F0"
-            />
-        </RandomSvg>
-    );
-};
-
-interface ShipProps {
-    id: number; 
-}
-
-const Ship: FC<ShipProps> = ({ id }) => {
-    return (
-        <ShipWrapper>
-            <ShipPart
-                part={BattleshipPartType.Front}
-                direction={BattleshipDirection.Vertical}
-                translateFixed={false}
-            ></ShipPart>
-            <ShipPart
-                part={BattleshipPartType.Middle}
-                direction={BattleshipDirection.Vertical}
-                translateFixed={false}
-            ></ShipPart>
-            <ShipPart
-                part={BattleshipPartType.Middle}
-                direction={BattleshipDirection.Vertical}
-                translateFixed={false}
-            ></ShipPart>
-            <ShipPart
-                part={BattleshipPartType.Back}
-                direction={BattleshipDirection.Vertical}
-                translateFixed={false}
-            ></ShipPart>
-            <ShipNumber>{id}</ShipNumber>
-        </ShipWrapper>
-    );
-};
 
 const SetupModal: FC = (_) => {
+    const [placements, setPlacements] =
+        useState<PlacementList>(INIT_PLACEMENT_LIST);
+
+    const onShipClick = (battleship: BattleshipBase, _e: MouseEvent) => {
+        const index = placements.findIndex((p) => p.battleship === battleship);
+        const nextPlacements = placements.map((p, i) => {
+            if (i === index) return { ...p, selected: true };
+            return { ...p, selected: false };
+        });
+
+        setPlacements(nextPlacements);
+    };
+
+    const onSquareHoverStart = (position: Position, _e: MouseEvent) => {
+        const index = placements.findIndex((p) => p.selected);
+
+        if (index === -1) return;
+
+        const nextPlacements: PlacementList = placements.map((p, i) => {
+            if (i !== index) return p;
+
+            const direction = p.status === PlacementStatus.Placing 
+                ? p.battleship.direction
+                : BattleshipDirection.Vertical;
+
+            return {
+                battleship: {
+                    ...p.battleship,
+                    position,
+                    direction, 
+                    status: BattleshipStatus.Default,
+                },
+                selected: p.selected,
+                status: PlacementStatus.Placing,
+            };
+        });
+
+        setPlacements(nextPlacements);
+    };
+
+    const onSquareHoverEnd = (_position: Position, _e: MouseEvent) => {
+        const index = placements.findIndex((p) => p.selected);
+
+        if (index === -1) return;
+
+        const nextPlacements: PlacementList = placements.map((p, i) => {
+            if (i !== index) return p;
+            return {
+                battleship: {
+                    name: p.battleship.name,
+                    length: p.battleship.length,
+                    status: BattleshipStatus.Hidden,
+                },
+                selected: p.selected,
+                status: PlacementStatus.Undecided,
+            };
+        });
+
+        setPlacements(nextPlacements);
+    };
+
+    const onSquareClick = (_position: Position, _e: MouseEvent) => {
+        const index = placements.findIndex((p) => p.selected);
+
+        if (index === -1) return;
+
+        const nextPlacements: PlacementList = placements.map((p, i) => {
+            if (i !== index || p.battleship.status === BattleshipStatus.Hidden)
+                return p;
+
+            return {
+                battleship: {
+                    ...p.battleship,
+                    status: BattleshipStatus.Default,
+                },
+                selected: false,
+                status: PlacementStatus.Placed,
+            };
+        });
+
+        setPlacements(nextPlacements);
+    };
+
+    const onReset = (_e: MouseEvent) => {
+        setPlacements(INIT_PLACEMENT_LIST);
+    };
+
+    const renderedShip = placements.map((p) => (
+        <Ship
+            key={p.battleship.name}
+            battleship={p.battleship}
+            selected={p.selected}
+            status={p.status}
+            onClick={(e) => onShipClick(p.battleship, e)}
+        />
+    ));
+
+    const renderedShipyard = placements
+        .filter((p) => p.battleship.status === BattleshipStatus.Default)
+        .map((p) => p.battleship) as BattleshipAllyYard;
+
+    useEffect(() => {
+        const fn = (e: KeyboardEvent) => {
+            if (e.code === "Space") {
+                const index = placements.findIndex((p) => p.selected);
+
+                if (index === -1) return;
+
+                const nextPlacements: PlacementList = placements.map((p, i) => {
+                    if (i !== index || p.status === PlacementStatus.Undecided) return p;
+                    return {
+                        battleship: {
+                            ...p.battleship,
+                            direction: (p.battleship.direction + 1) % 4, 
+                        },
+                        selected: p.selected,
+                        status: PlacementStatus.Placing,
+                    };
+                });
+
+                setPlacements(nextPlacements);
+            }
+        };
+
+        document.addEventListener('keypress', fn); 
+        return () => document.removeEventListener('keypress', fn);
+    }, [placements]);
+
     return (
         <Wrapper>
             <HeaderWrapper>
                 <HeaderText>Plan your ship positions...</HeaderText>
                 <RandomButton>
-                    <RefreshIcon />
+                    <Refresh />
                     Random
                 </RandomButton>
             </HeaderWrapper>
@@ -71,17 +155,19 @@ const SetupModal: FC = (_) => {
             <BodyWrapper>
                 <ShipyardWrapper>
                     <ShipyardText>Shipyard</ShipyardText>
-                    <Ship id={1} />
-                    <Ship id={2} />
-                    <Ship id={3} />
-                    <Ship id={4} />
+                    {renderedShip}
                 </ShipyardWrapper>
                 <BoardWrapper>
                     <Board
+                        validate={false}
                         selectable={false}
                         boardType={Side.Ally}
-                        shipYard={[]}
+                        shipYard={renderedShipyard}
+                        onSquareHoverStart={onSquareHoverStart}
+                        onSquareHoverEnd={onSquareHoverEnd}
+                        onSquareClick={onSquareClick}
                     ></Board>
+                    <ResetButton onClick={onReset}>Reset</ResetButton>
                 </BoardWrapper>
             </BodyWrapper>
             <Spacer />
@@ -92,12 +178,12 @@ const SetupModal: FC = (_) => {
 
 export default SetupModal;
 
-const Spacer = styled.div``; 
+const Spacer = styled.div``;
 
 const Wrapper = styled.div`
-    display: grid; 
+    display: grid;
     grid-template-columns: 1fr;
-    grid-template-rows: min-content 3rem minmax(0, 20rem) 2rem min-content;
+    grid-template-rows: min-content 3rem minmax(0, 19rem) 1.5rem min-content;
     padding: 1.75rem;
     border-radius: 1rem;
     height: auto;
@@ -136,15 +222,11 @@ const RandomButton = styled.button`
     transform: scaleX(1) scaleY(1);
     color: white;
     cursor: pointer;
-    font-weight: 600; 
+    font-weight: 600;
 
     &:hover {
         transform: scaleX(1.04) scaleY(1.08);
     }
-`;
-
-const RandomSvg = styled.svg`
-    margin-right: 0.375rem;
 `;
 
 const BodyWrapper = styled.div`
@@ -169,31 +251,16 @@ const ShipyardWrapper = styled.div`
 `;
 
 const ShipyardText = styled.span`
-    position: absolute; 
-    top: -1.75rem; 
-    color: #bbb3e0;
-    font-weight: 500; 
-    font-size: 1rem; 
-    margin-bottom: 1rem; 
-`;
-
-const BoardWrapper = styled.div``;
-
-const ShipWrapper = styled.div`
-    display: flex;
-    flex-flow: column nowrap;
-    align-items: center;
-    justify-content: center;
-    height: min-content;
-    margin: 0.375rem 1px 0;
-`;
-
-const ShipNumber = styled.span`
     position: absolute;
-    font-size: 1.75rem;
-    color: #bbb1e9;
-    font-weight: 700; 
-    z-index: 2; 
+    top: -1.75rem;
+    color: #bbb3e0;
+    font-weight: 500;
+    font-size: 1rem;
+    margin-bottom: 1rem;
+`;
+
+const BoardWrapper = styled.div`
+    position: relative;
 `;
 
 const ReadyButton = styled.button`
@@ -213,5 +280,30 @@ const ReadyButton = styled.button`
 
     &:hover {
         transform: scale(1.04);
+    }
+`;
+
+const ResetButton = styled.button`
+    outline: none;
+    font-size: 1rem;
+    padding: 0.5rem 0.75rem;
+    border-radius: 100px;
+    height: 2rem;
+    display: inline-flex;
+    flex-flow: row;
+    align-items: center;
+    justify-content: center;
+    background: #7b61ff;
+    transition: transform 300ms ease;
+    transform: scaleX(1) scaleY(1);
+    color: white;
+    cursor: pointer;
+    font-weight: 500;
+    width: 100%; 
+    position: absolute; 
+    bottom: 0; 
+
+    &:hover {
+        transform: scaleX(1.04) scaleY(1.08);
     }
 `;

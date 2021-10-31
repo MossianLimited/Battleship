@@ -5,19 +5,25 @@ import { BoardSquareStatus } from "../types/board";
 import { Position, Side } from "../types/utility";
 import { useGameStateContext } from "../../game/contexts/gameStateContext";
 import posToString from "../functions/posToString";
-import { useCallback } from "react";
+import { MouseEventHandler, useCallback } from "react";
 
 interface Props {
     squareType?: Side;
     position?: Position;
     part?: BattleshipPartRdState;
     selectable?: boolean;
+    onClick?: MouseEventHandler;
+    onHoverStart?: MouseEventHandler;
+    onHoverEnd?: MouseEventHandler;
 }
 
 const Square: React.FC<Props> = ({
     squareType = Side.Ally,
     position,
     part,
+    onClick,
+    onHoverStart,
+    onHoverEnd,
     selectable = true,
 }) => {
     const { state, dispatch } = useGameStateContext();
@@ -28,8 +34,6 @@ const Square: React.FC<Props> = ({
 
     const handleSelectClick = useCallback(() => {
         if (position && selectable) {
-            // should be replaced with call to api
-
             dispatch({
                 type: "MARK_SQUARE",
                 payload: {
@@ -42,7 +46,12 @@ const Square: React.FC<Props> = ({
     }, [dispatch, position, selectable, squareType]);
 
     return (
-        <Container squareType={squareType} onClick={handleSelectClick}>
+        <Container
+            squareType={squareType}
+            onMouseEnter={onHoverStart}
+            onMouseLeave={onHoverEnd}
+            onClick={onClick || handleSelectClick}
+        >
             {position?.row === 1 && (
                 <ColumnAlphabet className="positional">
                     {String.fromCharCode(65 + position?.col - 1)}

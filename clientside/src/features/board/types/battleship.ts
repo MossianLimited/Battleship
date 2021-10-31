@@ -15,9 +15,9 @@ export enum BattleshipPartType {
 
 export enum BattleshipDirection {
     Vertical = 0,
-    Horizontal,
-    VerticalRev,
-    HorizontalRev,
+    Horizontal = 1,
+    VerticalRev = 2,
+    HorizontalRev = 3,
 }
 
 export enum BattleshipStatus {

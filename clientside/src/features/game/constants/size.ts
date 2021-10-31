@@ -1,1 +1,1 @@
-export const DEFAULT_GRID_SIZE = 10;
+export const DEFAULT_GRID_SIZE = 8;
