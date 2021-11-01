@@ -2,6 +2,7 @@ import * as express from "express";
 import { Server, Socket } from "socket.io";
 import { createServer, Server as ServerType } from "http";
 import { Room, Admin } from "./class";
+import { randomRoom } from "./utils";
 import {
     createRoom,
     getRoomList,
@@ -28,8 +29,6 @@ import { adminStopSpectate } from "./controllers/admin/adminStopSpectate";
 const cors = require("cors");
 const encrypt = require("socket.io-encrypt");
 const useEncryption = false;
-
-let roomIterator = 0;
 
 export class GameServer {
     public static readonly PORT: number = 8000;
@@ -77,7 +76,7 @@ export class GameServer {
                 createRoom(
                     socket,
                     username,
-                    roomIterator++,
+                    randomRoom(),
                     address,
                     this.roomList
                 );
