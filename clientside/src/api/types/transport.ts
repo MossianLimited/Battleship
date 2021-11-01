@@ -27,7 +27,12 @@ export interface JoinRoomResponse {
 }
 
 export interface EndResponse {
-    responseStatus: string;
+    responseStatus:
+        | "Destroyed"
+        | "Withdrew"
+        | "Abandoned"
+        | "Reset by Admin"
+        | "Closed by Admin";
     previousRoundWinner: string;
     hostScore: number;
     guestScore: number;

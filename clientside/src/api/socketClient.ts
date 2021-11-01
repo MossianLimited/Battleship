@@ -114,28 +114,35 @@ class SocketClient {
         });
     }
 
+    // separated this function from withdraw
+    public subscribeToEndResponse(callbackFn: (response: EndResponse) => void) {
+        if (this.socket) {
+            this.socket.on(
+                SOCKET_EVENT.END_RESPONSE,
+                (
+                    responseStatus: EndResponse["responseStatus"],
+                    previousRoundWinner: EndResponse["previousRoundWinner"],
+                    hostScore: EndResponse["hostScore"],
+                    guestScore: EndResponse["guestScore"]
+                ) => {
+                    callbackFn({
+                        responseStatus,
+                        previousRoundWinner,
+                        hostScore,
+                        guestScore,
+                    });
+                }
+            );
+        }
+    }
+
     public withdraw(): Promise<EndResponse> {
         return new Promise((resolve, reject) => {
             if (!this.socket) {
                 reject("Socket not initialized");
             } else {
                 this.socket.emit(SOCKET_EVENT.WITHDRAW);
-                this.socket.on(
-                    SOCKET_EVENT.END_RESPONSE,
-                    (
-                        responseStatus: EndResponse["responseStatus"],
-                        previousRoundWinner: EndResponse["previousRoundWinner"],
-                        hostScore: EndResponse["hostScore"],
-                        guestScore: EndResponse["guestScore"]
-                    ) => {
-                        resolve({
-                            responseStatus,
-                            previousRoundWinner,
-                            hostScore,
-                            guestScore,
-                        });
-                    }
-                );
+                this.subscribeToEndResponse(resolve);
             }
         });
     }

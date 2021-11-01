@@ -1,4 +1,4 @@
-import { useLayoutEffect, useReducer } from "react";
+import { useEffect, useLayoutEffect, useReducer } from "react";
 import styled from "styled-components";
 import { useHistory } from "react-router";
 import socketClient from "../../../api/socketClient";
@@ -29,13 +29,9 @@ const GamePage = () => {
 
         if (!isHost) socketClient.joinRoom(username, roomId);
 
-        socketClient.subscribeToRoomJoined(({ responseStatus, username }) => {
-            switch (responseStatus) {
-                case "Completed":
-                    break;
-                default:
-                    alert(responseStatus);
-            }
+        socketClient.subscribeToEndResponse(({ responseStatus }) => {
+            alert(responseStatus);
+            history.push("/welcome");
         });
 
         return () => {
