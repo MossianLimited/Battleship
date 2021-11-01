@@ -13,6 +13,7 @@ const PublicRoomsList = () => {
 
     useEffect(() => {
         // ping getRoomList every 2 seconds
+        socketClient.getRoomList();
         const interval = setInterval(() => {
             socketClient.getRoomList();
         }, REFRESH_INTERVAL);

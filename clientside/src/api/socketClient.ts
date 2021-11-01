@@ -74,6 +74,7 @@ class SocketClient {
 
     public getRoomList() {
         if (this.socket) {
+            console.log("Getting room list");
             this.socket.emit(SOCKET_EVENT.GET_ROOM_LIST);
         }
     }
@@ -113,6 +114,20 @@ class SocketClient {
                     callbackFn({ responseStatus, username });
                 }
             );
+        }
+    }
+
+    public withdraw() {
+        if (this.socket) {
+            this.socket.emit(SOCKET_EVENT.WITHDRAW);
+        }
+    }
+
+    public subscribeToEndResponse() {
+        if (this.socket) {
+            this.socket.on(SOCKET_EVENT.END_RESPONSE, () => {
+                console.log("Ended"); // have to add proper response
+            });
         }
     }
 

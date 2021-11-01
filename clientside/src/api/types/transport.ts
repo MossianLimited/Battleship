@@ -25,3 +25,10 @@ export interface JoinRoomResponse {
         | "Room Full";
     username: string; // for host = guest username; for guest = host username
 }
+
+export interface EndResponse {
+    responseStatus: string;
+    previousRoundWinner: string;
+    hostScore: number;
+    guestScore: number;
+}

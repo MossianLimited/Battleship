@@ -17,6 +17,10 @@ const CreateRoomPage = () => {
         socketClient.subscribeToRoomCreated(({ roomID }) => {
             setRoomId(roomID);
         });
+
+        return () => {
+            socketClient.withdraw();
+        };
     }, [username]);
 
     const handleRoomModeToggle = (mode: RoomMode) => {

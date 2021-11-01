@@ -9,6 +9,8 @@ export const SOCKET_EVENT = {
     GET_ROOM_LIST_RESPONSE: "getRoomListResponse",
     JOIN_ROOM: "joinRoom",
     JOIN_ROOM_RESPONSE: "joinRoomResponse",
+    WITHDRAW: "withdraw",
+    END_RESPONSE: "endResponse",
     SOCKET_ID: "SocketID",
     DISCONNECT: "disconnect",
 };
