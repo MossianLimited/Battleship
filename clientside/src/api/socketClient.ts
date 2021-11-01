@@ -3,6 +3,7 @@ import { API_URL, SOCKET_EVENT } from "./constants/config";
 import {
     ChangeLockResponse,
     CreateRoomResponse,
+    EndResponse,
     GetRoomListResponse,
     JoinRoomResponse,
 } from "./types/transport";
@@ -26,81 +27,66 @@ class SocketClient {
         }
     }
 
-    public createRoom(username: string) {
-        if (this.socket) {
-            this.socket.emit(SOCKET_EVENT.CREATE_ROOM, username, "");
-        }
+    public createRoom(username: string): Promise<CreateRoomResponse> {
+        return new Promise((resolve, reject) => {
+            if (!this.socket) {
+                reject("Socket not initialized");
+            } else {
+                this.socket.emit(SOCKET_EVENT.CREATE_ROOM, username, "");
+                this.socket.on(
+                    SOCKET_EVENT.CREATE_ROOM_RESPONSE,
+                    (
+                        responseStatus: CreateRoomResponse["responseStatus"],
+                        roomID: string
+                    ) => {
+                        resolve({
+                            responseStatus,
+                            roomID,
+                        });
+                    }
+                );
+            }
+        });
     }
 
-    public subscribeToRoomCreated(
-        callbackFn: (response: CreateRoomResponse) => void
-    ) {
-        if (this.socket) {
-            this.socket.on(
-                SOCKET_EVENT.CREATE_ROOM_RESPONSE,
-                (
-                    responseStatus: CreateRoomResponse["responseStatus"],
-                    roomID: string
-                ) => {
-                    callbackFn({
-                        responseStatus,
-                        roomID,
-                    });
-                }
-            );
-        }
+    public changeLock(): Promise<ChangeLockResponse> {
+        return new Promise((resolve, reject) => {
+            if (!this.socket) {
+                reject("Socket not initialized");
+            } else {
+                this.socket.emit(SOCKET_EVENT.CHANGE_LOCK, "");
+                this.socket.on(
+                    SOCKET_EVENT.CHANGE_LOCK_RESPONSE,
+                    (responseStatus: ChangeLockResponse["responseStatus"]) => {
+                        resolve({
+                            responseStatus,
+                        });
+                    }
+                );
+            }
+        });
     }
 
-    public changeLock() {
-        if (this.socket) {
-            this.socket.emit(SOCKET_EVENT.CHANGE_LOCK, "");
-        }
+    public getRoomList(): Promise<GetRoomListResponse> {
+        return new Promise((resolve, reject) => {
+            if (!this.socket) {
+                reject("Socket not initialized");
+            } else {
+                this.socket.emit(SOCKET_EVENT.GET_ROOM_LIST);
+                this.socket.on(
+                    SOCKET_EVENT.GET_ROOM_LIST_RESPONSE,
+                    (
+                        responseStatus: GetRoomListResponse["responseStatus"],
+                        roomList: GetRoomListResponse["roomList"]
+                    ) => {
+                        resolve({ responseStatus, roomList });
+                    }
+                );
+            }
+        });
     }
 
-    public subscribeToLockChanged(
-        callbackFn: (response: ChangeLockResponse) => void
-    ) {
-        if (this.socket) {
-            this.socket.on(
-                SOCKET_EVENT.CHANGE_LOCK_RESPONSE,
-                (responseStatus: ChangeLockResponse["responseStatus"]) => {
-                    callbackFn({
-                        responseStatus,
-                    });
-                }
-            );
-        }
-    }
-
-    public getRoomList() {
-        if (this.socket) {
-            console.log("Getting room list");
-            this.socket.emit(SOCKET_EVENT.GET_ROOM_LIST);
-        }
-    }
-
-    public subscribeToRoomList(
-        callbackFn: (response: GetRoomListResponse) => void
-    ) {
-        if (this.socket) {
-            this.socket.on(
-                SOCKET_EVENT.GET_ROOM_LIST_RESPONSE,
-                (
-                    responseStatus: GetRoomListResponse["responseStatus"],
-                    roomList: GetRoomListResponse["roomList"]
-                ) => {
-                    callbackFn({ responseStatus, roomList });
-                }
-            );
-        }
-    }
-
-    public joinRoom(username: string, roomId: string) {
-        if (this.socket) {
-            this.socket.emit(SOCKET_EVENT.JOIN_ROOM, username, roomId, "");
-        }
-    }
-
+    // separated this function from joinRoom for createRoom use-case
     public subscribeToRoomJoined(
         callbackFn: (response: JoinRoomResponse) => void
     ) {
@@ -117,18 +103,41 @@ class SocketClient {
         }
     }
 
-    public withdraw() {
-        if (this.socket) {
-            this.socket.emit(SOCKET_EVENT.WITHDRAW);
-        }
+    public joinRoom(username: string, roomId: string): Promise<void> {
+        return new Promise((resolve, reject) => {
+            if (!this.socket) {
+                reject("Socket not initialized");
+            } else {
+                this.socket.emit(SOCKET_EVENT.JOIN_ROOM, username, roomId);
+                resolve();
+            }
+        });
     }
 
-    public subscribeToEndResponse() {
-        if (this.socket) {
-            this.socket.on(SOCKET_EVENT.END_RESPONSE, () => {
-                console.log("Ended"); // have to add proper response
-            });
-        }
+    public withdraw(): Promise<EndResponse> {
+        return new Promise((resolve, reject) => {
+            if (!this.socket) {
+                reject("Socket not initialized");
+            } else {
+                this.socket.emit(SOCKET_EVENT.WITHDRAW);
+                this.socket.on(
+                    SOCKET_EVENT.END_RESPONSE,
+                    (
+                        responseStatus: EndResponse["responseStatus"],
+                        previousRoundWinner: EndResponse["previousRoundWinner"],
+                        hostScore: EndResponse["hostScore"],
+                        guestScore: EndResponse["guestScore"]
+                    ) => {
+                        resolve({
+                            responseStatus,
+                            previousRoundWinner,
+                            hostScore,
+                            guestScore,
+                        });
+                    }
+                );
+            }
+        });
     }
 
     public disconnect() {

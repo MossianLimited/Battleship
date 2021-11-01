@@ -1,26 +1,28 @@
-import { useEffect, useState } from "react";
-import socketClient from "../../../api/socketClient";
+import { useCallback, useEffect, useState } from "react";
+import { useHistory } from "react-router";
 import styled from "../../../styles/theme";
 import { HeaderText, WhiteBox } from "../components/base.styled";
 import BasicInput from "../components/basicInput";
 import PublicRoomsList from "../components/publicRoomsList";
-import { useUserContext } from "../contexts/userContext";
 
 const JoinRoomPage = () => {
-    const { username } = useUserContext();
+    const history = useHistory();
 
     const [privateRoomId, setPrivateRoomId] = useState<string>("");
 
+    const handleJoinRoom = useCallback(
+        (roomId: string) => {
+            history.push({
+                pathname: "/room",
+                search: "?" + new URLSearchParams({ roomId }),
+            });
+        },
+        [history]
+    );
+
     useEffect(() => {
-        if (privateRoomId.length === 6) {
-            socketClient.joinRoom(username, privateRoomId);
-            socketClient.subscribeToRoomJoined(
-                ({ responseStatus, username }) => {
-                    console.log(responseStatus, username);
-                }
-            );
-        }
-    }, [privateRoomId, username]);
+        if (privateRoomId.length === 6) handleJoinRoom(privateRoomId);
+    }, [handleJoinRoom, privateRoomId]);
 
     return (
         <>
@@ -34,7 +36,7 @@ const JoinRoomPage = () => {
                     placeholder="Enter a 6-digit room code"
                 />
             </Container>
-            <PublicRoomsList />
+            <PublicRoomsList onRoomJoinHandler={handleJoinRoom} />
         </>
     );
 };

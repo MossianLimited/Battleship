@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useHistory } from "react-router";
 import socketClient from "../../../api/socketClient";
 import styled from "../../../styles/theme";
 import { HeaderText, WhiteBox } from "../components/base.styled";
@@ -8,25 +9,46 @@ import { RoomMode } from "../types/utility";
 
 const CreateRoomPage = () => {
     const { username } = useUserContext();
+    const history = useHistory();
 
     const [roomId, setRoomId] = useState<string>("");
     const [roomMode, setRoomMode] = useState<RoomMode>(RoomMode.Public);
-
-    useEffect(() => {
-        socketClient.createRoom(username);
-        socketClient.subscribeToRoomCreated(({ roomID }) => {
-            setRoomId(roomID);
-        });
-
-        return () => {
-            socketClient.withdraw();
-        };
-    }, [username]);
 
     const handleRoomModeToggle = (mode: RoomMode) => {
         setRoomMode(mode);
         socketClient.changeLock();
     };
+
+    useEffect(() => {
+        const asyncCreateRoom = async () => {
+            const createdRoomId = (await socketClient.createRoom(username))
+                .roomID;
+            setRoomId(createdRoomId);
+        };
+
+        asyncCreateRoom();
+    }, [username]);
+
+    useEffect(() => {
+        if (roomId)
+            socketClient.subscribeToRoomJoined(({ responseStatus }) => {
+                switch (responseStatus) {
+                    case "Completed":
+                        history.push({
+                            pathname: "/room",
+                            search:
+                                "?" +
+                                new URLSearchParams({
+                                    roomId,
+                                    isHost: "true",
+                                }),
+                        });
+                        break;
+                    default:
+                        alert(responseStatus);
+                }
+            });
+    }, [roomId, history]);
 
     return (
         <Container>

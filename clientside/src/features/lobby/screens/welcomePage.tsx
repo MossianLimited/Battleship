@@ -1,5 +1,6 @@
 import { useHistory } from "react-router";
 import styled from "styled-components";
+import useQuery from "../../routing/hooks/useQuery";
 import { HeaderText, WhiteBox } from "../components/base.styled";
 import BasicButton from "../components/basicButton";
 import BasicInput from "../components/basicInput";
@@ -9,6 +10,10 @@ import LobbyLayoutWrapper from "../wrappers/lobbyLayoutWrapper";
 
 const WelcomePage = () => {
     const history = useHistory();
+    const query = useQuery();
+
+    const roomId = query.get("roomId");
+
     const { username, setUsername } = useUserContext();
 
     const validateUsername = () => {
@@ -39,16 +44,18 @@ const WelcomePage = () => {
                         />
                     </LabelWrapper>
                     <ButtonContainer>
-                        <BasicButton
-                            type="button"
-                            variant="secondary"
-                            name="rooms"
-                            onClick={() =>
-                                validateUsername() && history.push("/rooms")
-                            }
-                        >
-                            Join Room
-                        </BasicButton>
+                        {!roomId && (
+                            <BasicButton
+                                type="button"
+                                variant="secondary"
+                                name="rooms"
+                                onClick={() =>
+                                    validateUsername() && history.push("/rooms")
+                                }
+                            >
+                                Join Room
+                            </BasicButton>
+                        )}
                         <BasicButton
                             type="button"
                             variant="primary"
@@ -57,17 +64,17 @@ const WelcomePage = () => {
                                 validateUsername() && history.push("/new-room")
                             }
                         >
-                            Create Room
+                            {roomId ? "Join Room" : "Create Room"}
                         </BasicButton>
                     </ButtonContainer>
                 </FormBox>
-                <ExperimentalZone>
+                {/* <ExperimentalZone>
                     <LabelWrapper label="Or try our experimental features">
                         <BasicButton type="button" variant="secondary">
                             Single Mode
                         </BasicButton>
                     </LabelWrapper>
-                </ExperimentalZone>
+                </ExperimentalZone> */}
             </Container>
         </LobbyLayoutWrapper>
     );
@@ -105,10 +112,10 @@ const ButtonContainer = styled.div`
     }
 `;
 
-const ExperimentalZone = styled.div`
-    background: ${(props) => props.theme.colors.lobby.backdrop.shadedLight};
+// const ExperimentalZone = styled.div`
+//     background: ${(props) => props.theme.colors.lobby.backdrop.shadedLight};
 
-    padding: 1.1875rem 2rem 1.75rem;
-`;
+//     padding: 1.1875rem 2rem 1.75rem;
+// `;
 
 export default WelcomePage;
