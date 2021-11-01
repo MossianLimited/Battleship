@@ -8,14 +8,17 @@ import { useUserContext } from "../contexts/userContext";
 
 const JoinRoomPage = () => {
     const { username } = useUserContext();
+
     const [privateRoomId, setPrivateRoomId] = useState<string>("");
 
     useEffect(() => {
         if (privateRoomId.length === 6) {
             socketClient.joinRoom(username, privateRoomId);
-            socketClient.subscribeToRoomJoined((msg, roomId) => {
-                console.log(msg, roomId);
-            });
+            socketClient.subscribeToRoomJoined(
+                ({ responseStatus, username }) => {
+                    console.log(responseStatus, username);
+                }
+            );
         }
     }, [privateRoomId, username]);
 

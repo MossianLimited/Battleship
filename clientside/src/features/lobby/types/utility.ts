@@ -1,4 +1,4 @@
 export enum RoomMode {
-    Public,
-    Private,
+    Public = "public",
+    Private = "private",
 }

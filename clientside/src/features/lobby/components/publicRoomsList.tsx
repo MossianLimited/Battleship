@@ -1,19 +1,37 @@
+import { useEffect, useState } from "react";
+// import { useHistory } from "react-router";
+import socketClient from "../../../api/socketClient";
+import { Room } from "../../../api/types/transport";
 import styled from "../../../styles/theme";
 import { HeaderText } from "./base.styled";
 
-const MOCK_ROOM_NAMES = [
-    "Winnaries",
-    "Wasurocks",
-    "Mossdinger",
-    "Boss WT",
-    "Adam",
-    "Brian",
-];
+const REFRESH_INTERVAL = 2000;
 
 const PublicRoomsList = () => {
-    const displayedRooms = MOCK_ROOM_NAMES.map((roomName) => (
-        <SingleRoom key={roomName}>
-            <span>{roomName}</span>
+    const [roomList, setRoomList] = useState<Room[]>([]);
+    //    const history = useHistory();
+
+    useEffect(() => {
+        // ping getRoomList every 2 seconds
+        const interval = setInterval(() => {
+            socketClient.getRoomList();
+        }, REFRESH_INTERVAL);
+
+        socketClient.subscribeToRoomList(({ roomList: fetchedRoomList }) => {
+            setRoomList(fetchedRoomList);
+        });
+
+        return () => {
+            clearInterval(interval);
+        };
+    }, []);
+
+    const displayedRooms = roomList.map(({ roomID, hostUsername }) => (
+        <SingleRoom
+            key={roomID}
+            onClick={() => alert("Joining room " + roomID)}
+        >
+            <span>{hostUsername}</span>
             <span>Join</span>
         </SingleRoom>
     ));

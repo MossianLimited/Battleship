@@ -9,7 +9,7 @@ const MainRouter = () => {
     return (
         <Router>
             <Switch>
-                <LobbyRoute path="/test">
+                <LobbyRoute path="/room">
                     <GamePage />
                 </LobbyRoute>
                 <LobbyRoute path="/new-room" userRequired>

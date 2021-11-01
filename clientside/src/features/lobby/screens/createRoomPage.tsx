@@ -4,24 +4,35 @@ import styled from "../../../styles/theme";
 import { HeaderText, WhiteBox } from "../components/base.styled";
 import RoomModeSlider from "../components/roomModeSlider";
 import { useUserContext } from "../contexts/userContext";
+import { RoomMode } from "../types/utility";
 
 const CreateRoomPage = () => {
     const { username } = useUserContext();
+
     const [roomId, setRoomId] = useState<string>("");
+    const [roomMode, setRoomMode] = useState<RoomMode>(RoomMode.Public);
 
     useEffect(() => {
         socketClient.createRoom(username);
-        socketClient.subscribeToRoomCreated((roomId) => {
-            setRoomId(roomId);
+        socketClient.subscribeToRoomCreated(({ roomID }) => {
+            setRoomId(roomID);
         });
     }, [username]);
+
+    const handleRoomModeToggle = (mode: RoomMode) => {
+        setRoomMode(mode);
+        socketClient.changeLock();
+    };
 
     return (
         <Container>
             <InfoBox>
                 <HeadingBox>
                     <Title>Waiting for other player...</Title>
-                    <RoomModeSlider onClickHandler={() => null} />
+                    <RoomModeSlider
+                        roomMode={roomMode}
+                        onRoomModeToggleHandler={handleRoomModeToggle}
+                    />
                 </HeadingBox>
                 <Guidelines>
                     <span>

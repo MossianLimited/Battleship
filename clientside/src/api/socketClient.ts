@@ -1,5 +1,11 @@
 import { io, Socket } from "socket.io-client";
 import { API_URL, SOCKET_EVENT } from "./constants/config";
+import {
+    ChangeLockResponse,
+    CreateRoomResponse,
+    GetRoomListResponse,
+    JoinRoomResponse,
+} from "./types/transport";
 
 class SocketClient {
     private socket?: Socket;
@@ -26,12 +32,63 @@ class SocketClient {
         }
     }
 
-    public subscribeToRoomCreated(callbackFn: (roomId: string) => void) {
+    public subscribeToRoomCreated(
+        callbackFn: (response: CreateRoomResponse) => void
+    ) {
         if (this.socket) {
             this.socket.on(
                 SOCKET_EVENT.CREATE_ROOM_RESPONSE,
-                (_statusMessage: string, roomId: string) => {
-                    callbackFn(roomId);
+                (
+                    responseStatus: CreateRoomResponse["responseStatus"],
+                    roomID: string
+                ) => {
+                    callbackFn({
+                        responseStatus,
+                        roomID,
+                    });
+                }
+            );
+        }
+    }
+
+    public changeLock() {
+        if (this.socket) {
+            this.socket.emit(SOCKET_EVENT.CHANGE_LOCK, "");
+        }
+    }
+
+    public subscribeToLockChanged(
+        callbackFn: (response: ChangeLockResponse) => void
+    ) {
+        if (this.socket) {
+            this.socket.on(
+                SOCKET_EVENT.CHANGE_LOCK_RESPONSE,
+                (responseStatus: ChangeLockResponse["responseStatus"]) => {
+                    callbackFn({
+                        responseStatus,
+                    });
+                }
+            );
+        }
+    }
+
+    public getRoomList() {
+        if (this.socket) {
+            this.socket.emit(SOCKET_EVENT.GET_ROOM_LIST);
+        }
+    }
+
+    public subscribeToRoomList(
+        callbackFn: (response: GetRoomListResponse) => void
+    ) {
+        if (this.socket) {
+            this.socket.on(
+                SOCKET_EVENT.GET_ROOM_LIST_RESPONSE,
+                (
+                    responseStatus: GetRoomListResponse["responseStatus"],
+                    roomList: GetRoomListResponse["roomList"]
+                ) => {
+                    callbackFn({ responseStatus, roomList });
                 }
             );
         }
@@ -44,13 +101,16 @@ class SocketClient {
     }
 
     public subscribeToRoomJoined(
-        callbackFn: (statusMessage: string, roomId: string) => void
+        callbackFn: (response: JoinRoomResponse) => void
     ) {
         if (this.socket) {
             this.socket.on(
                 SOCKET_EVENT.JOIN_ROOM_RESPONSE,
-                (statusMessage: string, roomId: string) => {
-                    callbackFn(statusMessage, roomId);
+                (
+                    responseStatus: JoinRoomResponse["responseStatus"],
+                    username: JoinRoomResponse["username"]
+                ) => {
+                    callbackFn({ responseStatus, username });
                 }
             );
         }

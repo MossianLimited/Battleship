@@ -1,16 +1,19 @@
-import { useState } from "react";
 import styled from "../../../styles/theme";
+import { RoomMode } from "../types/utility";
 
 interface Props {
-    onClickHandler: (value: "public" | "private") => void;
+    roomMode: RoomMode;
+    onRoomModeToggleHandler: (value: RoomMode) => void;
 }
 
-const RoomModeSlider: React.FC<Props> = ({ onClickHandler }) => {
-    const [isChecked, setChecked] = useState<boolean>(false);
+const RoomModeSlider: React.FC<Props> = ({
+    roomMode,
+    onRoomModeToggleHandler,
+}) => {
+    const isChecked = roomMode === RoomMode.Private;
 
     const handleSwitchClick = () => {
-        onClickHandler(isChecked ? "private" : "public");
-        setChecked(!isChecked);
+        onRoomModeToggleHandler(isChecked ? RoomMode.Public : RoomMode.Private);
     };
 
     return (
