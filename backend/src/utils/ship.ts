@@ -29,9 +29,10 @@ const randomLocation = (board: Board) => {
 };
 const directions = ['vertical', 'horizontal'];
 
-const ships: string[][] = [];
+
 
 export const randomShip = (numOfShips: number, shipLength: number) => {
+	const ships: string[][] = [];
 	const board: Board = {};
 
 	validColumns.forEach((column) => {

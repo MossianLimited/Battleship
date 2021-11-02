@@ -5,8 +5,8 @@ import { shoot } from '.';
 
 export const randomShoot = (socket: Socket, room: Room) => {
 	// Random Location Generator
-	const randomColumn = validColumns[Math.floor(Math.random() * 8)];
-	const randomRow = Math.floor(Math.random() * 8) + 1;
+	const randomColumn = validColumns[Math.floor(Math.random() * 10)];
+	const randomRow = Math.floor(Math.random() * 10) + 1;
 	const randomLocation = randomColumn + randomRow;
 
 	// Check and Recursively Find New Valid Location
