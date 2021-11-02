@@ -62,3 +62,14 @@ export class openRoom {
 		this.roomID = roomID;
 	}
 }
+
+export class allRoom {
+	private hostUsername: string;
+	private guestUsername: string;
+	private roomID: string;
+	constructor(hostUsername: string, guestUsername: string, roomID: string) {
+		this.hostUsername = hostUsername;
+		this.guestUsername = guestUsername ? guestUsername : "-"
+		this.roomID = roomID;
+	}
+}
