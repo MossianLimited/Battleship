@@ -14,4 +14,4 @@ export const validColumns: string[] = [
 export const validRows = validColumns.map((column, index) =>
 	(index + 1).toString()
 );
-export const adminPasswordHashed: string = '';
+export const adminPasswordHashed: string = "test1234";

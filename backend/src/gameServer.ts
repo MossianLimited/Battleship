@@ -72,7 +72,7 @@ export class GameServer {
                 address
             );
             socket.emit("SocketID", socket.id);
-            this.active.push(new ActiveSocket(socket.id, setInterval( () => socket.emit("heartbeat"), 5000)));
+            this.active.push(new ActiveSocket(socket.id, setInterval( () => socket.emit("heartbeat", this.active.length), 5000)));
             socket.on("getRoomList", () => {
                 getRoomList(socket, this.roomList);
             });
