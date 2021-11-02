@@ -115,7 +115,9 @@ export class GameServer {
             socket.on("disconnect", () => {
                 disconnect(socket, this.roomList, this.adminList);
                 clearInterval(this.active.find(conn => conn.socketID === socket.id).timer);
-                this.active = this.active.filter(conn => conn.socketID != socket.id);
+                this.active.splice(
+                    this.active.findIndex(conn => conn.socketID === socket.id), 1
+                );
             });
             socket.on("adminLogin", (hashedAdminPass: string) => {
                 adminLogin(socket, hashedAdminPass, this.adminList);

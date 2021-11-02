@@ -1,6 +1,6 @@
 import { Socket } from 'socket.io';
 import { Room, Admin } from '../../class';
-import { checkAdmin, findOpponentSocketId } from '../../utils';
+import { checkAdmin, findOpponentSocketId, vacateRoom } from '../../utils';
 export const disconnect = (
 	socket: Socket,
 	roomList: Room[],
@@ -37,21 +37,20 @@ export const disconnect = (
 		if (room.timer) clearTimeout(room.timer);
 		roomList.splice(
 			roomList.findIndex(
-				(room) =>
-					room.guestSocketID === socket.id || room.hostSocketID === socket.id,
-				1
-			)
+				(room) => room.guestSocketID === socket.id || room.hostSocketID === socket.id), 1
 		);
+		vacateRoom(room.roomID)
 		console.log(`room ${room.roomID} deleted`);
 	});
 
 	// Check if the socket belongs to admin. If yes, remove the instance from adminList
 	if (checkAdmin(socket.id, adminList)) {
 		adminList.splice(
-			adminList.findIndex((admin) => admin.socketID === socket.id, 1)
+			adminList.findIndex((admin) => admin.socketID === socket.id), 1
 		);
 		console.log('An admin logs out');
 	}
 
+	
 	
 };
