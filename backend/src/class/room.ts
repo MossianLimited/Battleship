@@ -23,6 +23,8 @@ export class Room {
 	public hostShot: string[];
 	public timer: NodeJS.Timeout;
 	public spectator: string;
+	public hostAvatar: string;
+	public guestAvatar: string;
 
 	constructor(
 		hostUsername: string,

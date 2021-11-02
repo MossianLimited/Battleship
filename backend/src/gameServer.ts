@@ -16,6 +16,7 @@ import {
     disconnect,
     chat,
     randomShip,
+    setAvatar
 } from "./controllers/game";
 import {
     adminClose,
@@ -93,6 +94,9 @@ export class GameServer {
             socket.on("chat", (msg: string) => {
                 chat(socket, msg, this.roomList);
             });
+            socket.on("setAvatar", (avatar: string) => {
+                setAvatar(socket, this.roomList, avatar)
+            })
             socket.on("setup", (coordinates: string[][]) => {
                 setup(socket, this.roomList, coordinates);
             });
