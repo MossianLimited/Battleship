@@ -1,6 +1,10 @@
 import { BoardSquareStatus } from "../../board/types/board";
 import { Position, Side } from "../../board/types/utility";
 
+type GameStartAction = {
+    type: "GAME_START"
+}
+
 type MarkSquareAction = {
     type: "MARK_SQUARE";
     payload: {
@@ -10,4 +14,6 @@ type MarkSquareAction = {
     };
 };
 
-export type GameAction = MarkSquareAction;
+
+
+export type GameAction = GameStartAction | MarkSquareAction;

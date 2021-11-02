@@ -24,6 +24,8 @@ export enum SocketEvent {
     GetRoomListResponse = "getRoomListResponse",
     JoinRoom = "joinRoom",
     JoinRoomResponse = "joinRoomResponse",
+    RandomShip = "randomShip", 
+    RandomShipResponse = "randomShipResponse", 
     Setup = "setup", 
     SetupResponse = "setupResponse", 
     Withdraw = "withdraw",
@@ -36,3 +38,5 @@ export enum SetupResponseStatus {
     Completed = "Completed", 
     InvalidPlacement = "Invalid Placement"
 }
+
+export type InfallibleResponse = 'Completed'; 

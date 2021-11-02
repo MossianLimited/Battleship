@@ -1,12 +1,20 @@
 import posToString from "../../board/functions/posToString";
 import { GameAction } from "../types/action";
-import { GameState } from "../types/state";
+import { GameState, MetaPhase } from "../types/state";
 
 const gameStateReducer = (
     prevState: GameState,
     action: GameAction
 ): GameState => {
     switch (action.type) {
+        case "GAME_START": 
+            return {
+                ...prevState, 
+                meta: {
+                    ...prevState.meta, 
+                    phase: MetaPhase.Playing, 
+                }
+            }
         case "MARK_SQUARE":
             return {
                 ...prevState,

@@ -1,21 +1,27 @@
 import { FC, MouseEvent, useState, useEffect } from "react";
+import { Position, Side } from "../board/types/utility";
+import { PlacementList, PlacementStatus } from "./types/placement";
+import { INIT_PLACEMENT_LIST } from "./constants/list";
 import styled from "styled-components";
 import Board from "../board";
-import { Position, Side } from "../board/types/utility";
 import Ship from "./components/ship";
 import Refresh from "./components/refresh";
-import { INIT_PLACEMENT_LIST } from "./constants/list";
-import { PlacementList, PlacementStatus } from "./types/placement";
+import socketClient from "../../api/socketClient";
+import deserializePlacements from "./functions/deserializePlacements";
+import serializePlacements from "./functions/serializePlacements";
 import {
     BattleshipAllyYard,
     BattleshipBase,
     BattleshipDirection,
+    BattleshipKnown,
     BattleshipStatus,
 } from "../board/types/battleship";
+import { useGameStateContext } from "../game/contexts/gameStateContext";
 
-const SetupModal: FC = (_) => {
-    const [placements, setPlacements] =
-        useState<PlacementList>(INIT_PLACEMENT_LIST);
+const SetupModal: FC = (_props) => {
+    const { dispatch } = useGameStateContext();
+
+    const [placements, setPlacements] = useState(INIT_PLACEMENT_LIST);
 
     const onShipClick = (battleship: BattleshipBase, _e: MouseEvent) => {
         const index = placements.findIndex((p) => p.battleship === battleship);
@@ -35,15 +41,16 @@ const SetupModal: FC = (_) => {
         const nextPlacements: PlacementList = placements.map((p, i) => {
             if (i !== index) return p;
 
-            const direction = p.status === PlacementStatus.Placing 
-                ? p.battleship.direction
-                : BattleshipDirection.Vertical;
+            const direction =
+                p.status === PlacementStatus.Placing
+                    ? p.battleship.direction
+                    : BattleshipDirection.Vertical;
 
             return {
                 battleship: {
                     ...p.battleship,
                     position,
-                    direction, 
+                    direction,
                     status: BattleshipStatus.Default,
                 },
                 selected: p.selected,
@@ -101,6 +108,33 @@ const SetupModal: FC = (_) => {
         setPlacements(INIT_PLACEMENT_LIST);
     };
 
+    const onRandomize = async (_e: MouseEvent) => {
+        const ships = await socketClient.randomize(4, 4, 30);
+        const formattedShips = deserializePlacements(ships);
+
+        const nextPlacements: PlacementList = formattedShips.map((fs) => ({
+            battleship: fs,
+            selected: false,
+            status: PlacementStatus.Placed,
+        }));
+
+        setPlacements(nextPlacements);
+    };
+
+    const onReady = async (_e: MouseEvent) => {
+        if (placements.find((p) => p.status !== PlacementStatus.Placed))
+            throw new Error("Not all battleships are placed");
+
+        const shipyard = placements.map((p) => p.battleship as BattleshipKnown);
+        const serialized = serializePlacements(shipyard);
+        const [hostReady, guestReady] = await socketClient.setup(serialized);
+
+        if (hostReady && guestReady) return dispatch({ type: "GAME_START" });
+
+        await socketClient.waitReady(); 
+        dispatch({ type: "GAME_START"}); 
+    };
+
     const renderedShip = placements.map((p) => (
         <Ship
             key={p.battleship.name}
@@ -123,11 +157,12 @@ const SetupModal: FC = (_) => {
                 if (index === -1) return;
 
                 const nextPlacements: PlacementList = placements.map((p, i) => {
-                    if (i !== index || p.status === PlacementStatus.Undecided) return p;
+                    if (i !== index || p.status === PlacementStatus.Undecided)
+                        return p;
                     return {
                         battleship: {
                             ...p.battleship,
-                            direction: (p.battleship.direction + 1) % 4, 
+                            direction: (p.battleship.direction + 1) % 4,
                         },
                         selected: p.selected,
                         status: PlacementStatus.Placing,
@@ -138,15 +173,15 @@ const SetupModal: FC = (_) => {
             }
         };
 
-        document.addEventListener('keypress', fn); 
-        return () => document.removeEventListener('keypress', fn);
+        document.addEventListener("keypress", fn);
+        return () => document.removeEventListener("keypress", fn);
     }, [placements]);
 
     return (
         <Wrapper>
             <HeaderWrapper>
                 <HeaderText>Plan your ship positions...</HeaderText>
-                <RandomButton>
+                <RandomButton onClick={onRandomize}>
                     <Refresh />
                     Random
                 </RandomButton>
@@ -171,7 +206,7 @@ const SetupModal: FC = (_) => {
                 </BoardWrapper>
             </BodyWrapper>
             <Spacer />
-            <ReadyButton>Ready!</ReadyButton>
+            <ReadyButton onClick={onReady}>Ready!</ReadyButton>
         </Wrapper>
     );
 };
@@ -226,6 +261,10 @@ const RandomButton = styled.button`
 
     &:hover {
         transform: scaleX(1.04) scaleY(1.08);
+    }
+
+    &:active {
+        transform: scaleX(0.96) scaleY(0.92);
     }
 `;
 
@@ -299,11 +338,15 @@ const ResetButton = styled.button`
     color: white;
     cursor: pointer;
     font-weight: 500;
-    width: 100%; 
-    position: absolute; 
-    bottom: 0; 
+    width: 100%;
+    position: absolute;
+    bottom: 0;
 
     &:hover {
         transform: scaleX(1.04) scaleY(1.08);
+    }
+
+    &:active {
+        transform: scaleX(0.96) scaleY(0.92);
     }
 `;

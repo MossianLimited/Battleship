@@ -1,5 +1,11 @@
 import { io, Socket } from "socket.io-client";
-import { API_URL, SetupResponseStatus, SocketEvent, SOCKET_EVENT } from "./constants/config";
+import {
+    API_URL,
+    InfallibleResponse,
+    SetupResponseStatus,
+    SocketEvent,
+    SOCKET_EVENT,
+} from "./constants/config";
 import {
     ChangeLockResponse,
     CreateRoomResponse,
@@ -27,7 +33,7 @@ class SocketClient {
         }
     }
 
-    public createRoom(username: string): Promise<CreateRoomResponse> {
+    public async createRoom(username: string): Promise<CreateRoomResponse> {
         return new Promise((resolve, reject) => {
             if (!this.socket) {
                 reject("Socket not initialized");
@@ -49,7 +55,7 @@ class SocketClient {
         });
     }
 
-    public changeLock(): Promise<ChangeLockResponse> {
+    public async changeLock(): Promise<ChangeLockResponse> {
         return new Promise((resolve, reject) => {
             if (!this.socket) {
                 reject("Socket not initialized");
@@ -67,7 +73,7 @@ class SocketClient {
         });
     }
 
-    public getRoomList(): Promise<GetRoomListResponse> {
+    public async getRoomList(): Promise<GetRoomListResponse> {
         return new Promise((resolve, reject) => {
             if (!this.socket) {
                 reject("Socket not initialized");
@@ -103,7 +109,7 @@ class SocketClient {
         }
     }
 
-    public joinRoom(username: string, roomId: string): Promise<void> {
+    public async joinRoom(username: string, roomId: string): Promise<void> {
         return new Promise((resolve, reject) => {
             if (!this.socket) {
                 reject("Socket not initialized");
@@ -121,22 +127,97 @@ class SocketClient {
             this.socket.emit(SocketEvent.Setup, ships);
             this.socket.on(
                 SocketEvent.SetupResponse,
-                (status: SetupResponseStatus, hostReady: boolean, guestReady: boolean) => {
+                (
+                    status: SetupResponseStatus,
+                    hostReady: boolean,
+                    guestReady: boolean
+                ) => {
                     switch (status) {
-                        case SetupResponseStatus.Completed: 
-                            resolve([hostReady, guestReady]); 
-                            break; 
-                        case SetupResponseStatus.InvalidPlacement: 
-                            reject("Invalid placements."); 
-                            break; 
+                        case SetupResponseStatus.Completed:
+                            return resolve([hostReady, guestReady]);
+                        case SetupResponseStatus.InvalidPlacement:
+                            return reject("Invalid placements.");
                     }
                 }
             );
 
             setTimeout(() => {
-                reject("Connection timeout 30s.")
-            }, 3000); 
+                reject("Connection timeout 30s.");
+            }, 3000);
         });
+    }
+
+    public async waitReady(): Promise<void> {
+        return new Promise((resolve, reject) => {
+            if (!this.socket) return reject("Socket not initialized");
+
+            // TODO: Heartbeating 
+            // let intervalId: NodeJS.Timeout | null = null; 
+
+            this.socket.on(
+                SocketEvent.SetupResponse,
+                (
+                    status: SetupResponseStatus,
+                    hostReady: boolean,
+                    guestReady: boolean
+                ) => {
+                    // intervalId && clearInterval(intervalId); 
+                    // intervalId = setTimeout(() => {
+                    //     reject("Connection timeout 30s.");
+                    // }, 30000);
+                    
+                    if (status === SetupResponseStatus.Completed)
+                        hostReady && guestReady && resolve(); 
+                }
+            );
+
+            // intervalId = setTimeout(() => {
+            //     reject("Connection timeout 30s.");
+            // }, 30000);
+        });
+    }
+
+    public async randomize(
+        nums: number,
+        length: number,
+        retry: number, 
+        fallback: string[][] = [
+            ["A1", "A2", "A3", "A4"],
+            ["C2", "D2", "E2", "F2"],
+            ["C4", "C5", "C6", "C7"],
+            ["H1", "H2", "H3", "H4"],
+        ] 
+    ): Promise<string[][]> {
+        if (!this.socket) throw new Error("Socket not initialized");
+
+        let handler = (reason: string) =>
+            new Promise<string[][]>((resolve, reject) => {
+                if (reason === "Connection timeout 30s.")
+                    reject("Connection timeout 30s");
+
+                this.socket?.emit(SocketEvent.RandomShip, nums, length);
+                this.socket?.on(
+                    SocketEvent.RandomShipResponse,
+                    (_: InfallibleResponse, ships: string[][]) => {
+                        if (ships.length !== length)
+                            reject(
+                                "Backend returns empty placements. Retrying..."
+                            );
+
+                        resolve(ships);
+                    }
+                );
+
+                setTimeout(() => {
+                    reject("Connection timeout 30s.");
+                }, 3000);
+            });
+
+        let promise = handler("");
+
+        for (let i = 0; i < retry; i++) promise = promise.catch(handler);
+
+        return promise.catch((_) => fallback);
     }
 
     // separated this function from withdraw
