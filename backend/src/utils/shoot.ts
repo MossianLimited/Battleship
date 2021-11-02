@@ -2,6 +2,7 @@ import { Socket } from 'socket.io';
 import { Room } from '../class';
 import { timePerRound } from '../config';
 import { findOpponentSocketId, randomShoot, resetRoom } from '.';
+import { stat } from '../controllers/game/stat';
 
 const checkDestroyed = (
 	socket: Socket,
@@ -137,6 +138,8 @@ export const shoot = (socket: Socket, room: Room, location: string) => {
 			room.hostScore,
 			room.guestScore
 		);
+
+		stat(socket, room)
 		// reset room to setup stage
 		resetRoom(room);
 	}

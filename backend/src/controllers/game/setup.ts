@@ -40,6 +40,7 @@ export const setup = (
 	}
 
 	// Notify Both Players of each other Status
+	room.matchStart = Date.now()
 	const opponentSocketId = findOpponentSocketId(room, socket.id);
 	socket
 		.to(opponentSocketId)
