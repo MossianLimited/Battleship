@@ -1,7 +1,7 @@
 import * as express from "express";
 import { Server, Socket } from "socket.io";
 import { createServer, Server as ServerType } from "http";
-import { Room, Admin } from "./class";
+import { Room, Admin, ActiveSocket } from "./class";
 import { randomRoom } from "./utils";
 import {
     createRoom,
@@ -38,6 +38,7 @@ export class GameServer {
     private port: string | number;
     private roomList: Room[];
     private adminList: Admin[];
+    private active: ActiveSocket[];
 
     constructor() {
         this._app = express();
@@ -49,6 +50,7 @@ export class GameServer {
         this.adminList = [];
         this.initSocket();
         this.listen();
+        this.active = []
     }
 
     private initSocket(): void {
@@ -69,6 +71,7 @@ export class GameServer {
                 address
             );
             socket.emit("SocketID", socket.id);
+            this.active.push(new ActiveSocket(socket.id, setInterval( () => socket.emit("heartbeat"), 5000)));
             socket.on("getRoomList", () => {
                 getRoomList(socket, this.roomList);
             });
@@ -107,6 +110,8 @@ export class GameServer {
             });
             socket.on("disconnect", () => {
                 disconnect(socket, this.roomList, this.adminList);
+                clearInterval(this.active.find(conn => conn.socketID === socket.id).timer);
+                this.active = this.active.filter(conn => conn.socketID != socket.id);
             });
             socket.on("adminLogin", (hashedAdminPass: string) => {
                 adminLogin(socket, hashedAdminPass, this.adminList);
