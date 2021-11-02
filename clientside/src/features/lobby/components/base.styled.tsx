@@ -32,6 +32,4 @@ export const WhiteBox = styled.div`
 
     display: flex;
     flex-flow: column;
-
-    overflow: hidden;
 `;

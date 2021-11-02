@@ -1,15 +1,18 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useHistory } from "react-router";
 import socketClient from "../../../api/socketClient";
 import styled from "../../../styles/theme";
+import AvatarVersus from "../../avatar/components/avatarVersus";
 import { HeaderText, WhiteBox } from "../components/base.styled";
 import RoomModeSlider from "../components/roomModeSlider";
 import { useUserContext } from "../contexts/userContext";
 import { RoomMode } from "../types/utility";
 
 const CreateRoomPage = () => {
-    const { username } = useUserContext();
+    const { username, userAvatarSeed } = useUserContext();
     const history = useHistory();
+
+    const roomComplete = useRef<boolean>(false);
 
     const [roomId, setRoomId] = useState<string>("");
     const [roomMode, setRoomMode] = useState<RoomMode>(RoomMode.Public);
@@ -27,6 +30,12 @@ const CreateRoomPage = () => {
         };
 
         asyncCreateRoom();
+
+        return () => {
+            if (!roomComplete.current) {
+                socketClient.withdraw();
+            }
+        };
     }, [username]);
 
     useEffect(() => {
@@ -34,6 +43,7 @@ const CreateRoomPage = () => {
             socketClient.subscribeToRoomJoined(({ responseStatus }) => {
                 switch (responseStatus) {
                     case "Completed":
+                        roomComplete.current = true;
                         history.push({
                             pathname: "/room",
                             search:
@@ -52,6 +62,10 @@ const CreateRoomPage = () => {
 
     return (
         <Container>
+            <AvatarVersus
+                leftAvatarSeed={userAvatarSeed}
+                leftAvatarUsername={username}
+            />
             <InfoBox>
                 <HeadingBox>
                     <Title>Waiting for other player...</Title>
@@ -69,18 +83,28 @@ const CreateRoomPage = () => {
                     <span>and enter the code.</span>
                 </Guidelines>
             </InfoBox>
-            <GameCode>{roomId && roomId.toUpperCase()}</GameCode>
+            <GameCode>{(roomId && roomId.toUpperCase()) || " "}</GameCode>
         </Container>
     );
 };
 
-const Container = styled(WhiteBox)``;
+const Container = styled(WhiteBox)`
+    background: none;
+
+    & > *:first-child {
+        margin-bottom: 1.6875rem;
+    }
+`;
 
 const InfoBox = styled.div`
     display: flex;
     flex-flow: column;
 
     padding: 1.75rem 2rem 0;
+
+    background: ${(props) => props.theme.colors.lobby.backdrop.light};
+
+    border-radius: 0.75rem 0.75rem 0 0;
 `;
 
 const HeadingBox = styled.div`
@@ -141,6 +165,8 @@ const GameCode = styled.div`
     display: grid;
     place-items: center;
     padding: 1.375rem 0;
+
+    border-radius: 0 0 0.75rem 0.75rem;
 `;
 
 export default CreateRoomPage;

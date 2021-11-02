@@ -15,6 +15,7 @@ import {
 
 class SocketClient {
     private socket?: Socket;
+    private callbackOnEnd?: (res: EndResponse) => void;
 
     constructor() {
         this.initSocket();
@@ -150,8 +151,8 @@ class SocketClient {
         return new Promise((resolve, reject) => {
             if (!this.socket) return reject("Socket not initialized");
 
-            // TODO: Heartbeating 
-            // let intervalId: NodeJS.Timeout | null = null; 
+            // TODO: Heartbeating
+            // let intervalId: NodeJS.Timeout | null = null;
 
             this.socket.on(
                 SocketEvent.SetupResponse,
@@ -160,13 +161,13 @@ class SocketClient {
                     hostReady: boolean,
                     guestReady: boolean
                 ) => {
-                    // intervalId && clearInterval(intervalId); 
+                    // intervalId && clearInterval(intervalId);
                     // intervalId = setTimeout(() => {
                     //     reject("Connection timeout 30s.");
                     // }, 30000);
-                    
+
                     if (status === SetupResponseStatus.Completed)
-                        hostReady && guestReady && resolve(); 
+                        hostReady && guestReady && resolve();
                 }
             );
 
@@ -179,13 +180,13 @@ class SocketClient {
     public async randomize(
         nums: number,
         length: number,
-        retry: number, 
+        retry: number,
         fallback: string[][] = [
             ["A1", "A2", "A3", "A4"],
             ["C2", "D2", "E2", "F2"],
             ["C4", "C5", "C6", "C7"],
             ["H1", "H2", "H3", "H4"],
-        ] 
+        ]
     ): Promise<string[][]> {
         if (!this.socket) throw new Error("Socket not initialized");
 
@@ -221,7 +222,13 @@ class SocketClient {
 
     // separated this function from withdraw
     public subscribeToEndResponse(callbackFn: (response: EndResponse) => void) {
+        if (this.callbackOnEnd) {
+            this.callbackOnEnd = callbackFn;
+            return;
+        }
+
         if (this.socket) {
+            this.callbackOnEnd = callbackFn;
             this.socket.on(
                 SocketEvent.EndResponse,
                 (
@@ -230,12 +237,13 @@ class SocketClient {
                     hostScore: EndResponse["hostScore"],
                     guestScore: EndResponse["guestScore"]
                 ) => {
-                    callbackFn({
-                        responseStatus,
-                        previousRoundWinner,
-                        hostScore,
-                        guestScore,
-                    });
+                    this.callbackOnEnd &&
+                        this.callbackOnEnd({
+                            responseStatus,
+                            previousRoundWinner,
+                            hostScore,
+                            guestScore,
+                        });
                 }
             );
         }
@@ -247,7 +255,7 @@ class SocketClient {
                 reject("Socket not initialized");
             } else {
                 this.socket.emit(SocketEvent.Withdraw);
-                this.subscribeToEndResponse(resolve);
+                // this.subscribeToEndResponse(resolve);
             }
         });
     }

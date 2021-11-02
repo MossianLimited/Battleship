@@ -29,6 +29,18 @@ const theme = {
             main: "#D91818",
         },
         lobby: {
+            avatar: {
+                background: {
+                    light: "#FFDBB4",
+                    medium: "#FFB463",
+                    white: "#FFFFFF",
+                },
+                selected: "#674DEF",
+                text: {
+                    name: "#3A2105",
+                    versus: "#d57f23",
+                },
+            },
             backdrop: {
                 medium: "#7B61FF",
                 dark: "#674DEF",
@@ -39,11 +51,13 @@ const theme = {
                 background: {
                     primary: "#6D51FD",
                     secondary: "#F0EDFF",
-                    room: "#947EFF",
+                    room: "#FFFFFF",
                 },
                 text: {
                     primary: "#FFFFFF",
                     secondary: "#6D51FD",
+                    room: "#8A77EF",
+                    roomDark: "#1C0B76",
                 },
             },
             slider: {
@@ -68,6 +82,7 @@ const theme = {
                 heading: "#1E088E",
                 label: "#9591a4",
                 guidelines: "#b0aace",
+                battleship: "#ffffff",
             },
             credits: {
                 light: "#9a86ff",

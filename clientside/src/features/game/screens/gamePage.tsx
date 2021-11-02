@@ -1,4 +1,4 @@
-import { useLayoutEffect, useReducer } from "react";
+import { useLayoutEffect, useReducer, useState } from "react";
 import styled from "styled-components";
 import { useHistory } from "react-router";
 import socketClient from "../../../api/socketClient";
@@ -11,9 +11,15 @@ import gameStateReducer from "../reducers/gameStateReducer";
 import { useUserContext } from "../../lobby/contexts/userContext";
 import SetupModal from "../../setup";
 import { MetaPhase } from "../types/state";
+import useAutoWithdraw from "../functions/useAutoWithdraw";
+import HostWelcome from "./hostWelcome";
 
 const GamePage = () => {
     const [state, dispatch] = useReducer(gameStateReducer, initialGameState);
+
+    const [guarded, forceWithdraw] = useAutoWithdraw();
+
+    const [hostStarted, setHostStarted] = useState<boolean>(false);
 
     const query = useQuery();
     const history = useHistory();
@@ -25,21 +31,21 @@ const GamePage = () => {
 
     useLayoutEffect(() => {
         if (!roomId) {
-            history.push("/welcome");
+            guarded() || history.push("/welcome");
             return;
         }
 
         if (!isHost) socketClient.joinRoom(username, roomId);
+        socketClient.subscribeToEndResponse(forceWithdraw);
+    }, [history, isHost, roomId, username, guarded, forceWithdraw]);
 
-        socketClient.subscribeToEndResponse(({ responseStatus }) => {
-            alert(responseStatus);
-            history.push("/welcome");
-        });
-
-        return () => {
-            socketClient.withdraw();
-        };
-    }, [history, isHost, roomId, username]);
+    if (!hostStarted)
+        return (
+            <HostWelcome
+                hostName={isHost ? username : ""}
+                onHostStartCallback={() => setHostStarted(true)}
+            />
+        );
 
     return (
         <GameStateContext.Provider value={{ state, dispatch }}>
@@ -67,12 +73,12 @@ const BoardContainer = styled.div`
 `;
 
 const Backdrop = styled.div`
-    position: fixed; 
-    top: 0; 
-    left: 0; 
-    width: 100vw; 
-    height: 100vh; 
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
     background-color: rgba(0, 0, 0, 0.6);
-`; 
+`;
 
 export default GamePage;

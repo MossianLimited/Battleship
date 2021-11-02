@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import socketClient from "../../../api/socketClient";
 import { Room } from "../../../api/types/transport";
 import styled from "../../../styles/theme";
-import { HeaderText } from "./base.styled";
+import UserAvatar from "../../avatar/components/userAvatar";
 
 const REFRESH_INTERVAL = 2000;
 
@@ -36,14 +36,16 @@ const PublicRoomsList: React.FC<Props> = ({ onRoomJoinHandler }) => {
 
     const displayedRooms = roomList.map(({ roomID, hostUsername }) => (
         <SingleRoom key={roomID} onClick={() => onRoomJoinHandler(roomID)}>
-            <span>{hostUsername}</span>
+            <div>
+                <UserAvatar />
+                <span>{hostUsername}</span>
+            </div>
             <span>Join</span>
         </SingleRoom>
     ));
 
     return (
         <Container>
-            <Title>Join Public Room</Title>
             <OverflowContainer>
                 <RoomsContainer>{displayedRooms}</RoomsContainer>
             </OverflowContainer>
@@ -55,7 +57,8 @@ const Container = styled.div`
     display: flex;
     flex-flow: column;
 
-    margin: 2.9375rem 0 1.0625rem;
+    margin: 2.25rem 0 1.0625rem;
+
     width: 28.6875rem;
 
     gap: 1.0625rem;
@@ -67,10 +70,6 @@ const Container = styled.div`
 
         color: ${(props) => props.theme.colors.lobby.button.text.primary};
     }
-`;
-
-const Title = styled(HeaderText)`
-    padding: 0 1.9375rem;
 `;
 
 const OverflowContainer = styled.div`
@@ -87,10 +86,46 @@ const RoomsContainer = styled.div`
 const SingleRoom = styled.div`
     display: flex;
     justify-content: space-between;
+    align-items: flex-end;
+
     background: ${(props) => props.theme.colors.lobby.button.background.room};
-    padding: 0.875rem 1.9375rem;
-    border-radius: 0.375rem;
+    color: ${(props) => props.theme.colors.lobby.button.text.room};
+
+    /* padding: 0.875rem 1.9375rem; */
+    height: 3.125rem;
+
+    border-radius: 0.75rem;
     cursor: pointer;
+
+    & > *:first-child {
+        display: flex;
+        align-items: center;
+        align-items: flex-end;
+
+        & > *:first-child {
+            width: 2.5rem;
+            height: 2.5rem;
+
+            margin: 0 1rem 0 1.3125rem;
+        }
+        & > *:last-child {
+            color: ${(props) => props.theme.colors.lobby.button.text.roomDark};
+            height: 3.125rem;
+
+            display: grid;
+            place-items: center;
+        }
+    }
+
+    & > *:last-child {
+        width: 6rem;
+        height: 100%;
+
+        border-radius: 0 0.75rem 0.75rem 0;
+
+        display: grid;
+        place-items: center;
+    }
 `;
 
 export default PublicRoomsList;

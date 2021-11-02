@@ -11,9 +11,13 @@ const LobbyLayoutWrapper: React.FC = ({ children }) => {
 };
 
 const Container = styled.div`
-    background: ${(props) => props.theme.colors.lobby.backdrop.medium};
+    background: ${(props) => props.theme.colors.lobby.backdrop.dark};
 
+    position: relative;
+
+    width: 100%;
     height: 100vh;
+    overflow: hidden;
 
     display: flex;
     flex-flow: column;

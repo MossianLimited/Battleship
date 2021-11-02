@@ -8,6 +8,9 @@ import { theme } from "./styles/theme";
 
 const App = () => {
     const [username, setUsername] = useState<string>("");
+    const [userAvatarSeed, setUserAvatarSeed] = useState<string>(
+        localStorage.getItem("userAvatarSeed") || "nnaries"
+    );
 
     useEffect(() => {
         return () => {
@@ -16,7 +19,9 @@ const App = () => {
     }, []);
 
     return (
-        <UserContext.Provider value={{ username, setUsername }}>
+        <UserContext.Provider
+            value={{ username, userAvatarSeed, setUsername, setUserAvatarSeed }}
+        >
             <ThemeProvider theme={theme}>
                 <GlobalStyles theme={theme} />
                 <MainRouter />
