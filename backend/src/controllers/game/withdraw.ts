@@ -29,10 +29,7 @@ export const withdraw = (socket: Socket, roomList: Room[]) => {
 		if (room.timer) clearTimeout(room.timer);
 		roomList.splice(
 			roomList.findIndex(
-				(room) =>
-					room.guestSocketID === socket.id || room.hostSocketID === socket.id,
-				1
-			)
+				(room) => room.guestSocketID === socket.id || room.hostSocketID === socket.id) , 1
 		);
 		console.log(`room ${room.roomID} deleted`);
 	});
