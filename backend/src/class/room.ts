@@ -25,6 +25,7 @@ export class Room {
 	public spectator: string;
 	public hostAvatar: string;
 	public guestAvatar: string;
+	public matchStart: number;
 
 	constructor(
 		hostUsername: string,
