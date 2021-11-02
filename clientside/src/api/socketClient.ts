@@ -4,7 +4,6 @@ import {
     InfallibleResponse,
     SetupResponseStatus,
     SocketEvent,
-    SOCKET_EVENT,
 } from "./constants/config";
 import {
     ChangeLockResponse,
@@ -27,7 +26,7 @@ class SocketClient {
 
     public subscribeToSocketID() {
         if (this.socket) {
-            this.socket.on(SOCKET_EVENT.SOCKET_ID, (socketId: string) => {
+            this.socket.on(SocketEvent.SocketId, (socketId: string) => {
                 console.log("Connected to socket ID:", socketId);
             });
         }
@@ -38,9 +37,9 @@ class SocketClient {
             if (!this.socket) {
                 reject("Socket not initialized");
             } else {
-                this.socket.emit(SOCKET_EVENT.CREATE_ROOM, username, "");
+                this.socket.emit(SocketEvent.CreateRoom, username, "");
                 this.socket.on(
-                    SOCKET_EVENT.CREATE_ROOM_RESPONSE,
+                    SocketEvent.CreateRoomResponse,
                     (
                         responseStatus: CreateRoomResponse["responseStatus"],
                         roomID: string
@@ -60,9 +59,9 @@ class SocketClient {
             if (!this.socket) {
                 reject("Socket not initialized");
             } else {
-                this.socket.emit(SOCKET_EVENT.CHANGE_LOCK, "");
+                this.socket.emit(SocketEvent.ChangeLock, "");
                 this.socket.on(
-                    SOCKET_EVENT.CHANGE_LOCK_RESPONSE,
+                    SocketEvent.ChangeLockResponse,
                     (responseStatus: ChangeLockResponse["responseStatus"]) => {
                         resolve({
                             responseStatus,
@@ -78,9 +77,9 @@ class SocketClient {
             if (!this.socket) {
                 reject("Socket not initialized");
             } else {
-                this.socket.emit(SOCKET_EVENT.GET_ROOM_LIST);
+                this.socket.emit(SocketEvent.GetRoomList);
                 this.socket.on(
-                    SOCKET_EVENT.GET_ROOM_LIST_RESPONSE,
+                    SocketEvent.GetRoomListResponse,
                     (
                         responseStatus: GetRoomListResponse["responseStatus"],
                         roomList: GetRoomListResponse["roomList"]
@@ -98,7 +97,7 @@ class SocketClient {
     ) {
         if (this.socket) {
             this.socket.on(
-                SOCKET_EVENT.JOIN_ROOM_RESPONSE,
+                SocketEvent.JoinRoomResponse,
                 (
                     responseStatus: JoinRoomResponse["responseStatus"],
                     username: JoinRoomResponse["username"]
@@ -114,7 +113,7 @@ class SocketClient {
             if (!this.socket) {
                 reject("Socket not initialized");
             } else {
-                this.socket.emit(SOCKET_EVENT.JOIN_ROOM, username, roomId);
+                this.socket.emit(SocketEvent.JoinRoom, username, roomId);
                 resolve();
             }
         });
@@ -224,7 +223,7 @@ class SocketClient {
     public subscribeToEndResponse(callbackFn: (response: EndResponse) => void) {
         if (this.socket) {
             this.socket.on(
-                SOCKET_EVENT.END_RESPONSE,
+                SocketEvent.EndResponse,
                 (
                     responseStatus: EndResponse["responseStatus"],
                     previousRoundWinner: EndResponse["previousRoundWinner"],
@@ -247,7 +246,7 @@ class SocketClient {
             if (!this.socket) {
                 reject("Socket not initialized");
             } else {
-                this.socket.emit(SOCKET_EVENT.WITHDRAW);
+                this.socket.emit(SocketEvent.Withdraw);
                 this.subscribeToEndResponse(resolve);
             }
         });
