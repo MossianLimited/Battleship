@@ -1,4 +1,4 @@
-export const timePerRound: number = 10;
+export const timePerRound: number = 10000;
 export const validColumns: string[] = [
 	'A',
 	'B',
