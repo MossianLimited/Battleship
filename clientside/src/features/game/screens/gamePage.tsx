@@ -1,4 +1,4 @@
-import { useEffect, useLayoutEffect, useReducer } from "react";
+import { useLayoutEffect, useReducer } from "react";
 import styled from "styled-components";
 import { useHistory } from "react-router";
 import socketClient from "../../../api/socketClient";

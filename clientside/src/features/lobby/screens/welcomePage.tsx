@@ -61,7 +61,7 @@ const WelcomePage = () => {
                             variant="primary"
                             name="newRoom"
                             onClick={() =>
-                                validateUsername() && history.push("/new-room")
+                                validateUsername() && history.push("/new")
                             }
                         >
                             {roomId ? "Join Room" : "Create Room"}

@@ -14,3 +14,25 @@ export const SOCKET_EVENT = {
     SOCKET_ID: "SocketID",
     DISCONNECT: "disconnect",
 };
+
+export enum SocketEvent {
+    CreateRoom = "createRoom", 
+    CreateRoomResponse = "createRoomResponse",
+    ChangeLock = "changeLock",
+    ChangeLockResponse = "changeLockResponse",
+    GetRoomList = "getRoomList",
+    GetRoomListResponse = "getRoomListResponse",
+    JoinRoom = "joinRoom",
+    JoinRoomResponse = "joinRoomResponse",
+    Setup = "setup", 
+    SetupResponse = "setupResponse", 
+    Withdraw = "withdraw",
+    EndResponse = "endResponse",
+    SocketId = "SocketID",
+    Disconnect = "disconnect",
+}
+
+export enum SetupResponseStatus {
+    Completed = "Completed", 
+    InvalidPlacement = "Invalid Placement"
+}

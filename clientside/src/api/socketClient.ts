@@ -1,5 +1,5 @@
 import { io, Socket } from "socket.io-client";
-import { API_URL, SOCKET_EVENT } from "./constants/config";
+import { API_URL, SetupResponseStatus, SocketEvent, SOCKET_EVENT } from "./constants/config";
 import {
     ChangeLockResponse,
     CreateRoomResponse,
@@ -114,6 +114,31 @@ class SocketClient {
         });
     }
 
+    public async setup(ships: string[][]): Promise<[boolean, boolean]> {
+        return new Promise((resolve, reject) => {
+            if (!this.socket) return reject("Socket not initialized");
+
+            this.socket.emit(SocketEvent.Setup, ships);
+            this.socket.on(
+                SocketEvent.SetupResponse,
+                (status: SetupResponseStatus, hostReady: boolean, guestReady: boolean) => {
+                    switch (status) {
+                        case SetupResponseStatus.Completed: 
+                            resolve([hostReady, guestReady]); 
+                            break; 
+                        case SetupResponseStatus.InvalidPlacement: 
+                            reject("Invalid placements."); 
+                            break; 
+                    }
+                }
+            );
+
+            setTimeout(() => {
+                reject("Connection timeout 30s.")
+            }, 3000); 
+        });
+    }
+
     // separated this function from withdraw
     public subscribeToEndResponse(callbackFn: (response: EndResponse) => void) {
         if (this.socket) {
@@ -136,7 +161,7 @@ class SocketClient {
         }
     }
 
-    public withdraw(): Promise<EndResponse> {
+    public async withdraw(): Promise<EndResponse> {
         return new Promise((resolve, reject) => {
             if (!this.socket) {
                 reject("Socket not initialized");
