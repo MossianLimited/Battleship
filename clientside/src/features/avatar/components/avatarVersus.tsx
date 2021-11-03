@@ -72,7 +72,7 @@ const Container = styled.div<{ isExpanded?: boolean }>`
     border-radius: 0.75rem;
 
     height: 8.125rem;
-    min-width: ${(props) => (props.isExpanded ? "46.9375rem" : "100%")};
+    min-width: ${(props) => (props.isExpanded ? "38.9375rem" : "100%")};
     background: ${(props) => props.theme.colors.lobby.avatar.background.light};
 
     display: flex;
@@ -144,7 +144,7 @@ const ChatBubble = styled.div<{ isFlipped?: boolean }>`
         width: max-content;
         background: ${(props) =>
             props.theme.colors.lobby.avatar.background.white};
-        padding: 0.9375rem;
+        padding: 0.625rem 0.875rem;
         border-radius: 0.375rem;
 
         overflow-wrap: break-word;

@@ -32,6 +32,22 @@ const GamePage = () => {
 
     const { username, userAvatarSeed } = useUserContext();
 
+    const userAndSeedProps = {
+        leftAvatarSeed: isHost ? userAvatarSeed : enemyAvatarSeed,
+        leftAvatarUsername: isHost ? username : enemyUsername,
+        rightAvatarSeed: isHost ? enemyAvatarSeed : userAvatarSeed,
+        rightAvatarUsername: isHost ? enemyUsername : username,
+    };
+
+    const scoreAndChatProps = userStarted
+        ? {
+              leftScore: 5,
+              rightScore: 5,
+              leftChatFeed: "Yo mama",
+              rightChatFeed: "Fuckkk",
+          }
+        : {};
+
     useLayoutEffect(() => {
         if (!roomId) {
             guarded() || history.push("/welcome");
@@ -59,27 +75,21 @@ const GamePage = () => {
         userAvatarSeed,
     ]);
 
+    const avatarVersusComponent = (
+        <AvatarVersus {...userAndSeedProps} {...scoreAndChatProps} />
+    );
+
     if (!userStarted)
         return (
             <HostWelcome
-                guestUsername={isHost ? enemyUsername : username}
-                hostUsername={isHost ? username : enemyUsername}
-                guestAvatarSeed={isHost ? enemyAvatarSeed : userAvatarSeed}
-                hostAvatarSeed={isHost ? userAvatarSeed : enemyAvatarSeed}
+                avatarVersusComponent={avatarVersusComponent}
                 onHostStartCallback={() => setUserStarted(true)}
             />
         );
 
     return (
         <GameStateContext.Provider value={{ state, dispatch }}>
-            <AvatarVersus
-                leftAvatarSeed={"test"}
-                leftAvatarUsername={"test"}
-                rightAvatarSeed={"test"}
-                rightAvatarUsername={"test"}
-                leftScore={5}
-                rightScore={5}
-            />
+            {avatarVersusComponent}
             <BoardContainer>
                 <Board boardType={Side.Ally} shipYard={state.battleship.ally} />
                 <Board
@@ -87,8 +97,8 @@ const GamePage = () => {
                     shipYard={state.battleship.enemy}
                 />
             </BoardContainer>
-            {state.meta.phase === MetaPhase.Setup && <Backdrop />}
-            {state.meta.phase === MetaPhase.Setup && <SetupModal />}
+            {/* {state.meta.phase === MetaPhase.Setup && <Backdrop />} */}
+            {/* {state.meta.phase === MetaPhase.Setup && <SetupModal />} */}
         </GameStateContext.Provider>
     );
 };
@@ -97,10 +107,9 @@ const BoardContainer = styled.div`
     display: flex;
     justify-content: center;
     align-items: center;
-    gap: 5.25rem;
+    gap: 6.9375rem;
 
-    height: 100vh;
-    width: 100vw;
+    margin-top: 4.3125rem;
 `;
 
 const Backdrop = styled.div`

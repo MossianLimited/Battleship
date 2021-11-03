@@ -1,33 +1,17 @@
 import styled from "styled-components";
-import AvatarVersus from "../../avatar/components/avatarVersus";
 
 interface Props {
-    hostUsername?: string;
-    hostAvatarSeed?: string;
-    guestUsername?: string;
-    guestAvatarSeed?: string;
+    avatarVersusComponent: JSX.Element;
     onHostStartCallback: () => void;
 }
 
 const HostWelcome: React.FC<Props> = ({
-    hostUsername,
-    hostAvatarSeed,
-    guestUsername,
-    guestAvatarSeed,
+    avatarVersusComponent,
     onHostStartCallback,
 }) => {
     return (
         <Container>
-            <AvatarVersus
-                leftAvatarSeed={hostAvatarSeed}
-                leftAvatarUsername={hostUsername}
-                rightAvatarSeed={guestAvatarSeed}
-                rightAvatarUsername={guestUsername}
-                leftScore={5}
-                rightScore={5}
-                leftChatFeed="Yo mama"
-                rightChatFeed="Fuckkk"
-            />
+            {avatarVersusComponent}
             <StartGameContainer onClick={onHostStartCallback}>
                 Start Game
             </StartGameContainer>
