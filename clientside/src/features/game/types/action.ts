@@ -1,4 +1,4 @@
-import { BattleshipAllyYard } from "../../board/types/battleship";
+import { BattleshipAllyYard, BattleshipKnown } from "../../board/types/battleship";
 import { BoardSquareStatus } from "../../board/types/board";
 import { Position, Side } from "../../board/types/utility";
 
@@ -18,4 +18,12 @@ type MarkSquareAction = {
     };
 };
 
-export type GameAction = GameStartAction | MarkSquareAction;
+type SunkShipAction = {
+    type: "SUNK_SHIP"; 
+    payload: {
+        side: Side;
+        battleship: BattleshipKnown;
+    }
+}
+
+export type GameAction = GameStartAction | MarkSquareAction | SunkShipAction;

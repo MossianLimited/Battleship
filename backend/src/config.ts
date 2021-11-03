@@ -9,7 +9,9 @@ export const validColumns: string[] = [
 	'G',
 	'H'
 ];
+
 export const validRows = validColumns.map((column, index) =>
 	(index + 1).toString()
 );
+
 export const adminPasswordHashed: string = "test1234";

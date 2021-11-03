@@ -16,11 +16,12 @@ import {
     BattleshipDirection,
     BattleshipStatus,
 } from "../board/types/battleship";
-import { useGameStateContext } from "../game/contexts/gameStateContext";
 
-const SetupModal: FC = (_props) => {
-    const { dispatch } = useGameStateContext();
+interface Props {
+    onSubmit: (shipyard: BattleshipAllyYard) => void; 
+}
 
+const SetupModal: FC<Props> = ({ onSubmit }) => {
     const [placements, setPlacements] = useState(INIT_PLACEMENT_LIST);
 
     const onShipClick = (battleship: BattleshipBase, _e: MouseEvent) => {
@@ -109,7 +110,7 @@ const SetupModal: FC = (_props) => {
     };
 
     const onRandomize = async (_e: MouseEvent) => {
-        const ships = await socketClient.randomBoard(4, 4, 30);
+        const ships = await socketClient.randomize(4, 4, 30);
         const formattedShips = deserializePlacements(ships);
 
         const nextPlacements: PlacementList = formattedShips.map((fs) => ({
@@ -127,13 +128,12 @@ const SetupModal: FC = (_props) => {
 
         const shipyard = placements.map((p) => p.battleship as BattleshipAlly);
         const serialized = serializePlacements(shipyard);
-        const [hostReady, guestReady] = await socketClient.setupBoard(serialized);
-        const payload = { shipyard };
+        const [hostReady, guestReady] = await socketClient.setup(serialized);
 
-        if (hostReady && guestReady) return dispatch({ type: "GAME_START", payload });
+        if (hostReady && guestReady) return onSubmit(shipyard);
 
         await socketClient.waitReady(); 
-        dispatch({ type: "GAME_START", payload }); 
+        return onSubmit(shipyard); 
     };
 
     const renderedShip = placements.map((p) => (

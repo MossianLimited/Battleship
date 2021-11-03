@@ -51,10 +51,10 @@ const Chatbox = () => {
         <Container
             className="chatParent"
             onClick={() => {
-                if (!inputFocused) {
+                // if (!inputFocused) {
                     setInputFocused(true);
                     inputRef.current?.focus();
-                }
+                // }
             }}
         >
             {inputFocused ? (

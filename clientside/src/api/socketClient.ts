@@ -12,6 +12,7 @@ import {
     EndResponse,
     GetRoomListResponse,
     JoinRoomResponse,
+    ShipDestroyedResponse,
     ShootResponse,
     StartResponse,
 } from "./types/transport";
@@ -101,33 +102,6 @@ class SocketClient {
         });
     }
 
-    public async setupBoard(ships: string[][]): Promise<[boolean, boolean]> {
-        return new Promise((resolve, reject) => {
-            if (!this.socket) return reject("Socket not initialized");
-
-            this.socket.emit(SocketEvent.Setup, ships);
-            this.socket.on(
-                SocketEvent.SetupResponse,
-                (
-                    status: SetupResponseStatus,
-                    hostReady: boolean,
-                    guestReady: boolean
-                ) => {
-                    switch (status) {
-                        case SetupResponseStatus.Completed:
-                            return resolve([hostReady, guestReady]);
-                        case SetupResponseStatus.InvalidPlacement:
-                            return reject("Invalid placements.");
-                    }
-                }
-            );
-
-            setTimeout(() => {
-                reject("Connection timeout 30s.");
-            }, 3000);
-        });
-    }
-
     public async setAvatar(avatarSeed: string): Promise<void> {
         return new Promise((resolve, reject) => {
             if (!this.socket) {
@@ -139,7 +113,52 @@ class SocketClient {
         });
     }
 
-    public async randomBoard(
+    public async waitReady(): Promise<void> {
+        return new Promise((resolve, reject) => {
+            if (!this.socket) return reject("Socket not initialized");
+
+            // TODO: Heartbeating
+            // let intervalId: NodeJS.Timeout | null = null;
+
+            this.socket.on(
+                SocketEvent.SetupResponse,
+                (
+                    status: SetupResponseStatus,
+                    hostReady: boolean,
+                    guestReady: boolean
+                ) => {
+                    // intervalId && clearInterval(intervalId);
+                    // intervalId = setTimeout(() => {
+                    //     reject("Connection timeout 30s.");
+                    // }, 30000);
+
+                    if (status === SetupResponseStatus.Completed)
+                        hostReady && guestReady && resolve();
+                }
+            );
+
+            // intervalId = setTimeout(() => {
+            //     reject("Connection timeout 30s.");
+            // }, 30000);
+        });
+    }
+
+    public async sendChat(message: string): Promise<void> {
+        return new Promise((resolve, reject) => {
+            if (!this.socket) {
+                reject("Socket not initialized");
+            } else {
+                this.socket.emit(SocketEvent.Chat, message);
+                resolve();
+            }
+        });
+    }
+
+    ///////////////////////////
+    // Asynchronous Game API //
+    ///////////////////////////
+
+    public async randomize(
         nums: number,
         length: number,
         retry: number,
@@ -182,13 +201,11 @@ class SocketClient {
         return promise.catch((_) => fallback);
     }
 
-    public async waitReady(): Promise<void> {
+    public async setup(ships: string[][]): Promise<[boolean, boolean]> {
         return new Promise((resolve, reject) => {
             if (!this.socket) return reject("Socket not initialized");
 
-            // TODO: Heartbeating
-            // let intervalId: NodeJS.Timeout | null = null;
-
+            this.socket.emit(SocketEvent.Setup, ships);
             this.socket.on(
                 SocketEvent.SetupResponse,
                 (
@@ -196,25 +213,20 @@ class SocketClient {
                     hostReady: boolean,
                     guestReady: boolean
                 ) => {
-                    // intervalId && clearInterval(intervalId);
-                    // intervalId = setTimeout(() => {
-                    //     reject("Connection timeout 30s.");
-                    // }, 30000);
-
-                    if (status === SetupResponseStatus.Completed)
-                        hostReady && guestReady && resolve();
+                    switch (status) {
+                        case SetupResponseStatus.Completed:
+                            return resolve([hostReady, guestReady]);
+                        case SetupResponseStatus.InvalidPlacement:
+                            return reject("Invalid placements.");
+                    }
                 }
             );
 
-            // intervalId = setTimeout(() => {
-            //     reject("Connection timeout 30s.");
-            // }, 30000);
+            setTimeout(() => {
+                reject("Connection timeout 30s.");
+            }, 3000);
         });
     }
-
-    ///////////////////////////
-    // Asynchronous Game API //
-    ///////////////////////////
 
     public async shoot(pos: string): Promise<ShootResponse> {
         return new Promise((resolve, reject) => {
@@ -241,6 +253,21 @@ class SocketClient {
     ////////////////////
     // Subscriber API //
     ////////////////////
+
+    public subscribeShipDestroyed(
+        callback: (res: ShipDestroyedResponse) => void
+    ) {
+        if (!this.socket) return;
+        this.socket.on(
+            SocketEvent.ShipDestroyed,
+            (
+                side: ShipDestroyedResponse["side"],
+                ship: ShipDestroyedResponse["ship"]
+            ) => {
+                callback({ side, ship });
+            }
+        );
+    }
 
     public subscribeJoinResponse(callback: (res: JoinRoomResponse) => void) {
         if (this.socket) {
@@ -335,17 +362,6 @@ class SocketClient {
                 });
             }
         );
-    }
-
-    public async sendChat(message: string): Promise<void> {
-        return new Promise((resolve, reject) => {
-            if (!this.socket) {
-                reject("Socket not initialized");
-            } else {
-                this.socket.emit(SocketEvent.Chat, message);
-                resolve();
-            }
-        });
     }
 
     public subscribeChat(callback: (msg: string) => void) {
