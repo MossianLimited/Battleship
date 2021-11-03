@@ -5,24 +5,26 @@ import AvatarContainer from "./avatarContainer";
 const AvatarVersus: React.FC<Partial<Record<AvatarSide, AvatarProperties>>> = ({
     left,
     right,
-    ...delegated 
+    ...delegated
 }) => {
-    const hasLeftScore = typeof left?.score !== "undefined"; 
-    const hasRightScore = typeof right?.score !== "undefined"; 
-    
+    const hasLeftScore = typeof left?.score !== "undefined";
+    const hasRightScore = typeof right?.score !== "undefined";
+
     if ((hasLeftScore && !hasRightScore) || (!hasLeftScore && hasRightScore))
         throw new Error("Both players need scores");
 
     return (
-        <Container
-            isExpanded={hasLeftScore && hasRightScore !== undefined}
-        >
+        <Container isExpanded={hasLeftScore && hasRightScore !== undefined}>
             <AvatarContainer {...left} side={AvatarSide.Left} />
             {left?.seed && right?.seed && (
                 <VS>
-                    {hasLeftScore && <span className="score">{left.score}</span>}
+                    {hasLeftScore && (
+                        <span className="score">{left.score}</span>
+                    )}
                     <span className="vs-text">vs</span>
-                    {hasRightScore && <span className="score">{right.score}</span>}
+                    {hasRightScore && (
+                        <span className="score">{right.score}</span>
+                    )}
                 </VS>
             )}
             <AvatarContainer {...right} side={AvatarSide.Right} />
@@ -48,7 +50,7 @@ const VS = styled.div`
     display: flex;
     align-items: center;
     align-self: center;
-    gap: 4.375rem;
+    gap: 2.75rem;
 
     & > .vs-text {
         font-weight: 500;
