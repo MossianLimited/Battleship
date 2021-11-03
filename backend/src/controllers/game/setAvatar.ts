@@ -22,8 +22,8 @@ export const setAvatar = (
 	const opponentSocketId = findOpponentSocketId(room, socket.id);
 	socket
 		.to(opponentSocketId)
-		.emit('setAvatarResponse', 'Completed', hostAvatar, guestAvatar);
-	socket.emit('setAvatarResponse', 'Completed', hostAvatar, guestAvatar);
+		.emit('setAvatarResponse', 'Completed', room.hostUsername, hostAvatar, room.guestUsername ? room.guestUsername : "Not set", guestAvatar);
+	socket.emit('setAvatarResponse', 'Completed', room.hostUsername, hostAvatar, room.guestUsername ? room.guestUsername : "Not set", guestAvatar);
 	console.log(room);
 
 };
