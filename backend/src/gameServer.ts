@@ -114,7 +114,7 @@ export class GameServer {
             });
             socket.on("disconnect", () => {
                 disconnect(socket, this.roomList, this.adminList);
-                if (this.active.find(conn => conn.socketID === socket.id).timer != undefined)
+                if (this.active.find(conn => conn.socketID === socket.id) != undefined)
                     clearInterval(this.active.find(conn => conn.socketID === socket.id).timer);
                 this.active.splice(
                     this.active.findIndex(conn => conn.socketID === socket.id), 1
