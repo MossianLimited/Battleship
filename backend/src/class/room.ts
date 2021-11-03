@@ -48,6 +48,10 @@ export class Room {
 		this.hostHitCount = 0;
 		this.guestHitCount = 0;
 		this.turnCount = 1;
+		this.guestShips = [[]];
+		this.hostShips = [[]];
+		this.guestShot = [];
+		this.hostShot = [];
 
 		roomIterator += 1;
 		if (roomIterator >= 1000000) roomIterator = 0;
