@@ -64,8 +64,10 @@ const CreateRoomPage = () => {
     return (
         <Container>
             <AvatarVersus
-                leftAvatarSeed={userAvatarSeed}
-                leftAvatarUsername={username}
+                left={{
+                    seed: userAvatarSeed,
+                    username,
+                }}
             />
             <InfoBox>
                 <HeadingBox>

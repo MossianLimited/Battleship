@@ -22,6 +22,9 @@ import { useOnEndSingle } from "../functions/useOnEnd";
 import { useOnShoot } from "../functions/useOnShoot";
 import { BoardSquareStatus } from "../../board/types/board";
 import { useOnAvatar } from "../functions/useOnAvatar";
+import { useOnChat } from "../functions/useOnChat";
+import useChatQueue from "../../avatar/hooks/useChatQueue";
+import { AvatarProperties, AvatarSide } from "../../avatar/types/avatar";
 
 const GamePage = () => {
     // eslint-disable-next-line
@@ -35,6 +38,9 @@ const GamePage = () => {
     const { meta, battleship } = state;
     const { username, userAvatarSeed } = useUserContext();
 
+    const playerChatQueue = useChatQueue();
+    const enemyChatQueue = useChatQueue();
+
     const roomId = query.get("roomId");
     const isHost = query.get("isHost") === "true";
     const yourSide = isHost ? "Host" : "Guest";
@@ -43,22 +49,20 @@ const GamePage = () => {
     const [enemyAvatarSeed, setEnemyAvatarSeed] = useState<string>("");
     const [enemyUsername, setEnemyUsername] = useState<string>("");
 
-
-    const userAndSeedProps = {
-        leftAvatarSeed: isHost ? userAvatarSeed : enemyAvatarSeed,
-        leftAvatarUsername: isHost ? username : enemyUsername,
-        rightAvatarSeed: isHost ? enemyAvatarSeed : userAvatarSeed,
-        rightAvatarUsername: isHost ? enemyUsername : username,
+    const combinedAvatarProps: Record<AvatarSide, AvatarProperties> = {
+        left: {
+            seed: isHost ? userAvatarSeed : enemyAvatarSeed,
+            username: isHost ? username : enemyUsername,
+            score: userStarted ? 5 : undefined,
+            chatFeed: ["Yo mama"],
+        },
+        right: {
+            seed: isHost ? enemyAvatarSeed : userAvatarSeed,
+            username: isHost ? enemyUsername : username,
+            score: userStarted ? 5 : undefined,
+            chatFeed: ["Fuckkk"],
+        },
     };
-
-    const scoreAndChatProps = userStarted
-        ? {
-              leftScore: 5,
-              rightScore: 5,
-              leftChatFeed: "Yo mama",
-              rightChatFeed: "Fuckkk",
-          }
-        : {};
 
     useLayoutEffect(() => {
         if (!roomId) {
@@ -70,17 +74,9 @@ const GamePage = () => {
             socket.joinRoom(username, roomId);
             socket.setAvatar(userAvatarSeed);
         }
-    }, [
-        history,
-        isHost,
-        roomId,
-        username,
-        userAvatarSeed,
-    ]);
+    }, [history, isHost, roomId, username, userAvatarSeed]);
 
-    const avatarVersusComponent = (
-        <AvatarVersus {...userAndSeedProps} {...scoreAndChatProps} />
-    );
+    const avatarVersusComponent = <AvatarVersus {...combinedAvatarProps} />;
 
     useOnEndSingle(() => forceWithdraw());
     useOnStartSingle((r) => r.firstPlayer === yourSide && setYourTurn(true));
@@ -88,7 +84,9 @@ const GamePage = () => {
     useOnAvatar(({ hostAvatar, guestAvatar, hostUsername, guestUsername }) => {
         setEnemyAvatarSeed(isHost ? guestAvatar : hostAvatar);
         setEnemyUsername(isHost ? guestUsername : hostUsername);
-    })
+    });
+
+    useOnChat((msg) => {});
 
     useOnShoot((r) => {
         let status;
@@ -102,8 +100,8 @@ const GamePage = () => {
             default:
                 return;
         }
-        
-        if (!r.location) return; 
+
+        if (!r.location) return;
         const side = r.currentTurnPlayer === yourSide ? Side.Enemy : Side.Ally;
         const position = deserializePos(r.location);
 
@@ -142,8 +140,8 @@ const GamePage = () => {
                     onSquareClick={onShoot}
                 />
             </BoardContainer>
-            {meta.phase === MetaPhase.Setup && <Backdrop />}
-            {meta.phase === MetaPhase.Setup && <SetupModal />}
+            {/* {meta.phase === MetaPhase.Setup && <Backdrop />} */}
+            {/* {meta.phase === MetaPhase.Setup && <SetupModal />} */}
         </GameStateContext.Provider>
     ) : (
         <HostWelcome
