@@ -26,7 +26,7 @@ const theme = {
             },
         },
         danger: {
-            main: "#D91818",
+            main: "#FF9A61",
         },
         lobby: {
             avatar: {

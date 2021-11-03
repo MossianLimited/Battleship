@@ -1,3 +1,5 @@
+import { InfallibleResponse } from "../constants/config";
+
 export interface Room {
     roomID: string;
     hostUsername: string;
@@ -35,6 +37,11 @@ export interface AvatarResponse {
     guestUsername: string;
 }
 
+export interface StartResponse {
+    responseStatus: InfallibleResponse; 
+    firstPlayer: string; 
+}
+
 export interface EndResponse {
     responseStatus:
         | "Destroyed"
@@ -45,4 +52,17 @@ export interface EndResponse {
     previousRoundWinner: string;
     hostScore: number;
     guestScore: number;
+}
+
+export interface ShootResponse {
+    responseStatus:
+        | "Hit"
+        | "Miss"
+        | "Wrong Turn"
+        | "Duplicated Shot"
+        | "Wrong Location";
+    location: string; 
+    currentTurnPlayer: string; 
+    nextTurnPlayer: string; 
+    turnCount: number; 
 }

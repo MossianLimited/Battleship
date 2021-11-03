@@ -19,7 +19,7 @@ const CreateRoomPage = () => {
 
     const handleRoomModeToggle = (mode: RoomMode) => {
         setRoomMode(mode);
-        socketClient.changeLock();
+        socketClient.toggleLock();
     };
 
     useEffect(() => {
@@ -41,7 +41,7 @@ const CreateRoomPage = () => {
 
     useEffect(() => {
         if (roomId)
-            socketClient.subscribeToRoomJoined(({ responseStatus }) => {
+            socketClient.subscribeJoinResponse(({ responseStatus }) => {
                 switch (responseStatus) {
                     case "Completed":
                         roomComplete.current = true;

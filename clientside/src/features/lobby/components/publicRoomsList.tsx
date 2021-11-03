@@ -17,11 +17,11 @@ const PublicRoomsList: React.FC<Props> = ({ onRoomJoinHandler }) => {
         let interval: ReturnType<typeof setInterval>;
 
         const asyncRefreshRoomList = async () => {
-            // ping getRoomList every 2 seconds
-            const fetchedRoomList = (await socketClient.getRoomList()).roomList;
+            // ping getRooms every 2 seconds
+            const fetchedRoomList = (await socketClient.getRooms()).roomList;
             setRoomList(fetchedRoomList);
             interval = setInterval(async () => {
-                const fetchedRoomList = (await socketClient.getRoomList())
+                const fetchedRoomList = (await socketClient.getRooms())
                     .roomList;
                 setRoomList(fetchedRoomList);
             }, REFRESH_INTERVAL);

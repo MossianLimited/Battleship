@@ -12,39 +12,24 @@ import { Position, Side } from "./types/utility";
 import { useGameStateContext } from "../game/contexts/gameStateContext";
 import generateArrayOfNumbers from "./functions/generateArrayOfNumbers";
 
-/**
- * Overall Game State
- * =====
- * 0. MetaState:        Whose turn is it? How many turn have passed?
- * 1. BoardState:       Which cells already get hit or missed?
- * 2. BattleshipState:  Contain all battleships state, but enemy battleship
- *                      are added here only when it's completely sunken
- *                      meaning that its ready to be rendered. For example, at
- *                      the begeinning of the game the enemy ships state is empty.
- *                      Beginning state should also be randomized accordingly
- *                      to the specified rules.
- **/
+type Props = InteractiveProps & (AllyProps | EnemyProps);
 
-type Props = AllyProps | EnemyProps;
+interface InteractiveProps {
+    selectable?: boolean;
+    validate?: boolean;
+    onSquareHoverStart?: (p: Position, e: MouseEvent) => any;
+    onSquareHoverEnd?: (p: Position, e: MouseEvent) => any;
+    onSquareClick?: (p: Position, e: MouseEvent) => any;
+}
 
 interface AllyProps {
     boardType: Side.Ally;
     shipYard: BattleshipAllyYard;
-    selectable?: boolean;
-    validate?: boolean;
-    onSquareHoverStart?: (p: Position, e: MouseEvent) => void;
-    onSquareHoverEnd?: (p: Position, e: MouseEvent) => void;
-    onSquareClick?: (p: Position, e: MouseEvent) => void;
 }
 
 interface EnemyProps {
     boardType: Side.Enemy;
     shipYard: BattleshipYard;
-    selectable?: boolean;
-    validate?: boolean;
-    onSquareHoverStart?: (p: Position, e: MouseEvent) => void;
-    onSquareHoverEnd?: (p: Position, e: MouseEvent) => void;
-    onSquareClick?: (p: Position, e: MouseEvent) => void;
 }
 
 const Board: React.FC<Props> = ({

@@ -6,6 +6,7 @@ import { Position, Side } from "../types/utility";
 import { useGameStateContext } from "../../game/contexts/gameStateContext";
 import posToString from "../functions/posToString";
 import { MouseEventHandler, useCallback } from "react";
+import { css } from "styled-components";
 
 interface Props {
     squareType?: Side;
@@ -47,6 +48,7 @@ const Square: React.FC<Props> = ({
 
     return (
         <Container
+            selectable={selectable}
             squareType={squareType}
             onMouseEnter={onHoverStart}
             onMouseLeave={onHoverEnd}
@@ -64,18 +66,15 @@ const Square: React.FC<Props> = ({
                 <ShipPart
                     part={part.partType}
                     direction={part.battleship.direction}
-                    color={isSunken ? "#ff3d3dc7" : undefined}
+                    color={isSunken ? "#FFBCB2" : undefined}
                 ></ShipPart>
             )}
-            {status === BoardSquareStatus.Missed && (
-                <Circle squareType={squareType} />
-            )}
-            {isSunken && <Circle squareType={squareType} hit={true} />}
+            <Circle squareType={squareType} status={status} />
         </Container>
     );
 };
 
-const Container = styled.div<{ squareType: Side }>`
+const Container = styled.div<{ squareType: Side, selectable: boolean }>`
     position: relative;
 
     background: ${(props) =>
@@ -106,6 +105,24 @@ const Container = styled.div<{ squareType: Side }>`
 
         user-select: none;
     }
+
+    ${({ selectable, theme }) => selectable && css`
+        &::after {
+            content: "";
+            width: 0.875rem;
+            height: 0.875rem;
+            border-radius: 50%;
+            position: absolute;
+            background: ${theme.colors.square.ally.circle};
+            z-index: 1;
+            opacity: 0;
+            transition: opacity 350ms ease;
+        }
+
+        &:hover::after {
+            opacity: 0.75;
+        }
+    `}
 `;
 
 const ColumnAlphabet = styled.div`
@@ -118,16 +135,20 @@ const RowNumber = styled.div`
     left: -2rem;
 `;
 
-const Circle = styled.div<{ squareType: Side; hit?: boolean }>`
+const Circle = styled.div<{ squareType: Side; status?: BoardSquareStatus }>`
     width: 0.875rem;
     height: 0.875rem;
     position: absolute;
     z-index: 2;
     border-radius: 50%;
 
-    background: ${(props) => {
-        if (props.hit) return props.theme.colors.danger.main;
-        return (props.theme.colors.square as any)[props.squareType].circle;
+    background: ${({ theme, status, squareType }) => {
+        switch (status) {
+            case BoardSquareStatus.Hit:
+                return theme.colors.danger.main;
+            case BoardSquareStatus.Missed:
+                return (theme.colors.square as any)[squareType].circle;
+        }
     }};
 `;
 

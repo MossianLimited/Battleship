@@ -12,26 +12,42 @@ import {
     EndResponse,
     GetRoomListResponse,
     JoinRoomResponse,
+    ShootResponse,
+    StartResponse,
 } from "./types/transport";
 
 class SocketClient {
     private socket?: Socket;
-    private callbackOnEnd?: (res: EndResponse) => void;
 
     constructor() {
-        this.initSocket();
-    }
-
-    private initSocket() {
         this.socket = io(API_URL);
     }
 
-    public subscribeToSocketID() {
-        if (this.socket) {
-            this.socket.on(SocketEvent.SocketId, (socketId: string) => {
-                console.log("Connected to socket ID:", socketId);
-            });
-        }
+    public disconnect() {
+        if (this.socket) this.socket.disconnect();
+    }
+
+    ////////////////////////////
+    // Asynchronous Setup API //
+    ////////////////////////////
+
+    public async getRooms(): Promise<GetRoomListResponse> {
+        return new Promise((resolve, reject) => {
+            if (!this.socket) {
+                reject("Socket not initialized");
+            } else {
+                this.socket.emit(SocketEvent.GetRoomList);
+                this.socket.on(
+                    SocketEvent.GetRoomListResponse,
+                    (
+                        responseStatus: GetRoomListResponse["responseStatus"],
+                        roomList: GetRoomListResponse["roomList"]
+                    ) => {
+                        resolve({ responseStatus, roomList });
+                    }
+                );
+            }
+        });
     }
 
     public async createRoom(username: string): Promise<CreateRoomResponse> {
@@ -56,7 +72,18 @@ class SocketClient {
         });
     }
 
-    public async changeLock(): Promise<ChangeLockResponse> {
+    public async joinRoom(username: string, roomId: string): Promise<void> {
+        return new Promise((resolve, reject) => {
+            if (!this.socket) {
+                reject("Socket not initialized");
+            } else {
+                this.socket.emit(SocketEvent.JoinRoom, username, roomId);
+                resolve();
+            }
+        });
+    }
+
+    public async toggleLock(): Promise<ChangeLockResponse> {
         return new Promise((resolve, reject) => {
             if (!this.socket) {
                 reject("Socket not initialized");
@@ -74,54 +101,7 @@ class SocketClient {
         });
     }
 
-    public async getRoomList(): Promise<GetRoomListResponse> {
-        return new Promise((resolve, reject) => {
-            if (!this.socket) {
-                reject("Socket not initialized");
-            } else {
-                this.socket.emit(SocketEvent.GetRoomList);
-                this.socket.on(
-                    SocketEvent.GetRoomListResponse,
-                    (
-                        responseStatus: GetRoomListResponse["responseStatus"],
-                        roomList: GetRoomListResponse["roomList"]
-                    ) => {
-                        resolve({ responseStatus, roomList });
-                    }
-                );
-            }
-        });
-    }
-
-    // separated this function from joinRoom for createRoom use-case
-    public subscribeToRoomJoined(
-        callbackFn: (response: JoinRoomResponse) => void
-    ) {
-        if (this.socket) {
-            this.socket.on(
-                SocketEvent.JoinRoomResponse,
-                (
-                    responseStatus: JoinRoomResponse["responseStatus"],
-                    username: JoinRoomResponse["username"]
-                ) => {
-                    callbackFn({ responseStatus, username });
-                }
-            );
-        }
-    }
-
-    public async joinRoom(username: string, roomId: string): Promise<void> {
-        return new Promise((resolve, reject) => {
-            if (!this.socket) {
-                reject("Socket not initialized");
-            } else {
-                this.socket.emit(SocketEvent.JoinRoom, username, roomId);
-                resolve();
-            }
-        });
-    }
-
-    public async setup(ships: string[][]): Promise<[boolean, boolean]> {
+    public async setupBoard(ships: string[][]): Promise<[boolean, boolean]> {
         return new Promise((resolve, reject) => {
             if (!this.socket) return reject("Socket not initialized");
 
@@ -159,60 +139,7 @@ class SocketClient {
         });
     }
 
-    public subscribeToAvatar(callbackFn: (response: AvatarResponse) => void) {
-        if (this.socket) {
-            this.socket.on(
-                SocketEvent.SetAvatarResponse,
-                (
-                    responseStatus: AvatarResponse["responseStatus"],
-                    hostUsername: AvatarResponse["hostUsername"],
-                    hostAvatar: AvatarResponse["hostAvatar"],
-                    guestUsername: AvatarResponse["guestUsername"],
-                    guestAvatar: AvatarResponse["guestAvatar"]
-                ) => {
-                    callbackFn({
-                        responseStatus,
-                        hostAvatar,
-                        guestAvatar,
-                        hostUsername,
-                        guestUsername,
-                    });
-                }
-            );
-        }
-    }
-
-    public async waitReady(): Promise<void> {
-        return new Promise((resolve, reject) => {
-            if (!this.socket) return reject("Socket not initialized");
-
-            // TODO: Heartbeating
-            // let intervalId: NodeJS.Timeout | null = null;
-
-            this.socket.on(
-                SocketEvent.SetupResponse,
-                (
-                    status: SetupResponseStatus,
-                    hostReady: boolean,
-                    guestReady: boolean
-                ) => {
-                    // intervalId && clearInterval(intervalId);
-                    // intervalId = setTimeout(() => {
-                    //     reject("Connection timeout 30s.");
-                    // }, 30000);
-
-                    if (status === SetupResponseStatus.Completed)
-                        hostReady && guestReady && resolve();
-                }
-            );
-
-            // intervalId = setTimeout(() => {
-            //     reject("Connection timeout 30s.");
-            // }, 30000);
-        });
-    }
-
-    public async randomize(
+    public async randomBoard(
         nums: number,
         length: number,
         retry: number,
@@ -255,33 +182,49 @@ class SocketClient {
         return promise.catch((_) => fallback);
     }
 
-    // separated this function from withdraw
-    public subscribeToEndResponse(callbackFn: (response: EndResponse) => void) {
-        if (this.callbackOnEnd) {
-            this.callbackOnEnd = callbackFn;
-            return;
-        }
+    public async waitReady(): Promise<void> {
+        return new Promise((resolve, reject) => {
+            if (!this.socket) return reject("Socket not initialized");
 
-        if (this.socket) {
-            this.callbackOnEnd = callbackFn;
+            // TODO: Heartbeating
+            // let intervalId: NodeJS.Timeout | null = null;
+
             this.socket.on(
-                SocketEvent.EndResponse,
+                SocketEvent.SetupResponse,
                 (
-                    responseStatus: EndResponse["responseStatus"],
-                    previousRoundWinner: EndResponse["previousRoundWinner"],
-                    hostScore: EndResponse["hostScore"],
-                    guestScore: EndResponse["guestScore"]
+                    status: SetupResponseStatus,
+                    hostReady: boolean,
+                    guestReady: boolean
                 ) => {
-                    this.callbackOnEnd &&
-                        this.callbackOnEnd({
-                            responseStatus,
-                            previousRoundWinner,
-                            hostScore,
-                            guestScore,
-                        });
+                    // intervalId && clearInterval(intervalId);
+                    // intervalId = setTimeout(() => {
+                    //     reject("Connection timeout 30s.");
+                    // }, 30000);
+
+                    if (status === SetupResponseStatus.Completed)
+                        hostReady && guestReady && resolve();
                 }
             );
-        }
+
+            // intervalId = setTimeout(() => {
+            //     reject("Connection timeout 30s.");
+            // }, 30000);
+        });
+    }
+
+    ///////////////////////////
+    // Asynchronous Game API //
+    ///////////////////////////
+
+    public async shoot(pos: string): Promise<ShootResponse> {
+        return new Promise((resolve, reject) => {
+            if (!this.socket) {
+                reject("Socket not initialized.");
+            } else {
+                this.socket.emit(SocketEvent.Shoot, pos);
+                this.subscribeShootResponse(resolve);
+            }
+        });
     }
 
     public async withdraw(): Promise<EndResponse> {
@@ -290,16 +233,120 @@ class SocketClient {
                 reject("Socket not initialized");
             } else {
                 this.socket.emit(SocketEvent.Withdraw);
-                // this.subscribeToEndResponse(resolve);
+                // this.subscribeEndResponse(resolve);
             }
         });
     }
 
-    public disconnect() {
-        if (this.socket) this.socket.disconnect();
+    ////////////////////
+    // Subscriber API //
+    ////////////////////
+
+    public subscribeJoinResponse(callback: (res: JoinRoomResponse) => void) {
+        if (this.socket) {
+            this.socket.on(
+                SocketEvent.JoinRoomResponse,
+                (
+                    responseStatus: JoinRoomResponse["responseStatus"],
+                    username: JoinRoomResponse["username"]
+                ) => {
+                    callback({ responseStatus, username });
+                }
+            );
+        }
+    }
+
+    public subscribeStartResponse(callback: (res: StartResponse) => void) {
+        if (!this.socket) return;
+        this.socket.on(
+            SocketEvent.StartResponse,
+            (
+                responseStatus: StartResponse["responseStatus"],
+                firstPlayer: StartResponse["firstPlayer"]
+            ) => {
+                callback({
+                    responseStatus,
+                    firstPlayer,
+                });
+            }
+        );
+    }
+
+    public subscribeEndResponse(callback: (res: EndResponse) => void) {
+        if (!this.socket) return;
+        this.socket.on(
+            SocketEvent.EndResponse,
+            (
+                responseStatus: EndResponse["responseStatus"],
+                previousRoundWinner: EndResponse["previousRoundWinner"],
+                hostScore: EndResponse["hostScore"],
+                guestScore: EndResponse["guestScore"]
+            ) => {
+                callback &&
+                    callback({
+                        responseStatus,
+                        previousRoundWinner,
+                        hostScore,
+                        guestScore,
+                    });
+            }
+        );
+    }
+
+    public subscribeShootResponse(callback: (res: ShootResponse) => void) {
+        if (!this.socket) return;
+        this.socket.on(
+            SocketEvent.ShootResponse,
+            (
+                responseStatus: ShootResponse["responseStatus"],
+                location: ShootResponse["location"],
+                currentTurnPlayer: ShootResponse["currentTurnPlayer"],
+                nextTurnPlayer: ShootResponse["nextTurnPlayer"],
+                turnCount: ShootResponse["turnCount"]
+            ) => {
+                callback({
+                    responseStatus,
+                    location,
+                    currentTurnPlayer,
+                    nextTurnPlayer,
+                    turnCount,
+                });
+            }
+        );
+    }
+
+    public subscribeAvatarResponse(callback: (res: AvatarResponse) => void) {
+        if (!this.socket) return;
+        this.socket.on(
+            SocketEvent.SetAvatarResponse,
+            (
+                responseStatus: AvatarResponse["responseStatus"],
+                hostUsername: AvatarResponse["hostUsername"],
+                hostAvatar: AvatarResponse["hostAvatar"],
+                guestUsername: AvatarResponse["guestUsername"],
+                guestAvatar: AvatarResponse["guestAvatar"]
+            ) => {
+                callback({
+                    responseStatus,
+                    hostAvatar,
+                    guestAvatar,
+                    hostUsername,
+                    guestUsername,
+                });
+            }
+        );
+    }
+
+    public subscribeChat(callback: (msg: string) => void) {
+        if (!this.socket) return; 
+        this.socket.on(
+            SocketEvent.Chat, (msg: string) => {
+                callback(msg);
+            }
+        );
     }
 }
 
-const socketClient = new SocketClient(); // singleton pattern
+const socket = new SocketClient(); // singleton pattern
 
-export default socketClient;
+export default socket;

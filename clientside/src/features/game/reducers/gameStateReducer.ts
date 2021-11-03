@@ -13,6 +13,11 @@ const gameStateReducer = (
                 meta: {
                     ...prevState.meta, 
                     phase: MetaPhase.Playing, 
+                }, 
+                battleship: {
+                    ...prevState.battleship, 
+                    ally: action.payload.shipyard, 
+                    enemy: [],
                 }
             }
         case "MARK_SQUARE":

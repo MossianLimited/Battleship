@@ -10,10 +10,10 @@ import socketClient from "../../api/socketClient";
 import deserializePlacements from "./functions/deserializePlacements";
 import serializePlacements from "./functions/serializePlacements";
 import {
+    BattleshipAlly,
     BattleshipAllyYard,
     BattleshipBase,
     BattleshipDirection,
-    BattleshipKnown,
     BattleshipStatus,
 } from "../board/types/battleship";
 import { useGameStateContext } from "../game/contexts/gameStateContext";
@@ -109,7 +109,7 @@ const SetupModal: FC = (_props) => {
     };
 
     const onRandomize = async (_e: MouseEvent) => {
-        const ships = await socketClient.randomize(4, 4, 30);
+        const ships = await socketClient.randomBoard(4, 4, 30);
         const formattedShips = deserializePlacements(ships);
 
         const nextPlacements: PlacementList = formattedShips.map((fs) => ({
@@ -125,14 +125,15 @@ const SetupModal: FC = (_props) => {
         if (placements.find((p) => p.status !== PlacementStatus.Placed))
             throw new Error("Not all battleships are placed");
 
-        const shipyard = placements.map((p) => p.battleship as BattleshipKnown);
+        const shipyard = placements.map((p) => p.battleship as BattleshipAlly);
         const serialized = serializePlacements(shipyard);
-        const [hostReady, guestReady] = await socketClient.setup(serialized);
+        const [hostReady, guestReady] = await socketClient.setupBoard(serialized);
+        const payload = { shipyard };
 
-        if (hostReady && guestReady) return dispatch({ type: "GAME_START" });
+        if (hostReady && guestReady) return dispatch({ type: "GAME_START", payload });
 
         await socketClient.waitReady(); 
-        dispatch({ type: "GAME_START"}); 
+        dispatch({ type: "GAME_START", payload }); 
     };
 
     const renderedShip = placements.map((p) => (

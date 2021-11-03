@@ -1,36 +1,48 @@
-import { useLayoutEffect, useReducer, useState } from "react";
-import styled from "styled-components";
+import { useLayoutEffect, useReducer, useState, MouseEvent } from "react";
 import { useHistory } from "react-router";
-import socketClient from "../../../api/socketClient";
-import Board from "../../board";
-import { Side } from "../../board/types/utility";
-import useQuery from "../../routing/hooks/useQuery";
+import { Position, Side } from "../../board/types/utility";
 import { initialGameState } from "../constants/state";
 import { GameStateContext } from "../contexts/gameStateContext";
-import gameStateReducer from "../reducers/gameStateReducer";
-import { useUserContext } from "../../lobby/contexts/userContext";
-import SetupModal from "../../setup";
 import { MetaPhase } from "../types/state";
+import Board from "../../board";
+import styled from "styled-components";
+import useQuery from "../../routing/hooks/useQuery";
+import gameStateReducer from "../reducers/gameStateReducer";
+import SetupModal from "../../setup";
 import useAutoWithdraw from "../functions/useAutoWithdraw";
 import HostWelcome from "./hostWelcome";
 import AvatarVersus from "../../avatar/components/avatarVersus";
+import socket from "../../../api/socketClient";
+import deserializePos from "../../board/functions/deserializePos";
+import serializePos from "../../board/functions/serializePos";
+
+import { useUserContext } from "../../lobby/contexts/userContext";
+import { useOnStartSingle } from "../functions/useOnStart";
+import { useOnEndSingle } from "../functions/useOnEnd";
+import { useOnShoot } from "../functions/useOnShoot";
+import { BoardSquareStatus } from "../../board/types/board";
+import { useOnAvatar } from "../functions/useOnAvatar";
 
 const GamePage = () => {
+    // eslint-disable-next-line
+    const [_guarded, forceWithdraw] = useAutoWithdraw();
+    const [yourTurn, setYourTurn] = useState(false);
     const [state, dispatch] = useReducer(gameStateReducer, initialGameState);
-
-    const [guarded, forceWithdraw] = useAutoWithdraw();
 
     const query = useQuery();
     const history = useHistory();
 
+    const { meta, battleship } = state;
+    const { username, userAvatarSeed } = useUserContext();
+
     const roomId = query.get("roomId");
     const isHost = query.get("isHost") === "true";
+    const yourSide = isHost ? "Host" : "Guest";
 
     const [userStarted, setUserStarted] = useState<boolean>(false);
     const [enemyAvatarSeed, setEnemyAvatarSeed] = useState<string>("");
     const [enemyUsername, setEnemyUsername] = useState<string>("");
 
-    const { username, userAvatarSeed } = useUserContext();
 
     const userAndSeedProps = {
         leftAvatarSeed: isHost ? userAvatarSeed : enemyAvatarSeed,
@@ -50,28 +62,19 @@ const GamePage = () => {
 
     useLayoutEffect(() => {
         if (!roomId) {
-            guarded() || history.push("/welcome");
+            history.push("/welcome");
             return;
         }
 
         if (!isHost) {
-            socketClient.joinRoom(username, roomId);
-            socketClient.setAvatar(userAvatarSeed);
+            socket.joinRoom(username, roomId);
+            socket.setAvatar(userAvatarSeed);
         }
-        socketClient.subscribeToAvatar(
-            ({ hostAvatar, guestAvatar, hostUsername, guestUsername }) => {
-                setEnemyAvatarSeed(isHost ? guestAvatar : hostAvatar);
-                setEnemyUsername(isHost ? guestUsername : hostUsername);
-            }
-        );
-        socketClient.subscribeToEndResponse(forceWithdraw);
     }, [
         history,
         isHost,
         roomId,
         username,
-        guarded,
-        forceWithdraw,
         userAvatarSeed,
     ]);
 
@@ -79,27 +82,74 @@ const GamePage = () => {
         <AvatarVersus {...userAndSeedProps} {...scoreAndChatProps} />
     );
 
-    if (!userStarted)
-        return (
-            <HostWelcome
-                avatarVersusComponent={avatarVersusComponent}
-                onHostStartCallback={() => setUserStarted(true)}
-            />
-        );
+    useOnEndSingle(() => forceWithdraw());
+    useOnStartSingle((r) => r.firstPlayer === yourSide && setYourTurn(true));
 
-    return (
+    useOnAvatar(({ hostAvatar, guestAvatar, hostUsername, guestUsername }) => {
+        setEnemyAvatarSeed(isHost ? guestAvatar : hostAvatar);
+        setEnemyUsername(isHost ? guestUsername : hostUsername);
+    })
+
+    useOnShoot((r) => {
+        let status;
+        switch (r.responseStatus) {
+            case "Hit":
+                status = BoardSquareStatus.Hit;
+                break;
+            case "Miss":
+                status = BoardSquareStatus.Missed;
+                break;
+            default:
+                return;
+        }
+        
+        if (!r.location) return; 
+        const side = r.currentTurnPlayer === yourSide ? Side.Enemy : Side.Ally;
+        const position = deserializePos(r.location);
+
+        if (r.nextTurnPlayer === yourSide) setYourTurn(true);
+        else setYourTurn(false);
+
+        dispatch({
+            type: "MARK_SQUARE",
+            payload: {
+                side,
+                position,
+                status,
+            },
+        });
+    });
+
+    const onShoot = async (pos: Position, _e: MouseEvent) => {
+        if (!yourTurn) return;
+        const serialized = serializePos(pos);
+        await socket.shoot(serialized);
+    };
+
+    return userStarted ? (
         <GameStateContext.Provider value={{ state, dispatch }}>
             {avatarVersusComponent}
             <BoardContainer>
-                <Board boardType={Side.Ally} shipYard={state.battleship.ally} />
                 <Board
+                    selectable={false}
+                    boardType={Side.Ally}
+                    shipYard={battleship.ally}
+                />
+                <Board
+                    selectable={yourTurn}
                     boardType={Side.Enemy}
-                    shipYard={state.battleship.enemy}
+                    shipYard={battleship.enemy}
+                    onSquareClick={onShoot}
                 />
             </BoardContainer>
-            {/* {state.meta.phase === MetaPhase.Setup && <Backdrop />} */}
-            {/* {state.meta.phase === MetaPhase.Setup && <SetupModal />} */}
+            {meta.phase === MetaPhase.Setup && <Backdrop />}
+            {meta.phase === MetaPhase.Setup && <SetupModal />}
         </GameStateContext.Provider>
+    ) : (
+        <HostWelcome
+            avatarVersusComponent={avatarVersusComponent}
+            onHostStartCallback={() => setUserStarted(true)}
+        />
     );
 };
 

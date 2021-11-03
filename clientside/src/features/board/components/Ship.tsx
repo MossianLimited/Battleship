@@ -102,7 +102,6 @@ const Wrapper = styled.div<WrapperProps>`
     height: 2rem;
     opacity: 0.9;
     transform-origin: center center;
-    cursor: grab;
 
     ${({ fixed, rotate }) =>
         !fixed

@@ -12,6 +12,7 @@ export const GameStateContext = createContext<{
             turn: 1,
             round: 1,
             phase: MetaPhase.Setup,
+            isHost: true, 
         },
         board: {
             ally: {},
