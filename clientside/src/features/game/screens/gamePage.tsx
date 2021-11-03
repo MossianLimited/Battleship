@@ -19,15 +19,17 @@ const GamePage = () => {
 
     const [guarded, forceWithdraw] = useAutoWithdraw();
 
-    const [hostStarted, setHostStarted] = useState<boolean>(false);
-
     const query = useQuery();
     const history = useHistory();
 
-    const { username } = useUserContext();
-
     const roomId = query.get("roomId");
     const isHost = query.get("isHost") === "true";
+
+    const [hostStarted, setHostStarted] = useState<boolean>(false);
+    const [enemyAvatarSeed, setEnemyAvatarSeed] = useState<string>("");
+    const [enemyUsername, setEnemyUsername] = useState<string>("");
+
+    const { username, userAvatarSeed } = useUserContext();
 
     useLayoutEffect(() => {
         if (!roomId) {
@@ -35,14 +37,32 @@ const GamePage = () => {
             return;
         }
 
-        if (!isHost) socketClient.joinRoom(username, roomId);
+        if (!isHost) {
+            socketClient.joinRoom(username, roomId);
+            socketClient.setAvatar(userAvatarSeed);
+        }
+        socketClient.subscribeToAvatar(({ hostAvatar, guestAvatar }) => {
+            setEnemyAvatarSeed(isHost ? guestAvatar : hostAvatar);
+            setEnemyUsername(isHost ? guestAvatar : hostAvatar);
+        });
         socketClient.subscribeToEndResponse(forceWithdraw);
-    }, [history, isHost, roomId, username, guarded, forceWithdraw]);
+    }, [
+        history,
+        isHost,
+        roomId,
+        username,
+        guarded,
+        forceWithdraw,
+        userAvatarSeed,
+    ]);
 
     if (!hostStarted)
         return (
             <HostWelcome
-                hostName={isHost ? username : ""}
+                guestUsername={isHost ? enemyUsername : username}
+                hostUsername={isHost ? username : enemyUsername}
+                guestAvatarSeed={isHost ? enemyAvatarSeed : userAvatarSeed}
+                hostAvatarSeed={isHost ? userAvatarSeed : enemyAvatarSeed}
                 onHostStartCallback={() => setHostStarted(true)}
             />
         );

@@ -6,6 +6,7 @@ import {
     SocketEvent,
 } from "./constants/config";
 import {
+    AvatarResponse,
     ChangeLockResponse,
     CreateRoomResponse,
     EndResponse,
@@ -145,6 +146,32 @@ class SocketClient {
                 reject("Connection timeout 30s.");
             }, 3000);
         });
+    }
+
+    public async setAvatar(avatarSeed: string): Promise<void> {
+        return new Promise((resolve, reject) => {
+            if (!this.socket) {
+                reject("Socket not initialized");
+            } else {
+                this.socket.emit(SocketEvent.SetAvatar, avatarSeed);
+                resolve();
+            }
+        });
+    }
+
+    public subscribeToAvatar(callbackFn: (response: AvatarResponse) => void) {
+        if (this.socket) {
+            this.socket.on(
+                SocketEvent.SetAvatarResponse,
+                (
+                    responseStatus: AvatarResponse["responseStatus"],
+                    hostAvatar: AvatarResponse["hostAvatar"],
+                    guestAvatar: AvatarResponse["guestAvatar"]
+                ) => {
+                    callbackFn({ responseStatus, hostAvatar, guestAvatar });
+                }
+            );
+        }
     }
 
     public async waitReady(): Promise<void> {

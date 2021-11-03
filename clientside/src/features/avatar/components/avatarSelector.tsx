@@ -3,16 +3,33 @@ import styled from "styled-components";
 import { useUserContext } from "../../lobby/contexts/userContext";
 import UserAvatar from "./userAvatar";
 
-const DEFAULT_AVATARS: string[] = [
-    localStorage.getItem("userAvatarSeed") || "nnaries",
-    "wt",
-    "dinger",
-    "rocks",
-];
+const DEFAULT_AVATARS: string[] = ["nnaries", "wt", "dinger", "rocks"];
+
+const getRandomSeed = (): string => {
+    return Math.random().toString(36).substring(2, 5);
+};
+
+const getDefaultAvatars = (): string[] => {
+    const savedAvatarSeed = localStorage.getItem("userAvatarSeed");
+
+    return DEFAULT_AVATARS.reduce((acc, seed, idx) => {
+        if (idx === 0 && savedAvatarSeed) return [savedAvatarSeed];
+        if (seed === savedAvatarSeed) {
+            let randomSeed = getRandomSeed();
+            while (acc.includes(randomSeed)) randomSeed = getRandomSeed();
+            return [...acc, randomSeed];
+        }
+        return [...acc, seed];
+    }, [] as string[]);
+};
 
 const AvatarSelector = () => {
-    const { userAvatarSeed, setUserAvatarSeed } = useUserContext();
-    const [randomSeeds, setRandomSeeds] = useState<string[]>(DEFAULT_AVATARS);
+    const [randomSeeds, setRandomSeeds] = useState<string[]>(
+        getDefaultAvatars()
+    );
+    const { userAvatarSeed: actualUserAvatarSeed, setUserAvatarSeed } =
+        useUserContext();
+    const userAvatarSeed = actualUserAvatarSeed || randomSeeds[0];
 
     const displayedAvatars = randomSeeds.map((seed) => (
         <UserAvatar
@@ -28,13 +45,12 @@ const AvatarSelector = () => {
     ));
 
     const handleRandomize = () => {
-        const newSeeds: string[] = randomSeeds
-            .map((seed) =>
-                seed === userAvatarSeed
-                    ? seed
-                    : Math.random().toString(36).substring(2, 5)
-            )
-            .slice(0, 4);
+        const newSeeds: string[] = randomSeeds.reduce((acc, seed) => {
+            if (seed === userAvatarSeed) return [...acc, seed];
+            let randomSeed = getRandomSeed();
+            while (acc.includes(randomSeed)) randomSeed = getRandomSeed();
+            return [...acc, randomSeed];
+        }, [] as string[]);
         setRandomSeeds(newSeeds);
     };
 

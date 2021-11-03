@@ -27,6 +27,7 @@ const CreateRoomPage = () => {
             const createdRoomId = (await socketClient.createRoom(username))
                 .roomID;
             setRoomId(createdRoomId);
+            socketClient.setAvatar(userAvatarSeed);
         };
 
         asyncCreateRoom();
@@ -36,7 +37,7 @@ const CreateRoomPage = () => {
                 socketClient.withdraw();
             }
         };
-    }, [username]);
+    }, [userAvatarSeed, username]);
 
     useEffect(() => {
         if (roomId)

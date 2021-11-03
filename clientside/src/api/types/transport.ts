@@ -26,6 +26,12 @@ export interface JoinRoomResponse {
     username: string; // for host = guest username; for guest = host username
 }
 
+export interface AvatarResponse {
+    responseStatus: string;
+    hostAvatar: string;
+    guestAvatar: string;
+}
+
 export interface EndResponse {
     responseStatus:
         | "Destroyed"
