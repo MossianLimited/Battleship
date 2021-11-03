@@ -1,74 +1,31 @@
 import styled from "styled-components";
-import UserAvatar from "./userAvatar";
+import { AvatarProperties, AvatarSide } from "../types/avatar";
+import AvatarContainer from "./avatarContainer";
 
-interface Props {
-    leftAvatarUsername?: string;
-    leftAvatarSeed?: string;
-    leftChatFeed?: string;
-    leftScore?: number;
-    rightAvatarUsername?: string;
-    rightAvatarSeed?: string;
-    rightChatFeed?: string;
-    rightScore?: number;
-}
-
-const AvatarVersus: React.FC<Props> = ({
-    leftAvatarUsername,
-    leftAvatarSeed,
-    leftChatFeed,
-    leftScore,
-    rightAvatarUsername,
-    rightAvatarSeed,
-    rightChatFeed,
-    rightScore,
+const AvatarVersus: React.FC<Partial<Record<AvatarSide, AvatarProperties>>> = ({
+    left,
+    right,
     ...delegated 
 }) => {
-    const hasLeftScore = typeof leftScore !== "undefined";
-    const hasRightScore = typeof rightScore !== "undefined";
-
-    if ((hasLeftScore && !hasRightScore) || (hasRightScore && !hasLeftScore))
+    const hasLeftScore = typeof left?.score !== "undefined"; 
+    const hasRightScore = typeof right?.score !== "undefined"; 
+    
+    if ((hasLeftScore && !hasRightScore) || (!hasLeftScore && hasRightScore))
         throw new Error("Both players need scores");
 
     return (
         <Container
             isExpanded={hasLeftScore && hasRightScore !== undefined}
-            {...delegated}
         >
-            <AvatarContainer>
-                {leftAvatarSeed && (
-                    <>
-                        {leftChatFeed && (
-                            <ChatBubble>
-                                <div>{leftChatFeed}</div>
-                            </ChatBubble>
-                        )}
-                        <span>{leftAvatarUsername}</span>
-                        <UserAvatar seed={leftAvatarSeed} />
-                    </>
-                )}
-            </AvatarContainer>
-            {leftAvatarSeed && rightAvatarSeed && (
+            <AvatarContainer {...left} side={AvatarSide.Left} />
+            {left?.seed && right?.seed && (
                 <VS>
-                    {hasLeftScore && <span className="score">{leftScore}</span>}
+                    {hasLeftScore && <span className="score">{left.score}</span>}
                     <span className="vs-text">vs</span>
-                    {hasRightScore && (
-                        <span className="score">{rightScore}</span>
-                    )}
+                    {hasRightScore && <span className="score">{right.score}</span>}
                 </VS>
             )}
-            <AvatarContainer>
-                {rightAvatarSeed && (
-                    <>
-                        {rightChatFeed && (
-                            <ChatBubble isFlipped>
-                                <div>{rightChatFeed}</div>
-                            </ChatBubble>
-                        )}
-                        <span>{rightAvatarUsername}</span>
-                        <UserAvatar isFlipped seed={rightAvatarSeed} />
-                    </>
-                )}
-            </AvatarContainer>
+            <AvatarContainer {...right} side={AvatarSide.Right} />
         </Container>
     );
 };
@@ -85,24 +42,6 @@ const Container = styled.div<{ isExpanded?: boolean }>`
     display: flex;
     align-items: flex-end;
     justify-content: space-between;
-`;
-
-const AvatarContainer = styled.div`
-    display: flex;
-    flex-flow: column;
-    align-items: center;
-
-    width: 5rem;
-
-    & > span {
-        user-select: none;
-
-        font-weight: 500;
-        font-size: 1rem;
-        line-height: 1.3125rem;
-
-        color: ${(props) => props.theme.colors.lobby.avatar.text.name};
-    }
 `;
 
 const VS = styled.div`
@@ -126,62 +65,6 @@ const VS = styled.div`
 
         color: ${(props) => props.theme.colors.lobby.avatar.text.score};
     }
-`;
-
-const ChatBubble = styled.div<{ isFlipped?: boolean }>`
-    position: relative;
-    top: -0.75rem;
-
-    width: 12rem;
-
-    font-weight: 500;
-
-    font-size: 1rem;
-    line-height: 1.3125rem;
-
-    color: ${(props) => props.theme.colors.lobby.avatar.text.chat};
-
-    display: flex;
-
-    & > div {
-        position: relative;
-        top: 0rem;
-
-        max-width: 12rem;
-        width: max-content;
-        background: ${(props) =>
-            props.theme.colors.lobby.avatar.background.white};
-        padding: 0.625rem 0.875rem;
-        border-radius: 0.375rem;
-
-        overflow-wrap: break-word;
-        word-wrap: break-word;
-        -webkit-hyphens: auto;
-        -ms-hyphens: auto;
-        -moz-hyphens: auto;
-        hyphens: auto;
-
-        &::before {
-            content: "";
-            position: absolute;
-            width: 0.875rem;
-            height: 0.875rem;
-            bottom: -0.4375rem;
-
-            background: ${(props) =>
-                props.theme.colors.lobby.avatar.background.white};
-
-            transform: rotate(-45deg);
-
-            ${(props) => `${props.isFlipped ? "right" : "left"}: 1.5em`};
-        }
-
-        ${(props) =>
-            `transform: translateX(${props.isFlipped ? "-4em" : "4em"})`}
-    }
-
-    ${(props) =>
-        `justify-content: ${props.isFlipped ? "flex-end" : "flex-start"}`}
 `;
 
 export default AvatarVersus;

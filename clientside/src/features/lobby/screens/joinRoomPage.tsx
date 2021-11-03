@@ -31,8 +31,10 @@ const JoinRoomPage = () => {
         <>
             <Container>
                 <AvatarVersus
-                    rightAvatarSeed={userAvatarSeed}
-                    rightAvatarUsername={username}
+                    right={{
+                        seed: userAvatarSeed,
+                        username,
+                    }}
                 />
                 <PrivateRoomContainer>
                     <Title>Join Private Room</Title>

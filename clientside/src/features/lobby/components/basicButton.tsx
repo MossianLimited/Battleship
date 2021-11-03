@@ -28,7 +28,8 @@ const StyledButton = styled.button<{ variant: ButtonVariant }>`
 
     color: ${(props) => props.theme.colors.lobby.button.text[props.variant]};
 
-    font-weight: 500;
+    font-family: DM Sans;
+    font-weight: ${(props) => (props.variant === "primary" ? 700 : 500)};
     font-size: 1rem;
     line-height: 1.3125rem;
 

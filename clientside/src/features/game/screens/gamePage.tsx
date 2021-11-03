@@ -31,6 +31,11 @@ import { BoardSquareStatus } from "../../board/types/board";
 import { useOnAvatar } from "../functions/useOnAvatar";
 import { BattleshipAllyYard } from "../../board/types/battleship";
 import { useOnShipDestroyed } from "../functions/useOnShipDestroyed";
+import { useOnChat } from "../functions/useOnChat";
+import useChatQueue from "../../avatar/hooks/useChatQueue";
+import { AvatarProperties, AvatarSide } from "../../avatar/types/avatar";
+import { ChatContext } from "../contexts/chatContext";
+import Chatbox from "../components/chatBox";
 
 const GamePage = () => {
     const [yourTurn, setYourTurn] = useState(false);
@@ -49,27 +54,26 @@ const GamePage = () => {
     const query = useQuery();
     const history = useHistory();
     const forceWithdraw = useAutoWithdraw()[1];
+    const playerChatQueue = useChatQueue();
+    const enemyChatQueue = useChatQueue();
 
     const roomId = query.get("roomId");
     const isHost = query.get("isHost") === "true";
     const yourSide = isHost ? "Host" : "Guest";
 
-    const userAndSeedProps = {
-        leftAvatarSeed: isHost ? userAvatarSeed : enemyAvatarSeed,
-        leftAvatarUsername: isHost ? username : enemyUsername,
-        rightAvatarSeed: isHost ? enemyAvatarSeed : userAvatarSeed,
-        rightAvatarUsername: isHost ? enemyUsername : username,
+    const combinedAvatarProps: Record<AvatarSide, AvatarProperties> = {
+        left: {
+            seed: isHost ? userAvatarSeed : enemyAvatarSeed,
+            username: isHost ? username : enemyUsername,
+            score: phase !== MetaPhase.Welcome ? 5 : undefined,
+        },
+        right: {
+            seed: isHost ? enemyAvatarSeed : userAvatarSeed,
+            username: isHost ? enemyUsername : username,
+            score: phase !== MetaPhase.Welcome ? 5 : undefined,
+        },
     };
 
-    const scoreAndChatProps =
-        phase === MetaPhase.Welcome
-            ? {}
-            : {
-                  leftScore: allyScore,
-                  rightScore: enemyScore,
-                  leftChatFeed: "It's not a silly little moment",
-                  rightChatFeed: "It's not the storm before the calm",
-              };
 
     const onShoot = async (pos: Position, _e: MouseEvent) => {
         if (!yourTurn) return;
@@ -110,6 +114,10 @@ const GamePage = () => {
     useOnAvatar(({ hostAvatar, guestAvatar, hostUsername, guestUsername }) => {
         setEnemyAvatarSeed(isHost ? guestAvatar : hostAvatar);
         setEnemyUsername(isHost ? guestUsername : hostUsername);
+    });
+
+    useOnChat((msg) => {
+        enemyChatQueue.addMessage(msg);
     });
 
     useOnShoot((r) => {
@@ -170,15 +178,14 @@ const GamePage = () => {
                 onHostStartCallback={() => setPhase(MetaPhase.Setup)}
                 avatarVersusComponent={
                     <AvatarVersus
-                        {...userAndSeedProps}
-                        {...scoreAndChatProps}
+                        {...combinedAvatarProps}
                     />
                 }
             />
         );
 
     const avatar = (
-        <AvatarVersus {...userAndSeedProps} {...scoreAndChatProps} />
+        <AvatarVersus {...combinedAvatarProps} />
     );
 
     const board = isHost ? (
@@ -212,14 +219,25 @@ const GamePage = () => {
     );
     
     return (
-        <GameStateContext.Provider value={{ state, dispatch }}>
-            {avatar}
-            {<Result />}
-            {/* {phase !== MetaPhase.Finish && board}
-            {phase === MetaPhase.Finish && <Result />}
-            {phase === MetaPhase.Setup && <Backdrop />}
-            {phase === MetaPhase.Setup && <SetupModal onSubmit={onSubmit} />} */}
-        </GameStateContext.Provider>
+        <ChatContext.Provider
+            value={{
+                chatSide:
+                    yourSide === "Host" ? AvatarSide.Left : AvatarSide.Right,
+                left: isHost ? playerChatQueue : enemyChatQueue,
+                right: isHost ? enemyChatQueue : playerChatQueue,
+            }}
+        >
+            <GameStateContext.Provider value={{ state, dispatch }}>
+                {avatar}
+                <Result />
+                {phase !== MetaPhase.Finish && board}
+                {phase === MetaPhase.Finish && <Result />}
+                {phase === MetaPhase.Setup && <Backdrop />}
+                {phase === MetaPhase.Setup && <SetupModal onSubmit={onSubmit} />}
+                <Chatbox />
+            </GameStateContext.Provider>
+
+        </ChatContext.Provider>
     );
 };
 
@@ -230,6 +248,7 @@ const BoardContainer = styled.div`
     gap: 6.9375rem;
 
     margin-top: 4.3125rem;
+    margin-bottom: 2.75rem;
 `;
 
 const Backdrop = styled.div`

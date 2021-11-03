@@ -143,6 +143,17 @@ class SocketClient {
         });
     }
 
+    public async sendChat(message: string): Promise<void> {
+        return new Promise((resolve, reject) => {
+            if (!this.socket) {
+                reject("Socket not initialized");
+            } else {
+                this.socket.emit(SocketEvent.Chat, message);
+                resolve();
+            }
+        });
+    }
+
     ///////////////////////////
     // Asynchronous Game API //
     ///////////////////////////
@@ -243,17 +254,19 @@ class SocketClient {
     // Subscriber API //
     ////////////////////
 
-    public subscribeShipDestroyed(callback: (res: ShipDestroyedResponse) => void) {
-        if (!this.socket) return; 
+    public subscribeShipDestroyed(
+        callback: (res: ShipDestroyedResponse) => void
+    ) {
+        if (!this.socket) return;
         this.socket.on(
-            SocketEvent.ShipDestroyed, 
+            SocketEvent.ShipDestroyed,
             (
-                side: ShipDestroyedResponse["side"], 
+                side: ShipDestroyedResponse["side"],
                 ship: ShipDestroyedResponse["ship"]
             ) => {
-                callback({ side, ship })
+                callback({ side, ship });
             }
-        )
+        );
     }
 
     public subscribeJoinResponse(callback: (res: JoinRoomResponse) => void) {

@@ -121,7 +121,7 @@ const WelcomePage = () => {
 
 const Rectangle = styled.div`
     position: absolute;
-    width: 112rem;
+    width: 150%;
     height: 7.5rem;
     margin: 0 auto;
 
