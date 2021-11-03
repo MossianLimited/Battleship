@@ -12,11 +12,11 @@ export const stat = (socket: Socket, room: Room) => {
         room.hostShot.length,
         room.hostHitCount,
         room.hostShot.length - room.hostHitCount,
-        room.hostShot.length ? room.hostHitCount/room.hostShot.length * 100: room.hostHitCount * 100,
+        room.hostShot.length != 0 ? room.hostHitCount/room.hostShot.length * 100: room.hostHitCount * 100,
         room.guestShot.length,
         room.guestHitCount,
         room.guestShot.length - room.guestHitCount,
-        room.guestShot.length ? room.guestHitCount/room.guestShot.length * 100: room.guestHitCount * 100,
+        room.guestShot.length != 0 ? room.guestHitCount/room.guestShot.length * 100: room.guestHitCount * 100,
         Date.now() - room.matchStart,
         room.turnCount
     )
@@ -27,11 +27,11 @@ export const stat = (socket: Socket, room: Room) => {
         room.hostShot.length,
         room.hostHitCount,
         room.hostShot.length - room.hostHitCount,
-        room.hostShot.length ? room.hostHitCount/room.hostShot.length * 100: room.hostHitCount * 100,
+        room.hostShot.length != 0 ? room.hostHitCount/room.hostShot.length * 100: room.hostHitCount * 100,
         room.guestShot.length,
         room.guestHitCount,
         room.guestShot.length - room.guestHitCount,
-        room.guestShot.length ? room.guestHitCount/room.guestShot.length * 100: room.guestHitCount * 100,
+        room.guestShot.length != 0 ? room.guestHitCount/room.guestShot.length * 100: room.guestHitCount * 100,
         Date.now() - room.matchStart,
         room.turnCount
     )
