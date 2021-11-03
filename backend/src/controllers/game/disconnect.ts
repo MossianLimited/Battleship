@@ -1,6 +1,7 @@
 import { Socket } from 'socket.io';
 import { Room, Admin } from '../../class';
 import { checkAdmin, findOpponentSocketId, vacateRoom } from '../../utils';
+import { stat } from './stat';
 export const disconnect = (
 	socket: Socket,
 	roomList: Room[],
@@ -34,6 +35,7 @@ export const disconnect = (
 			room.hostScore,
 			room.guestScore
 		);
+		stat(socket, room)
 		if (room.timer) clearTimeout(room.timer);
 		roomList.splice(
 			roomList.findIndex(

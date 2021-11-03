@@ -1,6 +1,7 @@
 import { Socket } from 'socket.io';
 import { findOpponentSocketId } from '../../utils';
 import { Room } from '../../class';
+import { stat } from './stat';
 
 export const withdraw = (socket: Socket, roomList: Room[]) => {
 	// Find room with matching socket id, let the other player wins, delete the room from the room list, and clear timer
@@ -25,7 +26,8 @@ export const withdraw = (socket: Socket, roomList: Room[]) => {
 			room.hostScore,
 			room.guestScore
 		);
-
+		
+		stat(socket, room);
 		if (room.timer) clearTimeout(room.timer);
 		roomList.splice(
 			roomList.findIndex(
