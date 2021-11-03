@@ -21,13 +21,18 @@ const AvatarVersus: React.FC<Props> = ({
     rightAvatarSeed,
     rightChatFeed,
     rightScore,
+    ...delegated 
 }) => {
-    if ((leftScore && !rightScore) || (rightScore && !leftScore))
+    const hasLeftScore = typeof leftScore !== "undefined";
+    const hasRightScore = typeof rightScore !== "undefined";
+
+    if ((hasLeftScore && !hasRightScore) || (hasRightScore && !hasLeftScore))
         throw new Error("Both players need scores");
 
     return (
         <Container
-            isExpanded={leftScore !== undefined && rightScore !== undefined}
+            isExpanded={hasLeftScore && hasRightScore !== undefined}
+            {...delegated}
         >
             <AvatarContainer>
                 {leftAvatarSeed && (
@@ -44,9 +49,11 @@ const AvatarVersus: React.FC<Props> = ({
             </AvatarContainer>
             {leftAvatarSeed && rightAvatarSeed && (
                 <VS>
-                    {typeof leftScore !== 'undefined' && <span className="score">{leftScore}</span>}
+                    {hasLeftScore && <span className="score">{leftScore}</span>}
                     <span className="vs-text">vs</span>
-                    {typeof rightScore !== 'undefined' && <span className="score">{rightScore}</span>}
+                    {hasRightScore && (
+                        <span className="score">{rightScore}</span>
+                    )}
                 </VS>
             )}
             <AvatarContainer>

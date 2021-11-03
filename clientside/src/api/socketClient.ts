@@ -12,6 +12,7 @@ import {
     EndResponse,
     GetRoomListResponse,
     JoinRoomResponse,
+    ShipDestroyedResponse,
     ShootResponse,
     StartResponse,
 } from "./types/transport";
@@ -241,6 +242,19 @@ class SocketClient {
     ////////////////////
     // Subscriber API //
     ////////////////////
+
+    public subscribeShipDestroyed(callback: (res: ShipDestroyedResponse) => void) {
+        if (!this.socket) return; 
+        this.socket.on(
+            SocketEvent.ShipDestroyed, 
+            (
+                side: ShipDestroyedResponse["side"], 
+                ship: ShipDestroyedResponse["ship"]
+            ) => {
+                callback({ side, ship })
+            }
+        )
+    }
 
     public subscribeJoinResponse(callback: (res: JoinRoomResponse) => void) {
         if (this.socket) {

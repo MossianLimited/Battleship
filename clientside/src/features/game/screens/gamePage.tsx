@@ -1,10 +1,16 @@
-import { useLayoutEffect, useReducer, useState, MouseEvent } from "react";
+import {
+    useLayoutEffect,
+    useReducer,
+    useState,
+    MouseEvent,
+} from "react";
 import { useHistory } from "react-router";
 import { Position, Side } from "../../board/types/utility";
 import { initialGameState } from "../constants/state";
 import { GameStateContext } from "../contexts/gameStateContext";
 import { MetaPhase } from "../types/state";
 import Board from "../../board";
+import Result from "../../result";
 import styled from "styled-components";
 import useQuery from "../../routing/hooks/useQuery";
 import gameStateReducer from "../reducers/gameStateReducer";
@@ -13,8 +19,9 @@ import useAutoWithdraw from "../functions/useAutoWithdraw";
 import HostWelcome from "./hostWelcome";
 import AvatarVersus from "../../avatar/components/avatarVersus";
 import socket from "../../../api/socketClient";
-import deserializePos from "../../board/functions/deserializePos";
 import serializePos from "../../board/functions/serializePos";
+import deserializePos from "../../board/functions/deserializePos";
+import deserializeBattleship from "../functions/deserializeBattleship";
 
 import { useUserContext } from "../../lobby/contexts/userContext";
 import { useOnStartSingle } from "../functions/useOnStart";
@@ -23,15 +30,16 @@ import { useOnShoot } from "../functions/useOnShoot";
 import { BoardSquareStatus } from "../../board/types/board";
 import { useOnAvatar } from "../functions/useOnAvatar";
 import { BattleshipAllyYard } from "../../board/types/battleship";
+import { useOnShipDestroyed } from "../functions/useOnShipDestroyed";
 
 const GamePage = () => {
     const [yourTurn, setYourTurn] = useState(false);
     const [phase, setPhase] = useState(MetaPhase.Welcome);
     const [state, dispatch] = useReducer(gameStateReducer, initialGameState);
 
-    const [, setRoundWinner] = useState<'Host' | 'Guest' | undefined>(); 
-    const [allyScore, setAllyScore] = useState(0); 
-    const [enemyScore, setEnemyScore] = useState(0); 
+    const [, setRoundWinner] = useState<"Host" | "Guest" | undefined>();
+    const [allyScore, setAllyScore] = useState(0);
+    const [enemyScore, setEnemyScore] = useState(0);
     const [enemyAvatarSeed, setEnemyAvatarSeed] = useState<string>("");
     const [enemyUsername, setEnemyUsername] = useState<string>("");
 
@@ -78,14 +86,20 @@ const GamePage = () => {
 
     useOnEndSingle(
         ({ responseStatus, previousRoundWinner, hostScore, guestScore }) => {
+            console.log({
+                responseStatus,
+                previousRoundWinner,
+                hostScore,
+                guestScore,
+            });
             switch (responseStatus) {
                 case "Withdrew":
                     return forceWithdraw();
                 case "Abandoned":
                 case "Destroyed":
-                    setRoundWinner(previousRoundWinner as any); 
+                    setRoundWinner(previousRoundWinner as any);
                     setAllyScore(isHost ? hostScore : guestScore);
-                    setEnemyScore(isHost ? guestScore : hostScore); 
+                    setEnemyScore(isHost ? guestScore : hostScore);
                     return setPhase(MetaPhase.Finish);
                 default:
                     console.log({ responseStatus });
@@ -128,6 +142,16 @@ const GamePage = () => {
         });
     });
 
+    useOnShipDestroyed(({ side, ship }) => {
+        dispatch({
+            type: "SUNK_SHIP",
+            payload: {
+                battleship: deserializeBattleship(ship),
+                side: side === yourSide ? Side.Ally : Side.Enemy,
+            },
+        });
+    });
+
     useLayoutEffect(() => {
         if (!roomId) {
             history.push("/welcome");
@@ -140,68 +164,63 @@ const GamePage = () => {
         }
     }, [history, isHost, roomId, username, userAvatarSeed]);
 
-    switch (phase) {
-        case MetaPhase.Welcome:
-            return (
-                <HostWelcome
-                    onHostStartCallback={() => setPhase(MetaPhase.Setup)}
-                    avatarVersusComponent={
-                        <AvatarVersus
-                            {...userAndSeedProps}
-                            {...scoreAndChatProps}
-                        />
-                    }
-                />
-            );
-        case MetaPhase.Setup:
-            return (
-                <GameStateContext.Provider value={{ state, dispatch }}>
+    if (phase === MetaPhase.Welcome)
+        return (
+            <HostWelcome
+                onHostStartCallback={() => setPhase(MetaPhase.Setup)}
+                avatarVersusComponent={
                     <AvatarVersus
                         {...userAndSeedProps}
                         {...scoreAndChatProps}
                     />
-                    <BoardContainer>
-                        <Board
-                            selectable={false}
-                            boardType={Side.Ally}
-                            shipYard={battleship.ally}
-                        />
-                        <Board
-                            selectable={yourTurn}
-                            boardType={Side.Enemy}
-                            shipYard={battleship.enemy}
-                            onSquareClick={onShoot}
-                        />
-                    </BoardContainer>
-                    <Backdrop />
-                    <SetupModal onSubmit={onSubmit} />
-                </GameStateContext.Provider>
-            );
-        case MetaPhase.Playing:
-            return (
-                <GameStateContext.Provider value={{ state, dispatch }}>
-                    <AvatarVersus
-                        {...userAndSeedProps}
-                        {...scoreAndChatProps}
-                    />
-                    <BoardContainer>
-                        <Board
-                            selectable={false}
-                            boardType={Side.Ally}
-                            shipYard={battleship.ally}
-                        />
-                        <Board
-                            selectable={yourTurn}
-                            boardType={Side.Enemy}
-                            shipYard={battleship.enemy}
-                            onSquareClick={onShoot}
-                        />
-                    </BoardContainer>
-                </GameStateContext.Provider>
-            );
-        default:
-            return null;
-    }
+                }
+            />
+        );
+
+    const avatar = (
+        <AvatarVersus {...userAndSeedProps} {...scoreAndChatProps} />
+    );
+
+    const board = isHost ? (
+        <BoardContainer>
+            <Board
+                selectable={false}
+                boardType={Side.Ally}
+                shipYard={battleship.ally}
+            />
+            <Board
+                selectable={yourTurn}
+                boardType={Side.Enemy}
+                shipYard={battleship.enemy}
+                onSquareClick={onShoot}
+            />
+        </BoardContainer>
+    ) : (
+        <BoardContainer>
+            <Board
+                selectable={yourTurn}
+                boardType={Side.Enemy}
+                shipYard={battleship.enemy}
+                onSquareClick={onShoot}
+            />
+            <Board
+                selectable={false}
+                boardType={Side.Ally}
+                shipYard={battleship.ally}
+            />
+        </BoardContainer>
+    );
+    
+    return (
+        <GameStateContext.Provider value={{ state, dispatch }}>
+            {avatar}
+            {<Result />}
+            {/* {phase !== MetaPhase.Finish && board}
+            {phase === MetaPhase.Finish && <Result />}
+            {phase === MetaPhase.Setup && <Backdrop />}
+            {phase === MetaPhase.Setup && <SetupModal onSubmit={onSubmit} />} */}
+        </GameStateContext.Provider>
+    );
 };
 
 const BoardContainer = styled.div`

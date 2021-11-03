@@ -66,3 +66,8 @@ export interface ShootResponse {
     nextTurnPlayer: string; 
     turnCount: number; 
 }
+
+export interface ShipDestroyedResponse {
+    side: 'Host' | 'Guest'; 
+    ship: string[]; 
+}

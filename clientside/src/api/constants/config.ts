@@ -1,4 +1,5 @@
-export const API_URL = "http://localhost:8000";
+// export const API_URL = "localhost:8000";
+export const API_URL = "139.59.108.208:42069";
 
 export enum SocketEvent {
     CreateRoom = "createRoom",
@@ -19,6 +20,7 @@ export enum SocketEvent {
     ShootResponse = "shootResponse",
     StartResponse = "gameStartResponse",
     EndResponse = "endResponse",
+    ShipDestroyed = "shipDestroyed",
     Chat = "chat", 
     Withdraw = "withdraw",
     SocketId = "SocketID",
