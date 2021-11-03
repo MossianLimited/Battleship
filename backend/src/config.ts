@@ -7,9 +7,7 @@ export const validColumns: string[] = [
 	'E',
 	'F',
 	'G',
-	'H',
-	'I',
-	'J'
+	'H'
 ];
 export const validRows = validColumns.map((column, index) =>
 	(index + 1).toString()
