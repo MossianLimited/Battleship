@@ -21,7 +21,7 @@ class SocketClient {
     private socket?: Socket;
 
     constructor() {
-        this.socket = io(API_URL);
+        this.socket = io(API_URL!);
     }
 
     public disconnect() {

@@ -1,5 +1,7 @@
-// export const API_URL = "localhost:8000";
-export const API_URL = "139.59.108.208:42069";
+export const API_URL =
+    process.env.NODE_ENV === "development"
+        ? "http://localhost:8000"
+        : process.env.REACT_APP_API_URL;
 
 export enum SocketEvent {
     CreateRoom = "createRoom",
@@ -12,9 +14,9 @@ export enum SocketEvent {
     JoinRoomResponse = "joinRoomResponse",
     SetAvatar = "setAvatar",
     SetAvatarResponse = "setAvatarResponse",
-    RandomShip = "randomShip", 
-    RandomShipResponse = "randomShipResponse", 
-    Setup = "setup", 
+    RandomShip = "randomShip",
+    RandomShipResponse = "randomShipResponse",
+    Setup = "setup",
     SetupResponse = "setupResponse",
     Shoot = "shoot",
     ShootResponse = "shootResponse",
