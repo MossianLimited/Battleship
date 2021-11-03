@@ -7,7 +7,7 @@ export const getRoomList = (socket: Socket, roomList: Room[]) => {
 	roomList
 		.filter((room) => !room.locked && !room.guestSocketID)
 		.forEach((room) =>
-			openRoomList.push(new openRoom(room.hostUsername, room.roomID))
+			openRoomList.push(new openRoom(room.hostUsername, room.hostAvatar, room.roomID))
 		);
 	socket.emit('getRoomListResponse', 'Completed', openRoomList);
 };
