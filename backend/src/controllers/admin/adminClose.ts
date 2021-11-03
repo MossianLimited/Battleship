@@ -72,7 +72,7 @@ export const adminClose = (
 
 			console.log(`room ${room.roomID} deleted`);
 			if (room.timer) clearTimeout(room.timer);
-			roomList.splice(roomList.findIndex((room) => room.roomID === filter, 1));
+			roomList.splice(roomList.findIndex((room) => room.roomID === filter), 1);
 		}
 		socket.emit('adminCloseResponse', 'Completed');
 	} else {
