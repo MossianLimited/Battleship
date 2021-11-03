@@ -28,7 +28,7 @@ const UserAvatar: React.FC<Props> = ({
         >
             <svg>
                 <image
-                    xlinkHref={`https://avatars.dicebear.com/api/open-peeps/${seed}.svg`}
+                    xlinkHref={`https://avatars.dicebear.com/api/open-peeps/${seed}.svg?scale=85`}
                 />
             </svg>
         </Container>
