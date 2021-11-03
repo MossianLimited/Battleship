@@ -13,6 +13,7 @@ import SetupModal from "../../setup";
 import { MetaPhase } from "../types/state";
 import useAutoWithdraw from "../functions/useAutoWithdraw";
 import HostWelcome from "./hostWelcome";
+import AvatarVersus from "../../avatar/components/avatarVersus";
 
 const GamePage = () => {
     const [state, dispatch] = useReducer(gameStateReducer, initialGameState);
@@ -25,7 +26,7 @@ const GamePage = () => {
     const roomId = query.get("roomId");
     const isHost = query.get("isHost") === "true";
 
-    const [hostStarted, setHostStarted] = useState<boolean>(false);
+    const [userStarted, setUserStarted] = useState<boolean>(false);
     const [enemyAvatarSeed, setEnemyAvatarSeed] = useState<string>("");
     const [enemyUsername, setEnemyUsername] = useState<string>("");
 
@@ -58,19 +59,27 @@ const GamePage = () => {
         userAvatarSeed,
     ]);
 
-    if (!hostStarted)
+    if (!userStarted)
         return (
             <HostWelcome
                 guestUsername={isHost ? enemyUsername : username}
                 hostUsername={isHost ? username : enemyUsername}
                 guestAvatarSeed={isHost ? enemyAvatarSeed : userAvatarSeed}
                 hostAvatarSeed={isHost ? userAvatarSeed : enemyAvatarSeed}
-                onHostStartCallback={() => setHostStarted(true)}
+                onHostStartCallback={() => setUserStarted(true)}
             />
         );
 
     return (
         <GameStateContext.Provider value={{ state, dispatch }}>
+            <AvatarVersus
+                leftAvatarSeed={"test"}
+                leftAvatarUsername={"test"}
+                rightAvatarSeed={"test"}
+                rightAvatarUsername={"test"}
+                leftScore={5}
+                rightScore={5}
+            />
             <BoardContainer>
                 <Board boardType={Side.Ally} shipYard={state.battleship.ally} />
                 <Board

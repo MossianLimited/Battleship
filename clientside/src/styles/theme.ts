@@ -39,6 +39,8 @@ const theme = {
                 text: {
                     name: "#3A2105",
                     versus: "#d57f23",
+                    score: "#743c00",
+                    chat: "#6d3900",
                 },
             },
             backdrop: {

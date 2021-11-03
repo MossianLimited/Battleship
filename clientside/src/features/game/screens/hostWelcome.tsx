@@ -23,6 +23,10 @@ const HostWelcome: React.FC<Props> = ({
                 leftAvatarUsername={hostUsername}
                 rightAvatarSeed={guestAvatarSeed}
                 rightAvatarUsername={guestUsername}
+                leftScore={5}
+                rightScore={5}
+                leftChatFeed="Yo mama"
+                rightChatFeed="Fuckkk"
             />
             <StartGameContainer onClick={onHostStartCallback}>
                 Start Game
