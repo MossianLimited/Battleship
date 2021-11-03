@@ -65,15 +65,24 @@ const GamePage = () => {
         left: {
             seed: isHost ? userAvatarSeed : enemyAvatarSeed,
             username: isHost ? username : enemyUsername,
-            score: phase !== MetaPhase.Welcome ? 5 : undefined,
+            score:
+                phase !== MetaPhase.Welcome
+                    ? isHost
+                        ? allyScore
+                        : enemyScore
+                    : undefined,
         },
         right: {
             seed: isHost ? enemyAvatarSeed : userAvatarSeed,
             username: isHost ? enemyUsername : username,
-            score: phase !== MetaPhase.Welcome ? 5 : undefined,
+            score:
+                phase !== MetaPhase.Welcome
+                    ? isHost
+                        ? enemyScore
+                        : allyScore
+                    : undefined,
         },
     };
-
 
     const onShoot = async (pos: Position, _e: MouseEvent) => {
         if (!yourTurn) return;
