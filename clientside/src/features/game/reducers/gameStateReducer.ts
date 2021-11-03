@@ -1,6 +1,6 @@
 import posToString from "../../board/functions/posToString";
 import { GameAction } from "../types/action";
-import { GameState, MetaPhase } from "../types/state";
+import { GameState } from "../types/state";
 
 const gameStateReducer = (
     prevState: GameState,
@@ -10,10 +10,6 @@ const gameStateReducer = (
         case "GAME_START": 
             return {
                 ...prevState, 
-                meta: {
-                    ...prevState.meta, 
-                    phase: MetaPhase.Playing, 
-                }, 
                 battleship: {
                     ...prevState.battleship, 
                     ally: action.payload.shipyard, 

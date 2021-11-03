@@ -22,27 +22,29 @@ import { useOnEndSingle } from "../functions/useOnEnd";
 import { useOnShoot } from "../functions/useOnShoot";
 import { BoardSquareStatus } from "../../board/types/board";
 import { useOnAvatar } from "../functions/useOnAvatar";
+import { BattleshipAllyYard } from "../../board/types/battleship";
 
 const GamePage = () => {
-    // eslint-disable-next-line
-    const [_guarded, forceWithdraw] = useAutoWithdraw();
     const [yourTurn, setYourTurn] = useState(false);
+    const [phase, setPhase] = useState(MetaPhase.Welcome);
     const [state, dispatch] = useReducer(gameStateReducer, initialGameState);
+
+    const [, setRoundWinner] = useState<'Host' | 'Guest' | undefined>(); 
+    const [allyScore, setAllyScore] = useState(0); 
+    const [enemyScore, setEnemyScore] = useState(0); 
+    const [enemyAvatarSeed, setEnemyAvatarSeed] = useState<string>("");
+    const [enemyUsername, setEnemyUsername] = useState<string>("");
+
+    const { battleship } = state;
+    const { username, userAvatarSeed } = useUserContext();
 
     const query = useQuery();
     const history = useHistory();
-
-    const { meta, battleship } = state;
-    const { username, userAvatarSeed } = useUserContext();
+    const forceWithdraw = useAutoWithdraw()[1];
 
     const roomId = query.get("roomId");
     const isHost = query.get("isHost") === "true";
     const yourSide = isHost ? "Host" : "Guest";
-
-    const [userStarted, setUserStarted] = useState<boolean>(false);
-    const [enemyAvatarSeed, setEnemyAvatarSeed] = useState<string>("");
-    const [enemyUsername, setEnemyUsername] = useState<string>("");
-
 
     const userAndSeedProps = {
         leftAvatarSeed: isHost ? userAvatarSeed : enemyAvatarSeed,
@@ -51,44 +53,50 @@ const GamePage = () => {
         rightAvatarUsername: isHost ? enemyUsername : username,
     };
 
-    const scoreAndChatProps = userStarted
-        ? {
-              leftScore: 5,
-              rightScore: 5,
-              leftChatFeed: "Yo mama",
-              rightChatFeed: "Fuckkk",
-          }
-        : {};
+    const scoreAndChatProps =
+        phase === MetaPhase.Welcome
+            ? {}
+            : {
+                  leftScore: allyScore,
+                  rightScore: enemyScore,
+                  leftChatFeed: "It's not a silly little moment",
+                  rightChatFeed: "It's not the storm before the calm",
+              };
 
-    useLayoutEffect(() => {
-        if (!roomId) {
-            history.push("/welcome");
-            return;
-        }
+    const onShoot = async (pos: Position, _e: MouseEvent) => {
+        if (!yourTurn) return;
+        const serialized = serializePos(pos);
+        await socket.shoot(serialized);
+    };
 
-        if (!isHost) {
-            socket.joinRoom(username, roomId);
-            socket.setAvatar(userAvatarSeed);
-        }
-    }, [
-        history,
-        isHost,
-        roomId,
-        username,
-        userAvatarSeed,
-    ]);
+    const onSubmit = (shipyard: BattleshipAllyYard) => {
+        dispatch({ type: "GAME_START", payload: { shipyard } });
+        setPhase(MetaPhase.Playing);
+    };
 
-    const avatarVersusComponent = (
-        <AvatarVersus {...userAndSeedProps} {...scoreAndChatProps} />
-    );
-
-    useOnEndSingle(() => forceWithdraw());
     useOnStartSingle((r) => r.firstPlayer === yourSide && setYourTurn(true));
+
+    useOnEndSingle(
+        ({ responseStatus, previousRoundWinner, hostScore, guestScore }) => {
+            switch (responseStatus) {
+                case "Withdrew":
+                    return forceWithdraw();
+                case "Abandoned":
+                case "Destroyed":
+                    setRoundWinner(previousRoundWinner as any); 
+                    setAllyScore(isHost ? hostScore : guestScore);
+                    setEnemyScore(isHost ? guestScore : hostScore); 
+                    return setPhase(MetaPhase.Finish);
+                default:
+                    console.log({ responseStatus });
+            }
+        }
+    );
 
     useOnAvatar(({ hostAvatar, guestAvatar, hostUsername, guestUsername }) => {
         setEnemyAvatarSeed(isHost ? guestAvatar : hostAvatar);
         setEnemyUsername(isHost ? guestUsername : hostUsername);
-    })
+    });
 
     useOnShoot((r) => {
         let status;
@@ -102,8 +110,8 @@ const GamePage = () => {
             default:
                 return;
         }
-        
-        if (!r.location) return; 
+
+        if (!r.location) return;
         const side = r.currentTurnPlayer === yourSide ? Side.Enemy : Side.Ally;
         const position = deserializePos(r.location);
 
@@ -120,37 +128,80 @@ const GamePage = () => {
         });
     });
 
-    const onShoot = async (pos: Position, _e: MouseEvent) => {
-        if (!yourTurn) return;
-        const serialized = serializePos(pos);
-        await socket.shoot(serialized);
-    };
+    useLayoutEffect(() => {
+        if (!roomId) {
+            history.push("/welcome");
+            return;
+        }
 
-    return userStarted ? (
-        <GameStateContext.Provider value={{ state, dispatch }}>
-            {avatarVersusComponent}
-            <BoardContainer>
-                <Board
-                    selectable={false}
-                    boardType={Side.Ally}
-                    shipYard={battleship.ally}
+        if (!isHost) {
+            socket.joinRoom(username, roomId);
+            socket.setAvatar(userAvatarSeed);
+        }
+    }, [history, isHost, roomId, username, userAvatarSeed]);
+
+    switch (phase) {
+        case MetaPhase.Welcome:
+            return (
+                <HostWelcome
+                    onHostStartCallback={() => setPhase(MetaPhase.Setup)}
+                    avatarVersusComponent={
+                        <AvatarVersus
+                            {...userAndSeedProps}
+                            {...scoreAndChatProps}
+                        />
+                    }
                 />
-                <Board
-                    selectable={yourTurn}
-                    boardType={Side.Enemy}
-                    shipYard={battleship.enemy}
-                    onSquareClick={onShoot}
-                />
-            </BoardContainer>
-            {meta.phase === MetaPhase.Setup && <Backdrop />}
-            {meta.phase === MetaPhase.Setup && <SetupModal />}
-        </GameStateContext.Provider>
-    ) : (
-        <HostWelcome
-            avatarVersusComponent={avatarVersusComponent}
-            onHostStartCallback={() => setUserStarted(true)}
-        />
-    );
+            );
+        case MetaPhase.Setup:
+            return (
+                <GameStateContext.Provider value={{ state, dispatch }}>
+                    <AvatarVersus
+                        {...userAndSeedProps}
+                        {...scoreAndChatProps}
+                    />
+                    <BoardContainer>
+                        <Board
+                            selectable={false}
+                            boardType={Side.Ally}
+                            shipYard={battleship.ally}
+                        />
+                        <Board
+                            selectable={yourTurn}
+                            boardType={Side.Enemy}
+                            shipYard={battleship.enemy}
+                            onSquareClick={onShoot}
+                        />
+                    </BoardContainer>
+                    <Backdrop />
+                    <SetupModal onSubmit={onSubmit} />
+                </GameStateContext.Provider>
+            );
+        case MetaPhase.Playing:
+            return (
+                <GameStateContext.Provider value={{ state, dispatch }}>
+                    <AvatarVersus
+                        {...userAndSeedProps}
+                        {...scoreAndChatProps}
+                    />
+                    <BoardContainer>
+                        <Board
+                            selectable={false}
+                            boardType={Side.Ally}
+                            shipYard={battleship.ally}
+                        />
+                        <Board
+                            selectable={yourTurn}
+                            boardType={Side.Enemy}
+                            shipYard={battleship.enemy}
+                            onSquareClick={onShoot}
+                        />
+                    </BoardContainer>
+                </GameStateContext.Provider>
+            );
+        default:
+            return null;
+    }
 };
 
 const BoardContainer = styled.div`

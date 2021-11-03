@@ -44,9 +44,9 @@ const AvatarVersus: React.FC<Props> = ({
             </AvatarContainer>
             {leftAvatarSeed && rightAvatarSeed && (
                 <VS>
-                    {leftScore && <span className="score">{leftScore}</span>}
+                    {typeof leftScore !== 'undefined' && <span className="score">{leftScore}</span>}
                     <span className="vs-text">vs</span>
-                    {rightScore && <span className="score">{rightScore}</span>}
+                    {typeof rightScore !== 'undefined' && <span className="score">{rightScore}</span>}
                 </VS>
             )}
             <AvatarContainer>
