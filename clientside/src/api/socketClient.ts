@@ -165,10 +165,18 @@ class SocketClient {
                 SocketEvent.SetAvatarResponse,
                 (
                     responseStatus: AvatarResponse["responseStatus"],
+                    hostUsername: AvatarResponse["hostUsername"],
                     hostAvatar: AvatarResponse["hostAvatar"],
+                    guestUsername: AvatarResponse["guestUsername"],
                     guestAvatar: AvatarResponse["guestAvatar"]
                 ) => {
-                    callbackFn({ responseStatus, hostAvatar, guestAvatar });
+                    callbackFn({
+                        responseStatus,
+                        hostAvatar,
+                        guestAvatar,
+                        hostUsername,
+                        guestUsername,
+                    });
                 }
             );
         }

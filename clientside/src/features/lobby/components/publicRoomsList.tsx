@@ -34,15 +34,17 @@ const PublicRoomsList: React.FC<Props> = ({ onRoomJoinHandler }) => {
         };
     }, []);
 
-    const displayedRooms = roomList.map(({ roomID, hostUsername }) => (
-        <SingleRoom key={roomID} onClick={() => onRoomJoinHandler(roomID)}>
-            <div>
-                <UserAvatar />
-                <span>{hostUsername}</span>
-            </div>
-            <span>Join</span>
-        </SingleRoom>
-    ));
+    const displayedRooms = roomList.map(
+        ({ roomID, hostAvatar, hostUsername }) => (
+            <SingleRoom key={roomID} onClick={() => onRoomJoinHandler(roomID)}>
+                <div>
+                    <UserAvatar seed={hostAvatar} />
+                    <span>{hostUsername}</span>
+                </div>
+                <span>Join</span>
+            </SingleRoom>
+        )
+    );
 
     return (
         <Container>

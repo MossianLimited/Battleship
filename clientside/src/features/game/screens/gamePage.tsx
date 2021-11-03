@@ -41,10 +41,12 @@ const GamePage = () => {
             socketClient.joinRoom(username, roomId);
             socketClient.setAvatar(userAvatarSeed);
         }
-        socketClient.subscribeToAvatar(({ hostAvatar, guestAvatar }) => {
-            setEnemyAvatarSeed(isHost ? guestAvatar : hostAvatar);
-            setEnemyUsername(isHost ? guestAvatar : hostAvatar);
-        });
+        socketClient.subscribeToAvatar(
+            ({ hostAvatar, guestAvatar, hostUsername, guestUsername }) => {
+                setEnemyAvatarSeed(isHost ? guestAvatar : hostAvatar);
+                setEnemyUsername(isHost ? guestUsername : hostUsername);
+            }
+        );
         socketClient.subscribeToEndResponse(forceWithdraw);
     }, [
         history,

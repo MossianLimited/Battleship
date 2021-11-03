@@ -1,6 +1,7 @@
 export interface Room {
     roomID: string;
     hostUsername: string;
+    hostAvatar: string;
 }
 
 export interface GetRoomListResponse {
@@ -30,6 +31,8 @@ export interface AvatarResponse {
     responseStatus: string;
     hostAvatar: string;
     guestAvatar: string;
+    hostUsername: string;
+    guestUsername: string;
 }
 
 export interface EndResponse {
