@@ -36,12 +36,11 @@ const deserializeBattleship = (ship: string[]): BattleshipKnown => {
             : BattleshipDirection.Horizontal;
 
     const direction = (reverse ? axis + 2 : axis) as BattleshipDirection;
-
-    const head = reverse ? pos[pos.length - 1] : pos[0];
+    
     return {
         direction,
         name: "",
-        position: head,
+        position: pos[0],
         length: pos.length,
         status: BattleshipStatus.Default,
     };
