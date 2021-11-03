@@ -337,13 +337,22 @@ class SocketClient {
         );
     }
 
-    public subscribeChat(callback: (msg: string) => void) {
-        if (!this.socket) return; 
-        this.socket.on(
-            SocketEvent.Chat, (msg: string) => {
-                callback(msg);
+    public async sendChat(message: string): Promise<void> {
+        return new Promise((resolve, reject) => {
+            if (!this.socket) {
+                reject("Socket not initialized");
+            } else {
+                this.socket.emit(SocketEvent.Chat, message);
+                resolve();
             }
-        );
+        });
+    }
+
+    public subscribeChat(callback: (msg: string) => void) {
+        if (!this.socket) return;
+        this.socket.on(SocketEvent.Chat, (msg: string) => {
+            callback(msg);
+        });
     }
 }
 

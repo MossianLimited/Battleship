@@ -1,16 +1,30 @@
-import { useState, useCallback } from "react";
+import { useCallback, useState } from "react";
+import { Message } from "../../game/types/chat";
 
 const useChatQueue = () => {
-    const [queue, setQueue] = useState<string[]>([]);
+    const [queue, setQueue] = useState<Message[]>([]);
 
-    const addMessage = useCallback((message: string) => {
-        setQueue((queue) => [message, ...queue]);
-        setTimeout(() => {
-            setQueue((queue) => queue.slice(0, -1));
-        }, 5000);
+    const removeMessage = useCallback(() => {
+        setQueue((queue) => queue.slice(0, -1));
     }, []);
 
-    return { addMessage, queue };
+    const addMessage = useCallback(
+        (message: string) => {
+            setQueue((queue) => [
+                {
+                    timestamp: Date.now(),
+                    content: message,
+                },
+                ...queue,
+            ]);
+            setTimeout(() => {
+                removeMessage();
+            }, 6000);
+        },
+        [removeMessage]
+    );
+
+    return { addMessage, removeMessage, queue };
 };
 
 export default useChatQueue;

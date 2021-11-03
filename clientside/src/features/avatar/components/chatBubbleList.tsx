@@ -1,24 +1,24 @@
 import React from "react";
 import styled from "styled-components";
+import { useChatContext } from "../../game/contexts/chatContext";
+import { AvatarSide } from "../types/avatar";
 
-const ChatBubbleList: React.FC<{ chatFeed: string[]; isFlipped?: boolean }> = ({
-    chatFeed,
-    isFlipped,
-}) => {
-    const displayedBubbles = chatFeed
+const ChatBubbleList: React.FC<{ side: AvatarSide }> = ({ side }) => {
+    const { queue } = useChatContext()[side];
+
+    const displayedBubbles = queue
         .reverse()
-        .slice(0, 4)
+        .slice(0, 2)
         .map((message, idx) => (
             <ChatBubble
-                isFlipped={isFlipped}
-                opacity={(4 - idx) / 4}
-                hasTail={idx === 0}
-                key={message + idx.toString()}
+                key={message.timestamp}
+                isFlipped={side === AvatarSide.Right}
             >
-                <div>{message}</div>
+                <div>{message.content}</div>
             </ChatBubble>
         ));
 
+    if (!queue.length) return null;
     return <Container>{displayedBubbles}</Container>;
 };
 
@@ -48,6 +48,21 @@ const ChatBubble = styled.div<{
 
     display: flex;
 
+    &:first-child > div::before {
+        content: "";
+        position: absolute;
+        width: 0.875rem;
+        height: 0.875rem;
+        bottom: -0.4375rem;
+
+        background: ${(props) =>
+            props.theme.colors.lobby.avatar.background.white};
+
+        transform: rotate(-45deg);
+
+        ${(props) => (props.isFlipped ? "right" : "left")}: 1.5em;
+    }
+
     & > div {
         position: relative;
         top: 0rem;
@@ -65,22 +80,6 @@ const ChatBubble = styled.div<{
         -ms-hyphens: auto;
         -moz-hyphens: auto;
         hyphens: auto;
-
-        ${(props) =>
-            props.hasTail &&
-            `&::before {
-            content: "";
-            position: absolute;
-            width: 0.875rem;
-            height: 0.875rem;
-            bottom: -0.4375rem;
-
-            background: ${props.theme.colors.lobby.avatar.background.white};
-
-            transform: rotate(-45deg);
-
-            ${props.isFlipped ? "right" : "left"}: 1.5em;
-        }`}
 
         ${(props) =>
             `transform: translateX(${props.isFlipped ? "-4em" : "4em"})`}

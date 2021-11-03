@@ -6,7 +6,6 @@ import UserAvatar from "./userAvatar";
 
 const AvatarContainer: React.FC<AvatarProperties & { side: AvatarSide }> = ({
     seed,
-    chatFeed,
     username,
     side,
 }) => {
@@ -14,12 +13,7 @@ const AvatarContainer: React.FC<AvatarProperties & { side: AvatarSide }> = ({
         <Container>
             {seed && (
                 <>
-                    {chatFeed && (
-                        <ChatBubbleList
-                            chatFeed={chatFeed}
-                            isFlipped={side === AvatarSide.Right}
-                        />
-                    )}
+                    <ChatBubbleList side={side} />
                     <span>{username}</span>
                     <UserAvatar
                         isFlipped={side === AvatarSide.Right}

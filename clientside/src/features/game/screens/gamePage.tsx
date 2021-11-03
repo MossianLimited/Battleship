@@ -31,6 +31,8 @@ import { useOnAvatar } from "../functions/useOnAvatar";
 import { useOnChat } from "../functions/useOnChat";
 import useChatQueue from "../../avatar/hooks/useChatQueue";
 import { AvatarProperties, AvatarSide } from "../../avatar/types/avatar";
+import { ChatContext } from "../contexts/chatContext";
+import Chatbox from "../components/chatBox";
 
 const GamePage = () => {
     // eslint-disable-next-line
@@ -60,22 +62,20 @@ const GamePage = () => {
             seed: isHost ? userAvatarSeed : enemyAvatarSeed,
             username: isHost ? username : enemyUsername,
             score: userStarted ? 5 : undefined,
-            chatFeed: playerChatQueue.queue,
         },
         right: {
             seed: isHost ? enemyAvatarSeed : userAvatarSeed,
             username: isHost ? enemyUsername : username,
             score: userStarted ? 5 : undefined,
-            chatFeed: enemyChatQueue.queue,
         },
     };
 
-    useEffect(() => {
-        const interval = setInterval(() => {
-            enemyChatQueue.addMessage((Math.random() * 100).toString());
-        }, 1000);
-        return () => clearInterval(interval);
-    }, [enemyChatQueue]);
+    // useEffect(() => {
+    //     const interval = setInterval(() => {
+    //         enemyChatQueue.addMessage((Math.random() * 100).toString());
+    //     }, 1100);
+    //     return () => clearInterval(interval);
+    // }, [enemyChatQueue]);
 
     useLayoutEffect(() => {
         if (!roomId) {
@@ -99,9 +99,9 @@ const GamePage = () => {
         setEnemyUsername(isHost ? guestUsername : hostUsername);
     });
 
-    // useOnChat((msg) => {
-    //     // enemyChatQueue.addMessage(msg);
-    // });
+    useOnChat((msg) => {
+        enemyChatQueue.addMessage(msg);
+    });
 
     useOnShoot((r) => {
         let status;
@@ -139,30 +139,42 @@ const GamePage = () => {
         await socket.shoot(serialized);
     };
 
-    return userStarted ? (
-        <GameStateContext.Provider value={{ state, dispatch }}>
-            {avatarVersusComponent}
-            <BoardContainer>
-                <Board
-                    selectable={false}
-                    boardType={Side.Ally}
-                    shipYard={battleship.ally}
+    return (
+        <ChatContext.Provider
+            value={{
+                chatSide:
+                    yourSide === "Host" ? AvatarSide.Left : AvatarSide.Right,
+                left: isHost ? playerChatQueue : enemyChatQueue,
+                right: isHost ? enemyChatQueue : playerChatQueue,
+            }}
+        >
+            {userStarted ? (
+                <GameStateContext.Provider value={{ state, dispatch }}>
+                    {avatarVersusComponent}
+                    <BoardContainer>
+                        <Board
+                            selectable={false}
+                            boardType={Side.Ally}
+                            shipYard={battleship.ally}
+                        />
+                        <Board
+                            selectable={yourTurn}
+                            boardType={Side.Enemy}
+                            shipYard={battleship.enemy}
+                            onSquareClick={onShoot}
+                        />
+                    </BoardContainer>
+                    <Chatbox />
+                    {/* {meta.phase === MetaPhase.Setup && <Backdrop />} */}
+                    {/* {meta.phase === MetaPhase.Setup && <SetupModal />} */}
+                </GameStateContext.Provider>
+            ) : (
+                <HostWelcome
+                    avatarVersusComponent={avatarVersusComponent}
+                    onHostStartCallback={() => setUserStarted(true)}
                 />
-                <Board
-                    selectable={yourTurn}
-                    boardType={Side.Enemy}
-                    shipYard={battleship.enemy}
-                    onSquareClick={onShoot}
-                />
-            </BoardContainer>
-            {/* {meta.phase === MetaPhase.Setup && <Backdrop />} */}
-            {/* {meta.phase === MetaPhase.Setup && <SetupModal />} */}
-        </GameStateContext.Provider>
-    ) : (
-        <HostWelcome
-            avatarVersusComponent={avatarVersusComponent}
-            onHostStartCallback={() => setUserStarted(true)}
-        />
+            )}
+        </ChatContext.Provider>
     );
 };
 
@@ -173,6 +185,7 @@ const BoardContainer = styled.div`
     gap: 6.9375rem;
 
     margin-top: 4.3125rem;
+    margin-bottom: 2.75rem;
 `;
 
 const Backdrop = styled.div`

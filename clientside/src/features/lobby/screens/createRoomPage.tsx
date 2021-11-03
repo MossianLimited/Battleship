@@ -3,7 +3,7 @@ import { useHistory } from "react-router";
 import socketClient from "../../../api/socketClient";
 import styled from "../../../styles/theme";
 import AvatarVersus from "../../avatar/components/avatarVersus";
-import { HeaderText, WhiteBox } from "../components/base.styled";
+import { HeaderText, Tag, WhiteBox } from "../components/base.styled";
 import RoomModeSlider from "../components/roomModeSlider";
 import { useUserContext } from "../contexts/userContext";
 import { RoomMode } from "../types/utility";
@@ -136,22 +136,6 @@ const Guidelines = styled.p`
     user-select: none;
 
     color: ${(props) => props.theme.colors.lobby.info.guidelines};
-`;
-
-const Tag = styled.span`
-    background: ${(props) =>
-        props.theme.colors.lobby.button.background.secondary};
-    border-radius: 0.375rem;
-    padding: 0.125rem 0.375rem;
-    margin: 0 0.375rem;
-
-    font-weight: 500;
-    font-size: 0.875rem;
-    line-height: 1.125rem;
-
-    color: ${(props) => props.theme.colors.lobby.button.text.secondary};
-
-    cursor: pointer;
 `;
 
 const GameCode = styled.div`
