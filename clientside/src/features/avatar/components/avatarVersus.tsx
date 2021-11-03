@@ -5,20 +5,24 @@ import AvatarContainer from "./avatarContainer";
 const AvatarVersus: React.FC<Partial<Record<AvatarSide, AvatarProperties>>> = ({
     left,
     right,
+    ...delegated 
 }) => {
-    if ((left?.score && !right?.score) || (left?.score && !right?.score))
+    const hasLeftScore = typeof left?.score !== "undefined"; 
+    const hasRightScore = typeof right?.score !== "undefined"; 
+    
+    if ((hasLeftScore && !hasRightScore) || (!hasLeftScore && hasRightScore))
         throw new Error("Both players need scores");
 
     return (
         <Container
-            isExpanded={left?.score !== undefined && right?.score !== undefined}
+            isExpanded={hasLeftScore && hasRightScore !== undefined}
         >
             <AvatarContainer {...left} side={AvatarSide.Left} />
             {left?.seed && right?.seed && (
                 <VS>
-                    {left.score && <span className="score">{left.score}</span>}
+                    {hasLeftScore && <span className="score">{left.score}</span>}
                     <span className="vs-text">vs</span>
-                    {left.score && <span className="score">{right.score}</span>}
+                    {hasRightScore && <span className="score">{right.score}</span>}
                 </VS>
             )}
             <AvatarContainer {...right} side={AvatarSide.Right} />

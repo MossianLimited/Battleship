@@ -15,7 +15,8 @@ export interface MetaState {
 }
 
 export enum MetaPhase {
-    Setup = 0, 
+    Welcome = 0, 
+    Setup, 
     Playing, 
     Finish, 
 }
