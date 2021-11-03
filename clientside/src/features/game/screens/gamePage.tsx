@@ -1,4 +1,10 @@
-import { useLayoutEffect, useReducer, useState, MouseEvent } from "react";
+import {
+    useLayoutEffect,
+    useReducer,
+    useState,
+    MouseEvent,
+    useEffect,
+} from "react";
 import { useHistory } from "react-router";
 import { Position, Side } from "../../board/types/utility";
 import { initialGameState } from "../constants/state";
@@ -54,15 +60,22 @@ const GamePage = () => {
             seed: isHost ? userAvatarSeed : enemyAvatarSeed,
             username: isHost ? username : enemyUsername,
             score: userStarted ? 5 : undefined,
-            chatFeed: ["Yo mama"],
+            chatFeed: playerChatQueue.queue,
         },
         right: {
             seed: isHost ? enemyAvatarSeed : userAvatarSeed,
             username: isHost ? enemyUsername : username,
             score: userStarted ? 5 : undefined,
-            chatFeed: ["Fuckkk"],
+            chatFeed: enemyChatQueue.queue,
         },
     };
+
+    useEffect(() => {
+        const interval = setInterval(() => {
+            enemyChatQueue.addMessage((Math.random() * 100).toString());
+        }, 1000);
+        return () => clearInterval(interval);
+    }, [enemyChatQueue]);
 
     useLayoutEffect(() => {
         if (!roomId) {
@@ -86,7 +99,9 @@ const GamePage = () => {
         setEnemyUsername(isHost ? guestUsername : hostUsername);
     });
 
-    useOnChat((msg) => {});
+    // useOnChat((msg) => {
+    //     // enemyChatQueue.addMessage(msg);
+    // });
 
     useOnShoot((r) => {
         let status;

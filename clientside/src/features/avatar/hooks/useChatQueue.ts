@@ -1,28 +1,16 @@
-import { useEffect, useState, useCallback } from "react";
+import { useState, useCallback } from "react";
 
 const useChatQueue = () => {
     const [queue, setQueue] = useState<string[]>([]);
 
-    const addMessage = useCallback(
-        (message: string) => {
-            setQueue([...queue, message]);
-        },
-        [queue]
-    );
+    const addMessage = useCallback((message: string) => {
+        setQueue((queue) => [message, ...queue]);
+        setTimeout(() => {
+            setQueue((queue) => queue.slice(0, -1));
+        }, 5000);
+    }, []);
 
-    const removeMessage = useCallback(() => {
-        setQueue(queue.slice(1));
-    }, [queue]);
-
-    useEffect(() => {
-        if (queue.length > 0) {
-            setTimeout(() => {
-                removeMessage();
-            }, 1000);
-        }
-    }, [queue.length, removeMessage]);
-
-    return { addMessage, removeMessage, queue };
+    return { addMessage, queue };
 };
 
 export default useChatQueue;
