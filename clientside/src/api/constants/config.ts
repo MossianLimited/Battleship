@@ -1,4 +1,7 @@
-export const API_URL = "http://localhost:8000";
+export const API_URL =
+    process.env.NODE_ENV === "development"
+        ? "http://localhost:8000"
+        : process.env.API_URL;
 
 export enum SocketEvent {
     CreateRoom = "createRoom",
@@ -11,15 +14,15 @@ export enum SocketEvent {
     JoinRoomResponse = "joinRoomResponse",
     SetAvatar = "setAvatar",
     SetAvatarResponse = "setAvatarResponse",
-    RandomShip = "randomShip", 
-    RandomShipResponse = "randomShipResponse", 
-    Setup = "setup", 
+    RandomShip = "randomShip",
+    RandomShipResponse = "randomShipResponse",
+    Setup = "setup",
     SetupResponse = "setupResponse",
     Shoot = "shoot",
     ShootResponse = "shootResponse",
     StartResponse = "gameStartResponse",
     EndResponse = "endResponse",
-    Chat = "chat", 
+    Chat = "chat",
     Withdraw = "withdraw",
     SocketId = "SocketID",
     Disconnect = "disconnect",
