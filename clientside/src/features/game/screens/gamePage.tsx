@@ -40,7 +40,7 @@ const GamePage = () => {
     const [state, dispatch] = useReducer(gameStateReducer, initialGameState);
 
     const [endReason, setEndReason] = useState<string>();
-    const [round, setRound] = useState(1);
+    const [round, setRound] = useState(0);
     const [winners, setWinners] = useState<("Host" | "Guest")[]>([]);
     const [allyScore, setAllyScore] = useState(0);
     const [enemyScore, setEnemyScore] = useState(0);
@@ -107,12 +107,12 @@ const GamePage = () => {
     };
 
     useOnStart((r) => {
+        setRound((prev) => prev + 1)
         r.firstPlayer === yourSide && setYourTurn(true);
     });
 
     useOnEnd(
         ({ responseStatus, previousRoundWinner, hostScore, guestScore }) => {
-            console.log({ previousRoundWinner });
             switch (responseStatus) {
                 case "Reset by Admin":
                     dispatch({ type: "RESET_BOARD" });
@@ -123,11 +123,13 @@ const GamePage = () => {
                     setRound(0);
                     return setStatistic([]);
                 case "Closed by Admin":
+                    return setPhase(Phase.Finish); 
                 case "Withdrew":
                 case "Abandoned":
                 case "Destroyed":
                 default:
                     setEndReason(responseStatus);
+                    if (phase === Phase.Finish) return; 
                     setPhase(Phase.Finish);
                     setAllyScore(isHost ? hostScore : guestScore);
                     setEnemyScore(isHost ? guestScore : hostScore);
@@ -192,6 +194,7 @@ const GamePage = () => {
     });
 
     useOnStatistics((r) => {
+        if (phase === Phase.Finish) return; 
         setStatistic((prev) => [...prev, r]);
     });
 
@@ -205,7 +208,6 @@ const GamePage = () => {
             socket.joinRoom(username, roomId);
             socket.setAvatar(userAvatarSeed);
         }
-
     }, [history, isHost, roomId, username, userAvatarSeed]);
 
     if (phase === Phase.Welcome)
@@ -268,16 +270,20 @@ const GamePage = () => {
         </Footer>
     );
 
-    let reason = formalizeReason(
-        endReason,
-        winners[winners.length - 1] === yourSide
+    const reason = (
+        <ReasonWrapper>
+            {formalizeReason(
+                endReason,
+                winners[winners.length - 1] === yourSide
+            )}
+        </ReasonWrapper>
     );
 
     return (
         <ChatContext.Provider value={chat}>
             <GameStateContext.Provider value={{ state, dispatch }}>
                 {round > 0 && <RoundCount>Round {round}</RoundCount>}
-                <ReasonWrapper>{reason}</ReasonWrapper>
+                {phase === Phase.Finish && reason}
                 {avatar}
                 {phase !== Phase.Finish && board}
                 {phase === Phase.Finish && result}
@@ -382,7 +388,7 @@ const ReasonWrapper = styled.div`
     background: #947eff;
     border-radius: 12px;
     font-weight: 700;
-    font-size: 48px;
+    font-size: 36px;
     padding: 1rem 2.5rem;
     display: flex;
     align-items: center;
