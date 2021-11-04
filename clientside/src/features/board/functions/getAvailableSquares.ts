@@ -1,14 +1,10 @@
-import {
-    BattleshipAllyYard,
-    BattleshipDirection,
-    BattleshipKnown,
-} from "../types/battleship";
+import { BattleshipDirection, BattleshipKnown } from "../types/battleship";
 import { Position } from "../types/utility";
 
 const safeSet = <T>(arr: T[][], value: T, row: number, col: number) => {
     const gridSize = arr.length;
     if (row >= gridSize || row < 0 || col >= gridSize || col < 0) return;
-    else arr[row][col] = value; 
+    else arr[row][col] = value;
 };
 
 const getDeltaFromDirection = (dir: BattleshipDirection): Position => {
@@ -48,8 +44,8 @@ const getAvailableSquares = (
             const col = pos.col - 1;
 
             for (let x = -1; x <= 1; x++)
-                for (let y = -1; y <=1; y++)
-                    safeSet(board, false, row + y, col + x); 
+                for (let y = -1; y <= 1; y++)
+                    safeSet(board, false, row + y, col + x);
 
             pos = {
                 row: pos.row + delta.row,
@@ -62,7 +58,7 @@ const getAvailableSquares = (
     const delta = getDeltaFromDirection(direction);
     const sum = delta.row + delta.col;
     const begin = sum >= 0 ? gridSize - 1 : 0;
-    const end = sum >= 0 ? -1 : gridSize; 
+    const end = sum >= 0 ? -1 : gridSize;
 
     const search = (i: number, j: number, depth: number) => {
         if (i >= gridSize || j >= gridSize || i < 0 || j < 0) return;
@@ -78,7 +74,7 @@ const getAvailableSquares = (
         }
     }
 
-    return board; 
+    return board;
 };
 
 export default getAvailableSquares;

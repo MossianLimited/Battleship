@@ -1,11 +1,10 @@
-import { MouseEvent, useMemo, useState } from "react";
+import { MouseEvent, useMemo } from "react";
 import styled from "styled-components";
 import Square from "./components/Square";
 import mapPosToBattleshipPart from "./functions/mapPosToBattleshipPart";
 import posToString from "./functions/posToString";
 import {
     BattleshipAllyYard,
-    BattleshipDirection,
     BattleshipPartType,
     BattleshipStatus,
     BattleshipYard,
@@ -46,7 +45,6 @@ const Board: React.FC<Props> = ({
     onSquareClick,
 }) => {
     const { board } = useGameStateContext().state;
-    const [direction, setDirection] = useState(BattleshipDirection.Vertical);
 
     const mappedBattleshipPart = useMemo(() => {
         if (boardType === Side.Ally)

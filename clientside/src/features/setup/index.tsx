@@ -42,7 +42,7 @@ const SetupModal: FC<Props> = ({ onSubmit }) => {
             direction,
             shipyard.filter((s) => s.status !== BattleshipStatus.Placeholder)
         );
-    }, [placements, shipyard]);
+    }, [placements, shipyard, direction]);
 
     const onShipClick = (battleship: BattleshipBase, _e: MouseEvent) => {
         const index = placements.findIndex((p) => p.battleship === battleship);
@@ -188,7 +188,7 @@ const SetupModal: FC<Props> = ({ onSubmit }) => {
 
         document.addEventListener("keypress", fn);
         return () => document.removeEventListener("keypress", fn);
-    }, [placements]);
+    }, [placements, direction]);
 
     return (
         <Wrapper>
