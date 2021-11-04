@@ -5,6 +5,8 @@ import socket from "../../../api/socketClient";
 export const useOnAvatar = (callback: (res: AvatarResponse) => void) => {
     const ref = useRef(callback);
 
+    ref.current = callback; 
+
     useEffect(() => {
         socket.subscribeAvatarResponse((res) => {
             ref.current(res);

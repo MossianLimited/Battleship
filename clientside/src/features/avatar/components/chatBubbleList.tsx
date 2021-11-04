@@ -24,7 +24,7 @@ const ChatBubbleList: React.FC<{ side: AvatarSide }> = ({ side }) => {
 
 const Container = styled.div`
     position: relative;
-    top: -0.75rem;
+    top: -2rem;
 
     display: flex;
     flex-flow: column-reverse;
@@ -54,11 +54,12 @@ const ChatBubble = styled.div<{
         width: 0.875rem;
         height: 0.875rem;
         bottom: -0.4375rem;
+        left: 0; 
 
         background: ${(props) =>
             props.theme.colors.lobby.avatar.background.white};
 
-        transform: rotate(-45deg);
+        transform:  rotate(-45deg);
 
         ${(props) => (props.isFlipped ? "right" : "left")}: 1.5em;
     }

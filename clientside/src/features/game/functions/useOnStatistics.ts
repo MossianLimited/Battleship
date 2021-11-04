@@ -5,6 +5,8 @@ import socket from "../../../api/socketClient";
 export const useOnStatistics = (callback: (res: StatResponse) => void) => {
     const ref = useRef(callback);
 
+    ref.current = callback; 
+
     useEffect(() => {
         socket.subscribeStatistic((res) => {
             ref.current(res);

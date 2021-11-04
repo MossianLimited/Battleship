@@ -80,11 +80,9 @@ const AvatarSelector = () => {
             <AvatarContainer>{displayedAvatars}</AvatarContainer>
             <DiceButton onClick={handleRandomize} whileHover={{ scale: 1.1 }}>
                 <motion.svg
+                    style={{ scale: 1.1, width: "1.5625rem", height: "1.125rem" }}
                     variants={variants}
                     animate={controls}
-                    style={{ scale: 1.1 }}
-                    width="1.5625rem"
-                    height="1.25rem"
                     viewBox="0 0 25 20"
                     fill="none"
                     xmlns="http://www.w3.org/2000/svg"

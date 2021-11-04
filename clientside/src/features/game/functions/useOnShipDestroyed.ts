@@ -5,6 +5,8 @@ import socket from "../../../api/socketClient";
 export const useOnShipDestroyed = (callback: (res: ShipDestroyedResponse) => void) => {
     const ref = useRef(callback);
 
+    ref.current = callback; 
+
     useEffect(() => {
         socket.subscribeShipDestroyed((res) => {
             ref.current(res);
