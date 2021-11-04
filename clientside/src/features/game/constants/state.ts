@@ -6,7 +6,6 @@ export const initialGameState: GameState = {
         turn: 1, 
         round: 1,
         phase: Phase.Setup,  
-        isHost: true, 
     }, 
     board: {
         gridSize: DEFAULT_GRID_SIZE,
