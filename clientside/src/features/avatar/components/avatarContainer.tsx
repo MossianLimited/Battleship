@@ -1,3 +1,4 @@
+import { AnimatePresence } from "framer-motion";
 import React from "react";
 import styled from "styled-components";
 import { AvatarProperties, AvatarSide } from "../types/avatar";
@@ -11,16 +12,18 @@ const AvatarContainer: React.FC<AvatarProperties & { side: AvatarSide }> = ({
 }) => {
     return (
         <Container>
-            {seed && (
-                <>
-                    <ChatBubbleList side={side} />
-                    <span>{username}</span>
-                    <UserAvatar
-                        isFlipped={side === AvatarSide.Right}
-                        seed={seed}
-                    />
-                </>
-            )}
+            <AnimatePresence>
+                {seed && (
+                    <>
+                        <ChatBubbleList side={side} />
+                        <UserAvatar
+                            isFlipped={side === AvatarSide.Right}
+                            seed={seed}
+                            username={username}
+                        />
+                    </>
+                )}
+            </AnimatePresence>
         </Container>
     );
 };
@@ -31,16 +34,6 @@ const Container = styled.div`
     align-items: center;
 
     width: 5rem;
-
-    & > span {
-        user-select: none;
-
-        font-weight: 500;
-        font-size: 1rem;
-        line-height: 1.3125rem;
-
-        color: ${(props) => props.theme.colors.lobby.avatar.text.name};
-    }
 `;
 
 export default AvatarContainer;

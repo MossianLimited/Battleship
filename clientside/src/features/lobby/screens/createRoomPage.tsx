@@ -1,3 +1,4 @@
+import { AnimatePresence, motion } from "framer-motion";
 import { useEffect, useRef, useState } from "react";
 import { useHistory } from "react-router";
 import socketClient from "../../../api/socketClient";
@@ -86,7 +87,19 @@ const CreateRoomPage = () => {
                     <span>and enter the code.</span>
                 </Guidelines>
             </InfoBox>
-            <GameCode>{(roomId && roomId.toUpperCase()) || " "}</GameCode>
+            <GameCode>
+                <AnimatePresence>
+                    {roomId && (
+                        <motion.span
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            exit={{ opacity: 0 }}
+                        >
+                            {roomId.toUpperCase()}
+                        </motion.span>
+                    )}
+                </AnimatePresence>
+            </GameCode>
         </Container>
     );
 };
@@ -144,6 +157,7 @@ const GameCode = styled.div`
     font-weight: 700;
     font-size: 2.25rem;
     line-height: 2.9375rem;
+    height: 5.4375rem;
 
     letter-spacing: 0.2em;
 
