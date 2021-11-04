@@ -50,11 +50,16 @@ const GamePage = () => {
     const [phase, setPhase] = useState(Phase.Welcome);
     const [state, dispatch] = useReducer(gameStateReducer, initialGameState);
 
+    const [second, setSecond] = useState(10);
+    const [turn, setTurn] = useState(1);
+
     const [mute, setMute] = useStickyState(false, "soundMute");
     const [endReason, setEndReason] = useState<string>();
-    const [round, setRound] = useState(0);
+    const [, setRound] = useState(0);
     const [winners, setWinners] = useState<("Host" | "Guest")[]>([]);
     const [allyScore, setAllyScore] = useState(0);
+    const [allyHit, setAllyHit] = useState(0);
+    const [enemyHit, setEnemyHit] = useState(0);
     const [enemyScore, setEnemyScore] = useState(0);
     const [enemyAvatarSeed, setEnemyAvatarSeed] = useState<string>("");
     const [enemyUsername, setEnemyUsername] = useState<string>("");
@@ -63,6 +68,7 @@ const GamePage = () => {
     const { battleship } = state;
     const { username, userAvatarSeed } = useUserContext();
 
+    const timerRef = useRef<NodeJS.Timeout | undefined>(undefined);
     const forceWithdraw = useAutoWithdraw()[1];
     const statsLock = useRef(false);
     const query = useQuery();
@@ -160,9 +166,20 @@ const GamePage = () => {
         setMute(!mute);
     };
 
+    const onNewCount = () => {
+        setSecond(10);
+        timerRef.current && clearInterval(timerRef.current);
+        timerRef.current = setInterval(() => {
+            setSecond((p) => p - 1);
+        }, 1000);
+    };
+
     useOnStart((r) => {
         stopPlanning();
-
+        setTurn(1);
+        setAllyHit(0);
+        setEnemyHit(0);
+        onNewCount();
         setRound((prev) => prev + 1);
         r.firstPlayer === yourSide && setYourTurn(true);
     });
@@ -232,6 +249,7 @@ const GamePage = () => {
         if (r.nextTurnPlayer === yourSide) setYourTurn(true);
         else setYourTurn(false);
 
+        onNewCount();
         dispatch({
             type: "MARK_SQUARE",
             payload: {
@@ -240,6 +258,12 @@ const GamePage = () => {
                 status,
             },
         });
+
+        setTurn((p) => p + 1);
+        if (status === BoardSquareStatus.Hit) {
+            side === Side.Enemy && setEnemyHit((prev) => prev + 1);
+            side === Side.Ally && setAllyHit((prev) => prev + 1);
+        }
     });
 
     useOnShipDestroyed(({ side, ship }) => {
@@ -323,9 +347,13 @@ const GamePage = () => {
             </>
         );
 
-    const borderRadius = phase === Phase.Finish ? "0.75rem 0.75rem 0 0" : "0.75rem";
+    const borderRadius =
+        phase === Phase.Finish ? "0.75rem 0.75rem 0 0" : "0.75rem";
     const avatar = <AvatarVersus style={{ borderRadius }} {...avatarProps} />;
     const result = <Result winners={winners} stats={statistic} />;
+    const turnCount = <RoundCount>Turn {turn}</RoundCount>;
+
+    const timer = <Timer yourTurn={yourTurn}>{second}s</Timer>;
 
     const chat = {
         chatSide: yourSide === "Host" ? AvatarSide.Left : AvatarSide.Right,
@@ -336,29 +364,37 @@ const GamePage = () => {
     const board = isHost ? (
         <BoardContainer>
             <Board
+                hitCount={allyHit}
                 selectable={false}
                 boardType={Side.Ally}
                 shipYard={battleship.ally}
+                style={{ opacity: yourTurn ? 0.6 : 1 }}
             />
             <Board
+                hitCount={enemyHit}
                 selectable={yourTurn}
                 boardType={Side.Enemy}
                 shipYard={battleship.enemy}
                 onSquareClick={onShoot}
+                style={{ opacity: yourTurn ? 1 : 0.6 }}
             />
         </BoardContainer>
     ) : (
         <BoardContainer>
             <Board
+                hitCount={enemyHit}
                 selectable={yourTurn}
                 boardType={Side.Enemy}
                 shipYard={battleship.enemy}
                 onSquareClick={onShoot}
+                style={{ opacity: yourTurn ? 1 : 0.6 }}
             />
             <Board
+                hitCount={allyHit}
                 selectable={false}
                 boardType={Side.Ally}
                 shipYard={battleship.ally}
+                style={{ opacity: yourTurn ? 0.6 : 1 }}
             />
         </BoardContainer>
     );
@@ -395,12 +431,13 @@ const GamePage = () => {
             </MuteButton>
             <ChatContext.Provider value={chat}>
                 <GameStateContext.Provider value={{ state, dispatch }}>
-                    {round > 0 && <RoundCount>Round {round}</RoundCount>}
+                    {phase === Phase.Playing && timer}
+                    {phase === Phase.Playing && turnCount}
                     {phase === Phase.Finish && reason}
                     {avatar}
                     {phase !== Phase.Finish && board}
-                    {phase === Phase.Finish && result}
                     <Chatbox />
+                    {phase === Phase.Finish && result}
                     {phase === Phase.Finish && footer}
                     {phase === Phase.Setup && <Backdrop />}
                     {phase === Phase.Setup && (
@@ -524,23 +561,6 @@ const ReasonWrapper = styled.div`
     margin-bottom: 1rem;
 `;
 
-const RoundCount = styled.div`
-    display: flex;
-    width: auto;
-    height: auto;
-    padding: 0.375rem 0.5rem;
-    text-transform: uppercase;
-    align-items: center;
-    justify-content: center;
-    color: #674def;
-    font-weight: 600;
-    background: white;
-    border-radius: 6px;
-    z-index: 4;
-    position: absolute;
-    top: -1.375rem;
-`;
-
 const MuteButton = styled.button`
     display: flex;
     align-items: center;
@@ -562,4 +582,36 @@ const MuteButton = styled.button`
     &:active {
         opacity: 0.85;
     }
+`;
+
+const Timer = styled.span<{ yourTurn: boolean }>`
+    color: #c2b6ff;
+    font-size: 1.25rem;
+    font-weight: 500;
+    position: absolute;
+    top: -3.25rem;
+
+    & > svg {
+        position: absolute;
+        transition: all 200ms ease;
+        transform: rotate(${({ yourTurn }) => (yourTurn ? 0 : 180)}deg);
+    }
+`;
+
+const RoundCount = styled.div`
+    display: flex;
+    width: auto;
+    height: auto;
+    padding: 0.375rem 0.625rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    align-items: center;
+    justify-content: center;
+    color: #674def;
+    font-weight: 600;
+    background: white;
+    border-radius: 6px;
+    z-index: 4;
+    position: absolute;
+    top: -1.375rem;
 `;
