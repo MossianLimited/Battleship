@@ -17,9 +17,10 @@ interface ShipProps {
 
 const Ship: FC<ShipProps> = ({ battleship, status, selected, onClick }) => {
     const opacity = status === PlacementStatus.Placed ? 0.4 : 1.0;
+    const pointerEvents = status === PlacementStatus.Placed ? 'none' : 'auto';
 
     return (
-        <ShipWrapper selected={selected} style={{ opacity }} onClick={onClick}>
+        <ShipWrapper selected={selected} style={{ opacity, pointerEvents }} onClick={onClick}>
             <ShipPart
                 part={BattleshipPartType.Front}
                 direction={BattleshipDirection.Vertical}

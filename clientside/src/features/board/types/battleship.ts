@@ -24,6 +24,7 @@ export enum BattleshipStatus {
     Default = 0,
     Hidden,
     Sunken,
+    Placeholder,
 }
 
 export interface BattleshipBase {
@@ -45,16 +46,21 @@ export interface BattleshipSunken extends BattleshipKnown {
     status: BattleshipStatus.Sunken;
 }
 
+export interface BattleshipPlaceholder extends BattleshipKnown {
+    status: BattleshipStatus.Placeholder;
+}
+
 export interface BattleshipHidden extends BattleshipBase {
     status: BattleshipStatus.Hidden;
 }
 
-export type BattleshipAllyYard = (BattleshipAlly | BattleshipSunken)[];
+export type BattleshipAllyYard = (BattleshipAlly | BattleshipSunken | BattleshipPlaceholder)[];
 
 export type BattleshipYard = (
     | BattleshipAlly
     | BattleshipSunken
     | BattleshipHidden
+    | BattleshipPlaceholder
 )[];
 
 export interface BattleshipState {

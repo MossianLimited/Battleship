@@ -1,10 +1,12 @@
-import { MouseEvent, useMemo } from "react";
+import { MouseEvent, useMemo, useState } from "react";
 import styled from "styled-components";
 import Square from "./components/Square";
 import mapPosToBattleshipPart from "./functions/mapPosToBattleshipPart";
 import posToString from "./functions/posToString";
 import {
     BattleshipAllyYard,
+    BattleshipDirection,
+    BattleshipPartType,
     BattleshipStatus,
     BattleshipYard,
 } from "./types/battleship";
@@ -17,6 +19,7 @@ type Props = InteractiveProps & (AllyProps | EnemyProps);
 interface InteractiveProps {
     selectable?: boolean;
     validate?: boolean;
+    availability?: boolean[][];
     onSquareHoverStart?: (p: Position, e: MouseEvent) => any;
     onSquareHoverEnd?: (p: Position, e: MouseEvent) => any;
     onSquareClick?: (p: Position, e: MouseEvent) => any;
@@ -37,11 +40,13 @@ const Board: React.FC<Props> = ({
     shipYard,
     selectable,
     validate,
+    availability,
     onSquareHoverEnd,
     onSquareHoverStart,
     onSquareClick,
 }) => {
     const { board } = useGameStateContext().state;
+    const [direction, setDirection] = useState(BattleshipDirection.Vertical);
 
     const mappedBattleshipPart = useMemo(() => {
         if (boardType === Side.Ally)
@@ -62,6 +67,21 @@ const Board: React.FC<Props> = ({
             generateArrayOfNumbers(board.gridSize).map((col) => {
                 const position = { row, col };
                 const key = posToString(position);
+
+                const isPlacing =
+                    mappedBattleshipPart.get(key)?.battleship.status ===
+                    BattleshipStatus.Placeholder;
+
+                const isHead =
+                    mappedBattleshipPart.get(key)?.partType ===
+                    BattleshipPartType.Front;
+
+                const interactive =
+                    availability === undefined ||
+                    (!isHead && isPlacing) ||
+                    (availability !== undefined &&
+                        availability[row - 1][col - 1]);
+
                 return (
                     <Square
                         key={key}
@@ -69,6 +89,10 @@ const Board: React.FC<Props> = ({
                         selectable={selectable}
                         position={position}
                         part={mappedBattleshipPart.get(key) || undefined}
+                        style={{
+                            opacity: interactive ? 1.0 : 0.4,
+                            pointerEvents: interactive ? "auto" : "none",
+                        }}
                         onClick={(e) =>
                             onSquareClick && onSquareClick(position, e)
                         }
@@ -88,6 +112,7 @@ const Board: React.FC<Props> = ({
         boardType,
         mappedBattleshipPart,
         selectable,
+        availability,
         onSquareClick,
         onSquareHoverEnd,
         onSquareHoverStart,
