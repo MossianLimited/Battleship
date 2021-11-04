@@ -436,8 +436,8 @@ const GamePage = () => {
                     {phase === Phase.Finish && reason}
                     {avatar}
                     {phase !== Phase.Finish && board}
-                    <Chatbox />
                     {phase === Phase.Finish && result}
+                    <Chatbox />
                     {phase === Phase.Finish && footer}
                     {phase === Phase.Setup && <Backdrop />}
                     {phase === Phase.Setup && (
