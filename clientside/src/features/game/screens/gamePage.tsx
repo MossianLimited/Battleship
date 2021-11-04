@@ -10,7 +10,6 @@ import styled from "styled-components";
 import useQuery from "../../routing/hooks/useQuery";
 import gameStateReducer from "../reducers/gameStateReducer";
 import SetupModal from "../../setup";
-import useAutoWithdraw from "../functions/useAutoWithdraw";
 import HostWelcome from "./hostWelcome";
 import AvatarVersus from "../../avatar/components/avatarVersus";
 import socket from "../../../api/socketClient";
@@ -50,7 +49,6 @@ const GamePage = () => {
     const { battleship } = state;
     const { username, userAvatarSeed } = useUserContext();
 
-    useAutoWithdraw()
     const query = useQuery();
     const history = useHistory();
     const playerChatQueue = useChatQueue();
@@ -102,6 +100,14 @@ const GamePage = () => {
     useOnEndSingle(
         ({ responseStatus, previousRoundWinner, hostScore, guestScore }) => {
             switch (responseStatus) {
+                case "Reset by Admin":
+                    dispatch({ type: "RESET_BOARD" });   
+                    setPhase(Phase.Welcome); 
+                    setAllyScore(0); 
+                    setEnemyScore(0); 
+                    setWinners([]) 
+                    return setStatistic([]); 
+                case "Closed by Admin":
                 case "Withdrew":
                 case "Abandoned":
                 case "Destroyed":
