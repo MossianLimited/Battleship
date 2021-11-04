@@ -1,12 +1,15 @@
-import { BattleshipAllyYard, BattleshipKnown } from "../../board/types/battleship";
+import {
+    BattleshipAllyYard,
+    BattleshipKnown,
+} from "../../board/types/battleship";
 import { BoardSquareStatus } from "../../board/types/board";
 import { Position, Side } from "../../board/types/utility";
 
 type GameStartAction = {
-    type: "GAME_START"; 
+    type: "GAME_START";
     payload: {
-        shipyard: BattleshipAllyYard; 
-    }, 
+        shipyard: BattleshipAllyYard;
+    };
 };
 
 type MarkSquareAction = {
@@ -19,11 +22,19 @@ type MarkSquareAction = {
 };
 
 type SunkShipAction = {
-    type: "SUNK_SHIP"; 
+    type: "SUNK_SHIP";
     payload: {
         side: Side;
         battleship: BattleshipKnown;
-    }
-}
+    };
+};
 
-export type GameAction = GameStartAction | MarkSquareAction | SunkShipAction;
+type ResetBoardAction = {
+    type: "RESET_BOARD";
+};
+
+export type GameAction =
+    | GameStartAction
+    | MarkSquareAction
+    | SunkShipAction
+    | ResetBoardAction;

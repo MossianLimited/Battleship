@@ -15,6 +15,7 @@ import {
     ShipDestroyedResponse,
     ShootResponse,
     StartResponse,
+    StatResponse,
 } from "./types/transport";
 
 class SocketClient {
@@ -369,6 +370,44 @@ class SocketClient {
         this.socket.on(SocketEvent.Chat, (msg: string) => {
             callback(msg);
         });
+    }
+
+    public subscribeStatistic(callback: (res: StatResponse) => void) {
+        if (!this.socket) return; 
+        this.socket.on(
+            SocketEvent.StatResponse,
+            (
+                responseStatus: InfallibleResponse,
+                hostTotal: number, 
+                hostHit: number, 
+                hostMiss: number, 
+                hostAcc: number, 
+                guestTotal: number, 
+                guestHit: number, 
+                guestMiss: number, 
+                guestAcc: number, 
+                time: number,
+                turnCount: number,
+            ) => {
+                callback({
+                    responseStatus, 
+                    time, 
+                    turnCount, 
+                    host: {
+                        total: hostTotal,
+                        hit: hostHit,
+                        miss: hostMiss,
+                        acc: hostAcc,
+                    },
+                    guest: {
+                        total: guestTotal,
+                        hit: guestHit,
+                        miss: guestMiss,
+                        acc: guestAcc,
+                    }
+                });
+            }
+        );
     }
 }
 

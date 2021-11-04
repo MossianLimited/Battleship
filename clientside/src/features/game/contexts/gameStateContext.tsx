@@ -1,6 +1,6 @@
 import { createContext, useContext } from "react";
 import { GameAction } from "../types/action";
-import { GameState, MetaPhase } from "../types/state";
+import { GameState, Phase } from "../types/state";
 
 // initializes with empty Product
 export const GameStateContext = createContext<{
@@ -11,7 +11,7 @@ export const GameStateContext = createContext<{
         meta: {
             turn: 1,
             round: 1,
-            phase: MetaPhase.Setup,
+            phase: Phase.Setup,
             isHost: true, 
         },
         board: {

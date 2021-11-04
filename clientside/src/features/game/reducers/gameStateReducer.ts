@@ -32,6 +32,19 @@ const gameStateReducer = (
                     },
                 },
             };
+        case "RESET_BOARD":
+            return {
+                ...prevState,
+                board: {
+                    ...prevState.board, 
+                    ally: {},
+                    enemy: {},
+                },
+                battleship: {
+                    ally: [],
+                    enemy: [],
+                },
+            };
         case "SUNK_SHIP":
             if (action.payload.side === Side.Enemy) {
                 const length = prevState.battleship.enemy.length;

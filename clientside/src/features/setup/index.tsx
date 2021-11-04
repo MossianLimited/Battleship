@@ -304,7 +304,7 @@ const BoardWrapper = styled.div`
 `;
 
 const ReadyButton = styled.button`
-    background: #fff06b;
+    background: #ffdbb4;
     display: flex;
     align-items: center;
     justify-content: center;
