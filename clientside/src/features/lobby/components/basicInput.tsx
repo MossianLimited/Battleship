@@ -1,13 +1,14 @@
+import { motion, MotionProps } from "framer-motion";
 import { InputHTMLAttributes } from "react";
 import styled from "../../../styles/theme";
 
-const BasicInput: React.FC<InputHTMLAttributes<HTMLInputElement>> = ({
-    ...delegated
-}) => {
+const BasicInput: React.FC<
+    InputHTMLAttributes<HTMLInputElement> & MotionProps
+> = ({ ...delegated }) => {
     return <StyledInput {...delegated} />;
 };
 
-const StyledInput = styled.input`
+const StyledInput = styled(motion.input)`
     background: ${(props) => props.theme.colors.lobby.input.background.light};
     border-radius: 0.375rem;
 

@@ -13,10 +13,7 @@ const AvatarVersus: React.FC<
         throw new Error("Both players need scores");
 
     return (
-        <Container
-            isExpanded={hasLeftScore && hasRightScore !== undefined}
-            {...delegated}
-        >
+        <Container isExpanded={hasLeftScore && hasRightScore !== undefined} {...delegated}>
             <AvatarContainer {...left} side={AvatarSide.Left} />
             {left?.seed && right?.seed && (
                 <VS>

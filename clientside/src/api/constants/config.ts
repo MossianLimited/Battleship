@@ -29,6 +29,14 @@ export enum SocketEvent {
     Withdraw = "withdraw",
     SocketId = "SocketID",
     Disconnect = "disconnect",
+    AdminLogin = "adminLogin",
+    AdminLoginResponse = "adminLoginResponse",
+    AdminGetRoomList = "adminGetRoomList",
+    AdminGetRoomListResponse = "adminGetRoomListResponse",
+    AdminSpectate = "adminSpectate",
+    AdminSpectateResponse = "adminSpectateResponse",
+    AdminStopSpectate = "adminStopSpectate",
+    AdminStopSpectateResponse = "adminStopSpectateResponse",
 }
 
 export enum SetupResponseStatus {

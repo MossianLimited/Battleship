@@ -41,9 +41,12 @@ import { AvatarProperties, AvatarSide } from "../../avatar/types/avatar";
 import { ChatContext } from "../contexts/chatContext";
 import { useOnStatistics } from "../functions/useOnStatistics";
 import { StatResponse } from "../../../api/types/transport";
+import TutorialWrapper from "../wrappers/tutorialWrapper";
+import { Backdrop } from "../../lobby/components/base.styled";
 import VolumeMute from "../components/volumeMute";
 import VolumeUp from "../components/volumeUp";
 import useStickyState from "../functions/useStickyState";
+import { useOnAdminSpectate } from "../functions/useOnAdminSpectate";
 
 const GamePage = () => {
     const [yourTurn, setYourTurn] = useState(false);
@@ -66,7 +69,7 @@ const GamePage = () => {
     const [statistic, setStatistic] = useState<StatResponse[]>([]);
 
     const { battleship } = state;
-    const { username, userAvatarSeed } = useUserContext();
+    const { username, userAvatarSeed, isAdmin } = useUserContext();
 
     const timerRef = useRef<NodeJS.Timeout | undefined>(undefined);
     const forceWithdraw = useAutoWithdraw()[1];
@@ -79,6 +82,7 @@ const GamePage = () => {
     const roomId = query.get("roomId");
     const isHost = query.get("isHost") === "true";
     const yourSide = isHost ? "Host" : "Guest";
+    const spectatorMode = query.get("spectator") === "true" && isAdmin;
 
     const option = { volume: 0.6, soundEnabled: !mute };
     const [playShootHit] = useSound("/sounds/shoot-hit.wav", option);
@@ -218,6 +222,12 @@ const GamePage = () => {
         }
     );
 
+    useOnAdminSpectate(({ responseStatus, room }) => {
+        if (responseStatus === "Connection Not Verified") {
+            return history.push("/");
+        }
+    });
+
     useOnAvatar(({ hostAvatar, guestAvatar, hostUsername, guestUsername }) => {
         setEnemyAvatarSeed(isHost ? guestAvatar : hostAvatar);
         setEnemyUsername(isHost ? guestUsername : hostUsername);
@@ -330,7 +340,7 @@ const GamePage = () => {
         stopVictory,
     ]);
 
-    if (phase === Phase.Welcome)
+    if (phase === Phase.Welcome && !spectatorMode)
         return (
             <>
                 <HostWelcome
@@ -437,7 +447,7 @@ const GamePage = () => {
                     {avatar}
                     {phase !== Phase.Finish && board}
                     {phase === Phase.Finish && result}
-                    <Chatbox />
+                    {!spectatorMode && <Chatbox />}
                     {phase === Phase.Finish && footer}
                     {phase === Phase.Setup && <Backdrop />}
                     {phase === Phase.Setup && (
@@ -489,16 +499,6 @@ const BoardContainer = styled.div`
     margin-top: 4.3125rem;
     margin-bottom: 3.25rem;
     position: relative;
-`;
-
-const Backdrop = styled.div`
-    z-index: 5;
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100vw;
-    height: 100vh;
-    background-color: rgba(0, 0, 0, 0.6);
 `;
 
 const Footer = styled.div`

@@ -28,6 +28,18 @@ const theme = {
         danger: {
             main: "#FF9A61",
         },
+        tutorial: {
+            modal: {
+                background: {
+                    primary: "#674def",
+                    light: "#FFFFFF",
+                },
+            },
+            infoButton: {
+                background: "#FFFFFF",
+                text: "#917DF8",
+            },
+        },
         lobby: {
             avatar: {
                 background: {
