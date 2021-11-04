@@ -6,7 +6,7 @@ import { GameStateContext } from "../contexts/gameStateContext";
 import { Phase } from "../types/state";
 import Board from "../../board";
 import Result from "../../result";
-import styled from "styled-components";
+import styled, { css } from "styled-components";
 import useQuery from "../../routing/hooks/useQuery";
 import gameStateReducer from "../reducers/gameStateReducer";
 import SetupModal from "../../setup";
@@ -21,7 +21,7 @@ import useChatQueue from "../../avatar/hooks/useChatQueue";
 import useAutoWithdraw from "../functions/useAutoWithdraw";
 
 import { useUserContext } from "../../lobby/contexts/userContext";
-import { useOnStartSingle } from "../functions/useOnStart";
+import { useOnStart } from "../functions/useOnStart";
 import { useOnEnd } from "../functions/useOnEnd";
 import { useOnShoot } from "../functions/useOnShoot";
 import { BoardSquareStatus } from "../../board/types/board";
@@ -39,7 +39,8 @@ const GamePage = () => {
     const [phase, setPhase] = useState(Phase.Welcome);
     const [state, dispatch] = useReducer(gameStateReducer, initialGameState);
 
-    const [, setEndReason] = useState<string>();
+    const [endReason, setEndReason] = useState<string>();
+    const [round, setRound] = useState(1);
     const [winners, setWinners] = useState<("Host" | "Guest")[]>([]);
     const [allyScore, setAllyScore] = useState(0);
     const [enemyScore, setEnemyScore] = useState(0);
@@ -50,7 +51,7 @@ const GamePage = () => {
     const { battleship } = state;
     const { username, userAvatarSeed } = useUserContext();
 
-    const forceWithdraw = useAutoWithdraw()[1]; 
+    const forceWithdraw = useAutoWithdraw()[1];
     const query = useQuery();
     const history = useHistory();
     const playerChatQueue = useChatQueue();
@@ -64,12 +65,22 @@ const GamePage = () => {
         left: {
             seed: isHost ? userAvatarSeed : enemyAvatarSeed,
             username: isHost ? username : enemyUsername,
-            score: phase !== Phase.Welcome ? (isHost ? allyScore : enemyScore) : undefined,
+            score:
+                phase !== Phase.Welcome
+                    ? isHost
+                        ? allyScore
+                        : enemyScore
+                    : undefined,
         },
         right: {
             seed: isHost ? enemyAvatarSeed : userAvatarSeed,
             username: isHost ? enemyUsername : username,
-            score: phase !== Phase.Welcome ? (isHost ? enemyScore : allyScore) : undefined,
+            score:
+                phase !== Phase.Welcome
+                    ? isHost
+                        ? enemyScore
+                        : allyScore
+                    : undefined,
         },
     };
 
@@ -92,34 +103,38 @@ const GamePage = () => {
     };
 
     const onWithdraw = (_e: MouseEvent) => {
-        forceWithdraw(); 
+        forceWithdraw();
     };
 
-    useOnStartSingle((r) => {
+    useOnStart((r) => {
         r.firstPlayer === yourSide && setYourTurn(true);
     });
 
     useOnEnd(
         ({ responseStatus, previousRoundWinner, hostScore, guestScore }) => {
-            console.log({previousRoundWinner})
+            console.log({ previousRoundWinner });
             switch (responseStatus) {
                 case "Reset by Admin":
-                    dispatch({ type: "RESET_BOARD" });   
-                    setPhase(Phase.Welcome); 
-                    setAllyScore(0); 
-                    setEnemyScore(0); 
-                    setWinners([]) 
-                    return setStatistic([]); 
+                    dispatch({ type: "RESET_BOARD" });
+                    setPhase(Phase.Welcome);
+                    setAllyScore(0);
+                    setEnemyScore(0);
+                    setWinners([]);
+                    setRound(0);
+                    return setStatistic([]);
                 case "Closed by Admin":
                 case "Withdrew":
                 case "Abandoned":
                 case "Destroyed":
-                default: 
+                default:
                     setEndReason(responseStatus);
                     setPhase(Phase.Finish);
                     setAllyScore(isHost ? hostScore : guestScore);
                     setEnemyScore(isHost ? guestScore : hostScore);
-                    return setWinners((prev) => [...prev, previousRoundWinner as any]);
+                    return setWinners((prev) => [
+                        ...prev,
+                        previousRoundWinner as any,
+                    ]);
             }
         }
     );
@@ -190,6 +205,7 @@ const GamePage = () => {
             socket.joinRoom(username, roomId);
             socket.setAvatar(userAvatarSeed);
         }
+
     }, [history, isHost, roomId, username, userAvatarSeed]);
 
     if (phase === Phase.Welcome)
@@ -243,13 +259,25 @@ const GamePage = () => {
     const footer = (
         <Footer>
             <Withdraw onClick={onWithdraw}>Withdraw</Withdraw>
-            <OneMoreRound onClick={onOneMoreRound}>One More Round</OneMoreRound>
+            <OneMoreRound
+                disabled={!canPlayAgain(endReason)}
+                onClick={onOneMoreRound}
+            >
+                One More Round
+            </OneMoreRound>
         </Footer>
+    );
+
+    let reason = formalizeReason(
+        endReason,
+        winners[winners.length - 1] === yourSide
     );
 
     return (
         <ChatContext.Provider value={chat}>
             <GameStateContext.Provider value={{ state, dispatch }}>
+                {round > 0 && <RoundCount>Round {round}</RoundCount>}
+                <ReasonWrapper>{reason}</ReasonWrapper>
                 {avatar}
                 {phase !== Phase.Finish && board}
                 {phase === Phase.Finish && result}
@@ -264,6 +292,25 @@ const GamePage = () => {
 
 export default GamePage;
 
+function formalizeReason(reason: string | undefined, youWon: boolean): string {
+    switch (reason) {
+        case "Closed by Admin":
+            return "Room Closed by Admin";
+        case "Withdrew":
+            return "Enemy Withdrew";
+        case "Abandoned":
+            return "Enemy Abandoned";
+        case "Destroyed":
+        default:
+            if (youWon) return "You Won!";
+            return "You Lose!";
+    }
+}
+
+function canPlayAgain(reason: string | undefined): boolean {
+    return reason === undefined || reason === "Destroyed";
+}
+
 const BoardContainer = styled.div`
     display: flex;
     justify-content: center;
@@ -272,6 +319,7 @@ const BoardContainer = styled.div`
 
     margin-top: 4.3125rem;
     margin-bottom: 2.75rem;
+    position: relative;
 `;
 
 const Backdrop = styled.div`
@@ -291,7 +339,7 @@ const Footer = styled.div`
     min-width: 38.9375rem;
 `;
 
-const OneMoreRound = styled.button`
+const OneMoreRound = styled.button<{ disabled?: boolean }>`
     outline: none;
     display: flex;
     align-items: center;
@@ -305,13 +353,22 @@ const OneMoreRound = styled.button`
     cursor: pointer;
     transform: scale(1, 1);
 
-    &:hover {
-        transform: scale(1.03, 1.06);
-    }
+    ${({ disabled }) => {
+        if (!disabled)
+            return css`
+                &:hover {
+                    transform: scale(1.03, 1.06);
+                }
 
-    &:active {
-        transform: scale(0.97, 0.94);
-    }
+                &:active {
+                    transform: scale(0.97, 0.94);
+                }
+            `;
+        return css`
+            opacity: 0.5;
+            cursor: default;
+        `;
+    }}
 `;
 
 const Withdraw = styled(OneMoreRound)`
@@ -319,4 +376,36 @@ const Withdraw = styled(OneMoreRound)`
     color: white;
     font-weight: 500;
     letter-spacing: 0.5px;
+`;
+
+const ReasonWrapper = styled.div`
+    background: #947eff;
+    border-radius: 12px;
+    font-weight: 700;
+    font-size: 48px;
+    padding: 1rem 2.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    margin-bottom: 1rem;
+`;
+
+const RoundCount = styled.div`
+    display: flex;
+    width: auto;
+    height: auto;
+    padding: 0.375rem 0.5rem;
+    text-transform: uppercase;
+    align-items: center;
+    justify-content: center;
+    color: #674def;
+    font-weight: 600;
+    background: white;
+    border-radius: 6px;
+    z-index: 4;
+
+    & + * {
+        margin-top: -1rem;
+    }
 `;
