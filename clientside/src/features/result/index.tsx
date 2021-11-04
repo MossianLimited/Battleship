@@ -19,7 +19,7 @@ const Result: FC<Props> = ({ stats, winners }) => {
                 return (
                     <Row key={index}>
                         <LeftStats>
-                            {st.host.hit}/{st.host.total}/{st.host.acc}%
+                            {st.host.hit}/{st.host.total}/{st.host.acc.toFixed(0)}%
                         </LeftStats>
                         <RoundInfo>
                             {winner === "Host" ? (
@@ -37,7 +37,7 @@ const Result: FC<Props> = ({ stats, winners }) => {
                             )}
                         </RoundInfo>
                         <RightStats>
-                            {st.guest.hit}/{st.guest.total}/{st.guest.acc}%
+                            {st.guest.hit}/{st.guest.total}/{st.guest.acc.toFixed(0)}%
                         </RightStats>
                     </Row>
                 );

@@ -12,24 +12,25 @@ import gameStateReducer from "../reducers/gameStateReducer";
 import SetupModal from "../../setup";
 import HostWelcome from "./hostWelcome";
 import AvatarVersus from "../../avatar/components/avatarVersus";
+import Chatbox from "../components/chatBox";
 import socket from "../../../api/socketClient";
 import serializePos from "../../board/functions/serializePos";
 import deserializePos from "../../board/functions/deserializePos";
 import deserializeBattleship from "../functions/deserializeBattleship";
+import useChatQueue from "../../avatar/hooks/useChatQueue";
+import useAutoWithdraw from "../functions/useAutoWithdraw";
 
 import { useUserContext } from "../../lobby/contexts/userContext";
 import { useOnStartSingle } from "../functions/useOnStart";
-import { useOnEndSingle } from "../functions/useOnEnd";
+import { useOnEnd } from "../functions/useOnEnd";
 import { useOnShoot } from "../functions/useOnShoot";
 import { BoardSquareStatus } from "../../board/types/board";
 import { useOnAvatar } from "../functions/useOnAvatar";
 import { BattleshipAllyYard } from "../../board/types/battleship";
 import { useOnShipDestroyed } from "../functions/useOnShipDestroyed";
 import { useOnChat } from "../functions/useOnChat";
-import useChatQueue from "../../avatar/hooks/useChatQueue";
 import { AvatarProperties, AvatarSide } from "../../avatar/types/avatar";
 import { ChatContext } from "../contexts/chatContext";
-import Chatbox from "../components/chatBox";
 import { useOnStatistics } from "../functions/useOnStatistics";
 import { StatResponse } from "../../../api/types/transport";
 
@@ -49,6 +50,7 @@ const GamePage = () => {
     const { battleship } = state;
     const { username, userAvatarSeed } = useUserContext();
 
+    const forceWithdraw = useAutoWithdraw()[1]; 
     const query = useQuery();
     const history = useHistory();
     const playerChatQueue = useChatQueue();
@@ -90,15 +92,16 @@ const GamePage = () => {
     };
 
     const onWithdraw = (_e: MouseEvent) => {
-        socket.withdraw(); 
+        forceWithdraw(); 
     };
 
     useOnStartSingle((r) => {
         r.firstPlayer === yourSide && setYourTurn(true);
     });
 
-    useOnEndSingle(
+    useOnEnd(
         ({ responseStatus, previousRoundWinner, hostScore, guestScore }) => {
+            console.log({previousRoundWinner})
             switch (responseStatus) {
                 case "Reset by Admin":
                     dispatch({ type: "RESET_BOARD" });   
@@ -116,7 +119,7 @@ const GamePage = () => {
                     setPhase(Phase.Finish);
                     setAllyScore(isHost ? hostScore : guestScore);
                     setEnemyScore(isHost ? guestScore : hostScore);
-                    return setWinners([...winners, previousRoundWinner as any]);
+                    return setWinners((prev) => [...prev, previousRoundWinner as any]);
             }
         }
     );
@@ -161,7 +164,9 @@ const GamePage = () => {
     });
 
     useOnShipDestroyed(({ side, ship }) => {
-        console.log({ side, ship });
+        return console.log({ side, ship });
+        // waiting for backend ghostship fix
+        // eslint-disable-next-line
         dispatch({
             type: "SUNK_SHIP",
             payload: {
