@@ -16,7 +16,6 @@ const AvatarVersus: React.FC<Partial<Record<AvatarSide, AvatarProperties>> & { s
     return (
         <Container
             isExpanded={hasLeftScore && hasRightScore !== undefined}
-            {...delegated}
         >
             <AvatarContainer {...left} side={AvatarSide.Left} />
             {left?.seed && right?.seed && (
