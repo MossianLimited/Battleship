@@ -26,6 +26,7 @@ export class Room {
 	public hostAvatar: string;
 	public guestAvatar: string;
 	public matchStart: number;
+	public lastWin: string;
 
 	constructor(
 		hostUsername: string,
@@ -52,6 +53,7 @@ export class Room {
 		this.hostShips = [[]];
 		this.guestShot = [];
 		this.hostShot = [];
+		this.lastWin = undefined;
 
 		roomIterator += 1;
 		if (roomIterator >= 1000000) roomIterator = 0;
