@@ -1,8 +1,10 @@
 import { Room } from '../class';
 
-export const findOpponentSocketId = (room: Room, socketID: string) => {
-	if (room.hostSocketID === socketID) return room.guestSocketID;
-	else if (room.guestSocketID === socketID) return room.hostSocketID;
+export const findOpponentSocketId = (room: Room, socketID: string) => { //woo
+	if (room) {
+		if (room.hostSocketID === socketID) return room.guestSocketID;
+		else if (room.guestSocketID === socketID) return room.hostSocketID;
+	}
 };
 
 export const resetRoom = (room: Room) => {

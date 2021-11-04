@@ -54,14 +54,13 @@ const ChatBubble = styled.div<{
         width: 0.875rem;
         height: 0.875rem;
         bottom: -0.4375rem;
-        left: 0; 
 
         background: ${(props) =>
             props.theme.colors.lobby.avatar.background.white};
 
-        transform:  rotate(-45deg);
+        transform: rotate(-45deg);
 
-        ${(props) => (props.isFlipped ? "right" : "left")}: 1.5em;
+        ${(props) => (props.isFlipped ? "right" : "left")}: 1em;
     }
 
     & > div {

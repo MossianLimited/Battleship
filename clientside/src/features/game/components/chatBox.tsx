@@ -103,6 +103,8 @@ const StyledInput = styled.input`
     height: 100%;
     flex: 1;
     font-family: DM Sans;
+    font-size: 1rem; 
+    
 `;
 
 const HintBox = styled.div`

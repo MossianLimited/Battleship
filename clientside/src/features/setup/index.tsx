@@ -229,7 +229,7 @@ const Wrapper = styled.div`
 `;
 
 const HeaderWrapper = styled.div`
-    border-radius: 12px;
+    border-radius: 0.75rem;
     display: flex;
     background: #7b61ff;
     flex-flow: row;

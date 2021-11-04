@@ -315,15 +315,15 @@ const GamePage = () => {
                 />
                 <MuteButton onClick={onToggleMute}>
                     {mute ? (
-                        <VolumeMute size={26} color="#b3a3ff" />
+                        <VolumeMute size="1.625rem" color="#b3a3ff" />
                     ) : (
-                        <VolumeUp size={26} color="#b3a3ff" />
+                        <VolumeUp size="1.625rem" color="#b3a3ff" />
                     )}
                 </MuteButton>
             </>
         );
 
-    const borderRadius = phase === Phase.Finish ? "12px 12px 0 0" : "12px";
+    const borderRadius = phase === Phase.Finish ? "0.75rem 0.75rem 0 0" : "0.75rem";
     const avatar = <AvatarVersus style={{ borderRadius }} {...avatarProps} />;
     const result = <Result winners={winners} stats={statistic} />;
 
@@ -481,7 +481,7 @@ const OneMoreRound = styled.button<{ disabled?: boolean }>`
     background: #ffdbb4;
     color: #674def;
     text-transform: uppercase;
-    border-radius: 8px;
+    border-radius: 0.5rem;
     font-weight: 600;
     cursor: pointer;
     transform: scale(1, 1);
@@ -513,9 +513,9 @@ const Withdraw = styled(OneMoreRound)`
 
 const ReasonWrapper = styled.div`
     background: #947eff;
-    border-radius: 12px;
+    border-radius: 0.75rem;
     font-weight: 700;
-    font-size: 36px;
+    font-size: 2.25rem;
     padding: 1rem 2.5rem;
     display: flex;
     align-items: center;
