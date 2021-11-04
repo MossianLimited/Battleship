@@ -27,6 +27,8 @@ const getDefaultAvatars = (): string[] => {
 const variants = {
     randomizing: {
         rotate: [0, 20, -15, 10, -5, 0, 0],
+        x: [0, -2, 4, 0, 4, -2, 0],
+        y: [0, 4, -2, 0, -4, -2, 0],
         transition: {
             repeat: Infinity,
             duration: 0.5,

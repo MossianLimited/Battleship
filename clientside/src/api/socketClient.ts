@@ -6,6 +6,8 @@ import {
     SocketEvent,
 } from "./constants/config";
 import {
+    AdminGetRoomListResponse,
+    AdminLoginResponse,
     AvatarResponse,
     ChangeLockResponse,
     CreateRoomResponse,
@@ -44,6 +46,25 @@ class SocketClient {
                     (
                         responseStatus: GetRoomListResponse["responseStatus"],
                         roomList: GetRoomListResponse["roomList"]
+                    ) => {
+                        resolve({ responseStatus, roomList });
+                    }
+                );
+            }
+        });
+    }
+
+    public async adminGetRooms(): Promise<AdminGetRoomListResponse> {
+        return new Promise((resolve, reject) => {
+            if (!this.socket) {
+                reject("Socket not initialized");
+            } else {
+                this.socket.emit(SocketEvent.AdminGetRoomList);
+                this.socket.on(
+                    SocketEvent.AdminGetRoomListResponse,
+                    (
+                        responseStatus: AdminGetRoomListResponse["responseStatus"],
+                        roomList: AdminGetRoomListResponse["roomList"]
                     ) => {
                         resolve({ responseStatus, roomList });
                     }
@@ -151,6 +172,26 @@ class SocketClient {
             } else {
                 this.socket.emit(SocketEvent.Chat, message);
                 resolve();
+            }
+        });
+    }
+
+    public async adminLogin(password: string): Promise<void> {
+        return new Promise((resolve, reject) => {
+            if (!this.socket) {
+                reject("Socket not initialized");
+            } else {
+                this.socket.emit(SocketEvent.AdminLogin, password);
+                this.socket.on(
+                    SocketEvent.AdminLoginResponse,
+                    (responseStatus: AdminLoginResponse["responseStatus"]) => {
+                        if (responseStatus === "Completed") {
+                            resolve();
+                        } else {
+                            reject(responseStatus);
+                        }
+                    }
+                );
             }
         });
     }
@@ -373,26 +414,26 @@ class SocketClient {
     }
 
     public subscribeStatistic(callback: (res: StatResponse) => void) {
-        if (!this.socket) return; 
+        if (!this.socket) return;
         this.socket.on(
             SocketEvent.StatResponse,
             (
                 responseStatus: InfallibleResponse,
-                hostTotal: number, 
-                hostHit: number, 
-                hostMiss: number, 
-                hostAcc: number, 
-                guestTotal: number, 
-                guestHit: number, 
-                guestMiss: number, 
-                guestAcc: number, 
+                hostTotal: number,
+                hostHit: number,
+                hostMiss: number,
+                hostAcc: number,
+                guestTotal: number,
+                guestHit: number,
+                guestMiss: number,
+                guestAcc: number,
                 time: number,
-                turnCount: number,
+                turnCount: number
             ) => {
                 callback({
-                    responseStatus, 
-                    time, 
-                    turnCount, 
+                    responseStatus,
+                    time,
+                    turnCount,
                     host: {
                         total: hostTotal,
                         hit: hostHit,
@@ -404,7 +445,7 @@ class SocketClient {
                         hit: guestHit,
                         miss: guestMiss,
                         acc: guestAcc,
-                    }
+                    },
                 });
             }
         );

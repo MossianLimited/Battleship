@@ -51,7 +51,7 @@ const GamePage = () => {
     const [statistic, setStatistic] = useState<StatResponse[]>([]);
 
     const { battleship } = state;
-    const { username, userAvatarSeed } = useUserContext();
+    const { username, userAvatarSeed, isAdmin } = useUserContext();
 
     const forceWithdraw = useAutoWithdraw()[1];
     const query = useQuery();
@@ -62,6 +62,7 @@ const GamePage = () => {
     const roomId = query.get("roomId");
     const isHost = query.get("isHost") === "true";
     const yourSide = isHost ? "Host" : "Guest";
+    const spectatorMode = query.get("spectator") === "true" && isAdmin;
 
     const avatarProps: Record<AvatarSide, AvatarProperties> = {
         left: {
@@ -212,7 +213,7 @@ const GamePage = () => {
         }
     }, [history, isHost, roomId, username, userAvatarSeed]);
 
-    if (phase === Phase.Welcome)
+    if (phase === Phase.Welcome && !spectatorMode)
         return (
             <HostWelcome
                 onHostStartCallback={() => setPhase(Phase.Setup)}
@@ -290,11 +291,13 @@ const GamePage = () => {
                     {avatar}
                     {phase !== Phase.Finish && board}
                     {phase === Phase.Finish && result}
-                    <Chatbox />
+                    {!spectatorMode && <Chatbox />}
                     {phase === Phase.Finish && footer}
                 </TutorialWrapper>
-                {phase === Phase.Setup && <Backdrop />}
-                {phase === Phase.Setup && <SetupModal onSubmit={onSubmit} />}
+                {phase === Phase.Setup && !spectatorMode && <Backdrop />}
+                {phase === Phase.Setup && !spectatorMode && (
+                    <SetupModal onSubmit={onSubmit} />
+                )}
             </GameStateContext.Provider>
         </ChatContext.Provider>
     );

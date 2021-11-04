@@ -13,6 +13,7 @@ const App = () => {
     const [userAvatarSeed, setUserAvatarSeed] = useState<string>(
         localStorage.getItem("userAvatarSeed") || "nnaries"
     );
+    const [isAdmin, setIsAdmin] = useState<boolean>(false);
 
     useEffect(() => {
         localStorage.setItem("username", username);
@@ -26,7 +27,14 @@ const App = () => {
 
     return (
         <UserContext.Provider
-            value={{ username, userAvatarSeed, setUsername, setUserAvatarSeed }}
+            value={{
+                username,
+                userAvatarSeed,
+                isAdmin,
+                setUsername,
+                setUserAvatarSeed,
+                setIsAdmin,
+            }}
         >
             <ThemeProvider theme={theme}>
                 <GlobalStyles theme={theme} />
