@@ -93,7 +93,9 @@ export const shoot = (socket: Socket, room: Room, location: string) => {
 			location,
 			currentTurn,
 			room.turn,
-			room.turnCount
+			room.turnCount,
+			room.hostHitCount,
+			room.guestHitCount
 		);
 	socket.emit(
 		'shootResponse',
@@ -101,7 +103,9 @@ export const shoot = (socket: Socket, room: Room, location: string) => {
 		location,
 		currentTurn,
 		room.turn,
-		room.turnCount
+		room.turnCount,
+		room.hostHitCount,
+		room.guestHitCount
 	);
 
 	// Log Output to server
