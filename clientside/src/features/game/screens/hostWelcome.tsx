@@ -1,4 +1,4 @@
-import styled from "styled-components";
+import styled from "../../../styles/theme";
 
 interface Props {
     avatarVersusComponent: JSX.Element;
@@ -38,7 +38,8 @@ const StartGameContainer = styled.div`
     width: 8.6875rem;
     height: 2.3125rem;
 
-    background: #ffffff;
+    background: ${(props) =>
+        props.theme.colors.lobby.button.background.startGame};
     border-radius: 0.5rem;
 
     font-weight: 700;
@@ -49,7 +50,13 @@ const StartGameContainer = styled.div`
 
     cursor: pointer;
 
-    color: #674def;
+    color: ${(props) => props.theme.colors.lobby.button.text.startGame};
+
+    transition: scale 100ms ease-in-out;
+    &:hover {
+        transition: scale 100ms ease-in-out;
+        scale: 1.025;
+    }
 `;
 
 export default HostWelcome;

@@ -1,6 +1,8 @@
 import { useCallback, useState } from "react";
 import { Message } from "../../game/types/chat";
 
+const CHAT_TIMEOUT = 6000;
+
 const useChatQueue = () => {
     const [queue, setQueue] = useState<Message[]>([]);
 
@@ -19,7 +21,7 @@ const useChatQueue = () => {
             ]);
             setTimeout(() => {
                 removeMessage();
-            }, 6000);
+            }, CHAT_TIMEOUT);
         },
         [removeMessage]
     );

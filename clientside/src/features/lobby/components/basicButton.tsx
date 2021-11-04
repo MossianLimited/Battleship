@@ -34,6 +34,12 @@ const StyledButton = styled.button<{ variant: ButtonVariant }>`
     line-height: 1.3125rem;
 
     cursor: pointer;
+
+    transition: scale 100ms ease-in-out;
+    &:hover {
+        transition: scale 100ms ease-in-out;
+        scale: 1.025;
+    }
 `;
 
 export default BasicButton;

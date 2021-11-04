@@ -1,10 +1,12 @@
 import { useCallback, useEffect, useState } from "react";
 import { useHistory } from "react-router";
+import { Room } from "../../../api/types/transport";
 import styled from "../../../styles/theme";
 import AvatarVersus from "../../avatar/components/avatarVersus";
 import { HeaderText, WhiteBox } from "../components/base.styled";
 import BasicInput from "../components/basicInput";
 import PublicRoomsList from "../components/publicRoomsList";
+import { RoomContext } from "../contexts/roomContext";
 import { useUserContext } from "../contexts/userContext";
 
 const JoinRoomPage = () => {
@@ -12,6 +14,7 @@ const JoinRoomPage = () => {
     const history = useHistory();
 
     const [privateRoomId, setPrivateRoomId] = useState<string>("");
+    const [hoveredRoom, setHoveredRoom] = useState<Room | undefined>();
 
     const handleJoinRoom = useCallback(
         (roomId: string) => {
@@ -28,13 +31,21 @@ const JoinRoomPage = () => {
     }, [handleJoinRoom, privateRoomId]);
 
     return (
-        <>
+        <RoomContext.Provider value={{ hoveredRoom, setHoveredRoom }}>
             <Container>
                 <AvatarVersus
                     right={{
                         seed: userAvatarSeed,
                         username,
                     }}
+                    left={
+                        hoveredRoom
+                            ? {
+                                  seed: hoveredRoom.hostAvatar,
+                                  username: hoveredRoom.hostUsername,
+                              }
+                            : undefined
+                    }
                 />
                 <PrivateRoomContainer>
                     <Title>Join Private Room</Title>
@@ -48,7 +59,7 @@ const JoinRoomPage = () => {
                 </PrivateRoomContainer>
             </Container>
             <PublicRoomsList onRoomJoinHandler={handleJoinRoom} />
-        </>
+        </RoomContext.Provider>
     );
 };
 
