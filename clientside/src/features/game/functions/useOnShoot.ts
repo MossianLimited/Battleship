@@ -5,6 +5,8 @@ import { ShootResponse } from "../../../api/types/transport";
 export const useOnShoot = (callback: (res: ShootResponse) => void) => {
     const ref = useRef(callback);
 
+    ref.current = callback; 
+
     useEffect(() => {
         socket.subscribeShootResponse((res) => {
             ref.current(res);

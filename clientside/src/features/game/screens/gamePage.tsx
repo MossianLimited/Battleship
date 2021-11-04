@@ -1,4 +1,11 @@
-import { useLayoutEffect, useReducer, useState, MouseEvent } from "react";
+import {
+    useLayoutEffect,
+    useReducer,
+    useState,
+    MouseEvent,
+    useRef,
+    useEffect,
+} from "react";
 import { useHistory } from "react-router";
 import { Position, Side } from "../../board/types/utility";
 import { initialGameState } from "../constants/state";
@@ -19,6 +26,7 @@ import deserializePos from "../../board/functions/deserializePos";
 import deserializeBattleship from "../functions/deserializeBattleship";
 import useChatQueue from "../../avatar/hooks/useChatQueue";
 import useAutoWithdraw from "../functions/useAutoWithdraw";
+import useSound from "use-sound";
 
 import { useUserContext } from "../../lobby/contexts/userContext";
 import { useOnStart } from "../functions/useOnStart";
@@ -33,12 +41,16 @@ import { AvatarProperties, AvatarSide } from "../../avatar/types/avatar";
 import { ChatContext } from "../contexts/chatContext";
 import { useOnStatistics } from "../functions/useOnStatistics";
 import { StatResponse } from "../../../api/types/transport";
+import VolumeMute from "../components/volumeMute";
+import VolumeUp from "../components/volumeUp";
+import useStickyState from "../functions/useStickyState";
 
 const GamePage = () => {
     const [yourTurn, setYourTurn] = useState(false);
     const [phase, setPhase] = useState(Phase.Welcome);
     const [state, dispatch] = useReducer(gameStateReducer, initialGameState);
 
+    const [mute, setMute] = useStickyState(false, "soundMute");
     const [endReason, setEndReason] = useState<string>();
     const [round, setRound] = useState(0);
     const [winners, setWinners] = useState<("Host" | "Guest")[]>([]);
@@ -52,6 +64,7 @@ const GamePage = () => {
     const { username, userAvatarSeed } = useUserContext();
 
     const forceWithdraw = useAutoWithdraw()[1];
+    const statsLock = useRef(false);
     const query = useQuery();
     const history = useHistory();
     const playerChatQueue = useChatQueue();
@@ -60,6 +73,36 @@ const GamePage = () => {
     const roomId = query.get("roomId");
     const isHost = query.get("isHost") === "true";
     const yourSide = isHost ? "Host" : "Guest";
+
+    const option = { volume: 0.6, soundEnabled: !mute };
+    const [playShootHit] = useSound("/sounds/shoot-hit.wav", option);
+    const [playShootFire] = useSound("/sounds/shoot-fire.wav", option);
+    const [playChat] = useSound("/sounds/notification-chat.wav", option);
+
+    const [playMatchmake] = useSound(
+        "/sounds/notification-matchmake.wav",
+        option
+    );
+
+    const [playDefeat, { stop: stopDefeat }] = useSound(
+        "/sounds/result-defeat.wav",
+        option
+    );
+
+    const [playVictory, { stop: stopVictory }] = useSound(
+        "/sounds/result-victory.wav",
+        option
+    );
+
+    const [playPlanning, { stop: stopPlanning }] = useSound(
+        "/sounds/atmosphere-planning.wav",
+        { ...option, volume: 0.35, interrupt: false }
+    );
+
+    const [playPlaying, { stop: stopPlaying }] = useSound(
+        "/sounds/atmosphere-playing.wav",
+        { ...option, volume: 0.35, interrupt: false }
+    );
 
     const avatarProps: Record<AvatarSide, AvatarProperties> = {
         left: {
@@ -96,6 +139,8 @@ const GamePage = () => {
     };
 
     const onOneMoreRound = (_e: MouseEvent) => {
+        playPlanning();
+
         if (phase !== Phase.Finish) return;
         dispatch({ type: "RESET_BOARD" });
         if (winners[winners.length - 1] === yourSide) setYourTurn(true);
@@ -106,13 +151,25 @@ const GamePage = () => {
         forceWithdraw();
     };
 
+    const onStart = () => {
+        playPlanning();
+        setPhase(Phase.Setup);
+    };
+
+    const onToggleMute = () => {
+        setMute(!mute);
+    };
+
     useOnStart((r) => {
-        setRound((prev) => prev + 1)
+        stopPlanning();
+
+        setRound((prev) => prev + 1);
         r.firstPlayer === yourSide && setYourTurn(true);
     });
 
     useOnEnd(
         ({ responseStatus, previousRoundWinner, hostScore, guestScore }) => {
+            stopPlaying();
             switch (responseStatus) {
                 case "Reset by Admin":
                     dispatch({ type: "RESET_BOARD" });
@@ -123,13 +180,16 @@ const GamePage = () => {
                     setRound(0);
                     return setStatistic([]);
                 case "Closed by Admin":
-                    return setPhase(Phase.Finish); 
+                    return setPhase(Phase.Finish);
                 case "Withdrew":
                 case "Abandoned":
                 case "Destroyed":
                 default:
                     setEndReason(responseStatus);
-                    if (phase === Phase.Finish) return; 
+                    if (phase === Phase.Finish)
+                        return (statsLock.current = true);
+                    previousRoundWinner === yourSide && playVictory();
+                    previousRoundWinner !== yourSide && playDefeat();
                     setPhase(Phase.Finish);
                     setAllyScore(isHost ? hostScore : guestScore);
                     setEnemyScore(isHost ? guestScore : hostScore);
@@ -147,10 +207,12 @@ const GamePage = () => {
     });
 
     useOnChat((msg) => {
+        playChat();
         enemyChatQueue.addMessage(msg);
     });
 
     useOnShoot((r) => {
+        playShootFire();
         let status;
         switch (r.responseStatus) {
             case "Hit":
@@ -181,9 +243,13 @@ const GamePage = () => {
     });
 
     useOnShipDestroyed(({ side, ship }) => {
-        return console.log({ side, ship });
+        setTimeout(() => {
+            playShootHit();
+        }, 1000);
+
+        if (ship.length <= 0) return;
+
         // waiting for backend ghostship fix
-        // eslint-disable-next-line
         dispatch({
             type: "SUNK_SHIP",
             payload: {
@@ -194,7 +260,7 @@ const GamePage = () => {
     });
 
     useOnStatistics((r) => {
-        if (phase === Phase.Finish) return; 
+        if (statsLock.current) return;
         setStatistic((prev) => [...prev, r]);
     });
 
@@ -210,12 +276,51 @@ const GamePage = () => {
         }
     }, [history, isHost, roomId, username, userAvatarSeed]);
 
+    useLayoutEffect(() => {
+        phase === Phase.Welcome && playMatchmake();
+    }, [phase, playMatchmake]);
+
+    useEffect(() => {
+        if (!enemyUsername || !enemyAvatarSeed)
+            socket.setAvatar(userAvatarSeed);
+    }, [userAvatarSeed, enemyUsername, enemyAvatarSeed]);
+
+    useEffect(() => {
+        if (mute) {
+            stopPlanning();
+            stopPlaying();
+            stopVictory();
+            stopDefeat();
+        } else {
+            if (phase === Phase.Setup) playPlanning();
+            if (phase === Phase.Playing) playPlaying();
+        }
+    }, [
+        mute,
+        phase,
+        playPlaying,
+        playPlanning,
+        stopPlaying,
+        stopPlanning,
+        stopDefeat,
+        stopVictory,
+    ]);
+
     if (phase === Phase.Welcome)
         return (
-            <HostWelcome
-                onHostStartCallback={() => setPhase(Phase.Setup)}
-                avatarVersusComponent={<AvatarVersus {...avatarProps} />}
-            />
+            <>
+                <HostWelcome
+                    onHostStartCallback={onStart}
+                    avatarVersusComponent={<AvatarVersus {...avatarProps} />}
+                />
+                <MuteButton onClick={onToggleMute}>
+                    {mute ? (
+                        <VolumeMute size={26} color="#b3a3ff" />
+                    ) : (
+                        <VolumeUp size={26} color="#b3a3ff" />
+                    )}
+                </MuteButton>
+            </>
         );
 
     const borderRadius = phase === Phase.Finish ? "12px 12px 0 0" : "12px";
@@ -280,19 +385,30 @@ const GamePage = () => {
     );
 
     return (
-        <ChatContext.Provider value={chat}>
-            <GameStateContext.Provider value={{ state, dispatch }}>
-                {round > 0 && <RoundCount>Round {round}</RoundCount>}
-                {phase === Phase.Finish && reason}
-                {avatar}
-                {phase !== Phase.Finish && board}
-                {phase === Phase.Finish && result}
-                <Chatbox />
-                {phase === Phase.Finish && footer}
-                {phase === Phase.Setup && <Backdrop />}
-                {phase === Phase.Setup && <SetupModal onSubmit={onSubmit} />}
-            </GameStateContext.Provider>
-        </ChatContext.Provider>
+        <Wrapper>
+            <MuteButton onClick={onToggleMute}>
+                {mute ? (
+                    <VolumeMute size={26} color="#b3a3ff" />
+                ) : (
+                    <VolumeUp size={26} color="#b3a3ff" />
+                )}
+            </MuteButton>
+            <ChatContext.Provider value={chat}>
+                <GameStateContext.Provider value={{ state, dispatch }}>
+                    {round > 0 && <RoundCount>Round {round}</RoundCount>}
+                    {phase === Phase.Finish && reason}
+                    {avatar}
+                    {phase !== Phase.Finish && board}
+                    {phase === Phase.Finish && result}
+                    <Chatbox />
+                    {phase === Phase.Finish && footer}
+                    {phase === Phase.Setup && <Backdrop />}
+                    {phase === Phase.Setup && (
+                        <SetupModal onSubmit={onSubmit} />
+                    )}
+                </GameStateContext.Provider>
+            </ChatContext.Provider>
+        </Wrapper>
     );
 };
 
@@ -317,6 +433,16 @@ function canPlayAgain(reason: string | undefined): boolean {
     return reason === undefined || reason === "Destroyed";
 }
 
+const Wrapper = styled.div`
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: auto;
+    flex-flow: column;
+    position: relative;
+    min-width: 38.9375rem;
+`;
+
 const BoardContainer = styled.div`
     display: flex;
     justify-content: center;
@@ -329,6 +455,7 @@ const BoardContainer = styled.div`
 `;
 
 const Backdrop = styled.div`
+    z-index: 5;
     position: fixed;
     top: 0;
     left: 0;
@@ -342,7 +469,7 @@ const Footer = styled.div`
     align-items: center;
     justify-content: space-between;
     margin-top: 1rem;
-    min-width: 38.9375rem;
+    width: 100%;
 `;
 
 const OneMoreRound = styled.button<{ disabled?: boolean }>`
@@ -410,8 +537,29 @@ const RoundCount = styled.div`
     background: white;
     border-radius: 6px;
     z-index: 4;
+    position: absolute;
+    top: -1.375rem;
+`;
 
-    & + * {
-        margin-top: -1rem;
+const MuteButton = styled.button`
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.5rem;
+    outline: none;
+    opacity: 0.7;
+    transition: all 120ms ease;
+    position: fixed;
+    left: 2rem;
+    bottom: 2rem;
+    cursor: pointer;
+    z-index: 6;
+
+    &:hover {
+        opacity: 1;
+    }
+
+    &:active {
+        opacity: 0.85;
     }
 `;

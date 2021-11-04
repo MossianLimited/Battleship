@@ -225,6 +225,7 @@ const Wrapper = styled.div`
     height: auto;
     position: absolute;
     background: #674def;
+    z-index: 99; 
 `;
 
 const HeaderWrapper = styled.div`

@@ -5,6 +5,7 @@ import AvatarContainer from "./avatarContainer";
 const AvatarVersus: React.FC<Partial<Record<AvatarSide, AvatarProperties>> & { style?: any }> = ({
     left,
     right,
+    ...delegated
 }) => {
     const hasLeftScore = typeof left?.score !== "undefined";
     const hasRightScore = typeof right?.score !== "undefined";
@@ -15,6 +16,7 @@ const AvatarVersus: React.FC<Partial<Record<AvatarSide, AvatarProperties>> & { s
     return (
         <Container
             isExpanded={hasLeftScore && hasRightScore !== undefined}
+            {...delegated}
         >
             <AvatarContainer {...left} side={AvatarSide.Left} />
             {left?.seed && right?.seed && (
