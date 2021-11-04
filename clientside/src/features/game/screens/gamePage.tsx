@@ -33,6 +33,8 @@ import { AvatarProperties, AvatarSide } from "../../avatar/types/avatar";
 import { ChatContext } from "../contexts/chatContext";
 import { useOnStatistics } from "../functions/useOnStatistics";
 import { StatResponse } from "../../../api/types/transport";
+import TutorialWrapper from "../wrappers/tutorialWrapper";
+import { Backdrop } from "../../lobby/components/base.styled";
 
 const GamePage = () => {
     const [yourTurn, setYourTurn] = useState(false);
@@ -107,7 +109,7 @@ const GamePage = () => {
     };
 
     useOnStart((r) => {
-        setRound((prev) => prev + 1)
+        setRound((prev) => prev + 1);
         r.firstPlayer === yourSide && setYourTurn(true);
     });
 
@@ -123,13 +125,13 @@ const GamePage = () => {
                     setRound(0);
                     return setStatistic([]);
                 case "Closed by Admin":
-                    return setPhase(Phase.Finish); 
+                    return setPhase(Phase.Finish);
                 case "Withdrew":
                 case "Abandoned":
                 case "Destroyed":
                 default:
                     setEndReason(responseStatus);
-                    if (phase === Phase.Finish) return; 
+                    if (phase === Phase.Finish) return;
                     setPhase(Phase.Finish);
                     setAllyScore(isHost ? hostScore : guestScore);
                     setEnemyScore(isHost ? guestScore : hostScore);
@@ -194,7 +196,7 @@ const GamePage = () => {
     });
 
     useOnStatistics((r) => {
-        if (phase === Phase.Finish) return; 
+        if (phase === Phase.Finish) return;
         setStatistic((prev) => [...prev, r]);
     });
 
@@ -282,13 +284,15 @@ const GamePage = () => {
     return (
         <ChatContext.Provider value={chat}>
             <GameStateContext.Provider value={{ state, dispatch }}>
-                {round > 0 && <RoundCount>Round {round}</RoundCount>}
-                {phase === Phase.Finish && reason}
-                {avatar}
-                {phase !== Phase.Finish && board}
-                {phase === Phase.Finish && result}
-                <Chatbox />
-                {phase === Phase.Finish && footer}
+                <TutorialWrapper>
+                    {round > 0 && <RoundCount>Round {round}</RoundCount>}
+                    {phase === Phase.Finish && reason}
+                    {avatar}
+                    {phase !== Phase.Finish && board}
+                    {phase === Phase.Finish && result}
+                    <Chatbox />
+                    {phase === Phase.Finish && footer}
+                </TutorialWrapper>
                 {phase === Phase.Setup && <Backdrop />}
                 {phase === Phase.Setup && <SetupModal onSubmit={onSubmit} />}
             </GameStateContext.Provider>
@@ -326,15 +330,6 @@ const BoardContainer = styled.div`
     margin-top: 4.3125rem;
     margin-bottom: 2.75rem;
     position: relative;
-`;
-
-const Backdrop = styled.div`
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100vw;
-    height: 100vh;
-    background-color: rgba(0, 0, 0, 0.6);
 `;
 
 const Footer = styled.div`
