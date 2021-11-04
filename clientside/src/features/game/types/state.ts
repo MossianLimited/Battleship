@@ -11,7 +11,6 @@ export interface MetaState {
     round: number; 
     turn: number; 
     phase: Phase; 
-    isHost: boolean, 
 }
 
 export enum Phase {

@@ -1,10 +1,11 @@
 import styled from "styled-components";
+import { Side } from "../../board/types/utility";
 import { AvatarProperties, AvatarSide } from "../types/avatar";
 import AvatarContainer from "./avatarContainer";
 
 const AvatarVersus: React.FC<
-    Partial<Record<AvatarSide, AvatarProperties>> & { style?: any }
-> = ({ left, right }) => {
+    Partial<Record<AvatarSide, AvatarProperties>> & { style?: any; side?: Side }
+> = ({ left, right, ...delegated }) => {
     const hasLeftScore = typeof left?.score !== "undefined";
     const hasRightScore = typeof right?.score !== "undefined";
 
@@ -12,7 +13,7 @@ const AvatarVersus: React.FC<
         throw new Error("Both players need scores");
 
     return (
-        <Container isExpanded={hasLeftScore && hasRightScore !== undefined}>
+        <Container isExpanded={hasLeftScore && hasRightScore !== undefined} {...delegated}>
             <AvatarContainer {...left} side={AvatarSide.Left} />
             {left?.seed && right?.seed && (
                 <VS>
@@ -53,6 +54,7 @@ const VS = styled.div`
     gap: 2.75rem;
     position: relative;
     width: 10rem;
+    transform: translateY(0.25rem);
 
     & > .vs-text {
         font-weight: 500;

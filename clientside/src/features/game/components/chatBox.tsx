@@ -93,6 +93,7 @@ const Container = styled.div`
     display: flex;
     align-items: center;
     justify-content: space-between;
+    margin-top: 1rem; 
 
     cursor: pointer;
 `;
@@ -103,8 +104,8 @@ const StyledInput = styled.input`
     height: 100%;
     flex: 1;
     font-family: DM Sans;
-    font-size: 1rem; 
-    
+    font-size: 1rem;
+    color: #15046d;
 `;
 
 const HintBox = styled.div`
@@ -112,6 +113,7 @@ const HintBox = styled.div`
     user-select: none;
     pointer-events: none;
     position: absolute;
+    color: #200c83;
 `;
 
 const SendButton = styled(BasicButton)`

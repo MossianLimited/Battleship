@@ -57,7 +57,6 @@ const Wrapper = styled.div`
     background: white;
     border-radius: 0 0 0.75rem 0.75rem;
     overflow: auto; 
-    margin-bottom: 1rem; 
 `;
 
 const Row = styled.div`

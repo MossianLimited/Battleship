@@ -4,6 +4,7 @@ import { useHistory } from "react-router";
 import socketClient from "../../../api/socketClient";
 import styled from "../../../styles/theme";
 import AvatarVersus from "../../avatar/components/avatarVersus";
+import { useOnJoinSingle } from "../../game/functions/useOnJoin";
 import { HeaderText, Tag, WhiteBox } from "../components/base.styled";
 import RoomModeSlider from "../components/roomModeSlider";
 import { useUserContext } from "../contexts/userContext";
@@ -57,27 +58,25 @@ const CreateRoomPage = () => {
         };
     }, [userAvatarSeed, username]);
 
-    useEffect(() => {
-        if (roomId)
-            socketClient.subscribeJoinResponse(({ responseStatus }) => {
-                switch (responseStatus) {
-                    case "Completed":
-                        roomComplete.current = true;
-                        history.push({
-                            pathname: "/room",
-                            search:
-                                "?" +
-                                new URLSearchParams({
-                                    roomId,
-                                    isHost: "true",
-                                }),
-                        });
-                        break;
-                    default:
-                        alert(responseStatus);
-                }
-            });
-    }, [roomId, history]);
+    useOnJoinSingle(({ responseStatus }) => {
+        if (!roomId) return; 
+        switch (responseStatus) {
+            case "Completed":
+                roomComplete.current = true;
+                history.push({
+                    pathname: "/room",
+                    search:
+                        "?" +
+                        new URLSearchParams({
+                            roomId,
+                            isHost: "true",
+                        }),
+                });
+                break;
+            default:
+                alert(responseStatus);
+        }
+    }); 
 
     return (
         <Container>
