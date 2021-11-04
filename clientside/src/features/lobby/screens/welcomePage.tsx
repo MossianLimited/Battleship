@@ -1,13 +1,14 @@
 import { useHistory } from "react-router";
 import styled from "styled-components";
 import useQuery from "../../routing/hooks/useQuery";
-import { HeaderText, WhiteBox } from "../components/base.styled";
+import { Backdrop, HeaderText, WhiteBox } from "../components/base.styled";
 import BasicButton from "../components/basicButton";
 import BasicInput from "../components/basicInput";
 import AvatarSelector from "../../avatar/components/avatarSelector";
 import { useUserContext } from "../contexts/userContext";
 import LabelWrapper from "../wrappers/labelWrapper";
 import LobbyLayoutWrapper from "../wrappers/lobbyLayoutWrapper";
+import { useState } from "react";
 
 const WelcomePage = () => {
     const history = useHistory();
@@ -17,12 +18,11 @@ const WelcomePage = () => {
 
     const { username, setUsername } = useUserContext();
 
+    const [showUsernameAlert, setShowUsernameAlert] = useState<boolean>(false);
+
     const validateUsername = () => {
-        if (!username) {
-            alert("You need to fill in a username");
-            return false;
-        }
-        return true;
+        setShowUsernameAlert(!username);
+        return !!username;
     };
 
     return (
@@ -115,6 +115,14 @@ const WelcomePage = () => {
                     </LabelWrapper>
                 </ExperimentalZone> */}
             </Container>
+            {showUsernameAlert && (
+                <>
+                    <Backdrop onClick={() => setShowUsernameAlert(false)} />
+                    <UsernameAlertModal>
+                        You need to enter a username
+                    </UsernameAlertModal>
+                </>
+            )}
         </LobbyLayoutWrapper>
     );
 };
@@ -182,5 +190,20 @@ const ButtonContainer = styled.div`
 
 //     padding: 1.1875rem 2rem 1.75rem;
 // `;
+
+const UsernameAlertModal = styled.div`
+    z-index: 4;
+    position: absolute;
+    background: ${(props) => props.theme.colors.lobby.backdrop.light};
+
+    width: 20rem;
+    height: 8rem;
+
+    border-radius: 0.75rem;
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+`;
 
 export default WelcomePage;
