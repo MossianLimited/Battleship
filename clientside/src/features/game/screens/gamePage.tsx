@@ -487,7 +487,7 @@ const BoardContainer = styled.div`
     gap: 6.9375rem;
 
     margin-top: 4.3125rem;
-    margin-bottom: 2.75rem;
+    margin-bottom: 3.25rem;
     position: relative;
 `;
 
