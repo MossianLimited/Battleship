@@ -18,7 +18,9 @@ export class Room {
 	public turnCount: number;
 	public turn: string;
 	public guestShips: string[][];
+	public guestShipsCopy: string[][];
 	public hostShips: string[][];
+	public hostShipsCopy: string[][];
 	public guestShot: string[];
 	public hostShot: string[];
 	public timer: NodeJS.Timeout;
@@ -51,6 +53,8 @@ export class Room {
 		this.turnCount = 1;
 		this.guestShips = [[]];
 		this.hostShips = [[]];
+		this.guestShipsCopy = [[]];
+		this.hostShipsCopy = [[]];
 		this.guestShot = [];
 		this.hostShot = [];
 		this.lastWin = undefined;

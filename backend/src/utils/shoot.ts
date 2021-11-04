@@ -6,30 +6,27 @@ import { stat } from '../controllers/game/stat';
 
 const checkDestroyed = (
 	socket: Socket,
-	shot: string[],
+	location: string,
 	playerShips: string[][],
+	playerShipsCopy: string[][],
 	opponentSocketId: string,
 	currentTurn: string
 ) => {
-	const ships = [...playerShips];
 	let shipDestroyed: string;
 	if (currentTurn === 'Guest') shipDestroyed = 'Host';
 	else shipDestroyed = 'Guest';
-	shot.forEach((location) => {
-		for (let i = 0; i < ships.length; i++) {
-			const index = ships[i].findIndex((coordinate) => coordinate === location);
-
-			if (index !== -1) {
-				ships[i].splice(index, 1);
-				if (ships[i].length === 0) {
-					socket.emit('shipDestroyed', shipDestroyed, playerShips[i]);
-					socket
-						.to(opponentSocketId)
-						.emit('shipDestroyed', shipDestroyed, playerShips[i]);
-				}
+	for (let i = 0; i < playerShipsCopy.length; i++) {
+		const index = playerShipsCopy[i].findIndex((coordinate) => coordinate === location);
+		if (index !== -1) {
+			playerShipsCopy[i].splice(index, 1);
+			if (playerShipsCopy[i].length === 0) {
+				socket.emit('shipDestroyed', shipDestroyed, playerShips[i]);
+				socket
+					.to(opponentSocketId)
+					.emit('shipDestroyed', shipDestroyed, playerShips[i]);
 			}
 		}
-	});
+	};
 };
 export const shoot = (socket: Socket, room: Room, location: string) => {
 	// Get Current Turn Player, Update Turn Number, and Logging
@@ -54,8 +51,9 @@ export const shoot = (socket: Socket, room: Room, location: string) => {
 			room.guestShot.push(location);
 			checkDestroyed(
 				socket,
-				room.guestShot,
+				location,
 				room.hostShips,
+				room.hostShipsCopy,
 				opponentSocketId,
 				currentTurn
 			);
@@ -64,8 +62,9 @@ export const shoot = (socket: Socket, room: Room, location: string) => {
 			room.hostShot.push(location);
 			checkDestroyed(
 				socket,
-				room.hostShot,
+				location,
 				room.guestShips,
+				room.guestShipsCopy,
 				opponentSocketId,
 				currentTurn
 			);

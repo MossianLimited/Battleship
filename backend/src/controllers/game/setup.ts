@@ -33,9 +33,11 @@ export const setup = (
 
 	if (room.guestSocketID === socket.id) {
 		room.guestShips = coordinates;
+		for (let i = 0; i < room.guestShips.length; i++) room.guestShipsCopy[i] = room.guestShips[i].slice();
 		room.guestReady = true;
 	} else if (room.hostSocketID === socket.id) {
 		room.hostShips = coordinates;
+		for (let i = 0; i < room.hostShips.length; i++) room.hostShipsCopy[i] = room.hostShips[i].slice();
 		room.hostReady = true;
 	}
 
