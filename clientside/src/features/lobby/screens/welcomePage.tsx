@@ -8,20 +8,33 @@ import AvatarSelector from "../../avatar/components/avatarSelector";
 import { useUserContext } from "../contexts/userContext";
 import LabelWrapper from "../wrappers/labelWrapper";
 import LobbyLayoutWrapper from "../wrappers/lobbyLayoutWrapper";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import BattleshipIcon from "../components/battleshipIcon";
 import useKeySequenceListener from "../hooks/useKeySequenceListener";
 import socketClient from "../../../api/socketClient";
+import { useAnimation, Variants } from "framer-motion";
+
+// shakes the input when it is invalid
+const inputVariants: Variants = {
+    shake: {
+        transition: {
+            duration: 0.3,
+            ease: "easeInOut",
+        },
+        x: [0, -5, 0, 5, 0, -2, 0, 2, 0],
+    },
+};
 
 const WelcomePage = () => {
     const history = useHistory();
     const query = useQuery();
-
     const roomId = query.get("roomId");
+
+    const controls = useAnimation();
 
     const { username, setUsername, setIsAdmin } = useUserContext();
 
-    const [showUsernameAlert, setShowUsernameAlert] = useState<boolean>(false);
+    const [showUsernameError, setShowUsernameError] = useState<boolean>(false);
 
     // admin cheat code login (but password is verified on server so it's secure)
     useKeySequenceListener(async (sequence) => {
@@ -33,9 +46,18 @@ const WelcomePage = () => {
     });
 
     const validateUsername = () => {
-        setShowUsernameAlert(!username);
+        if (!username) {
+            controls.start("shake");
+        }
+        setShowUsernameError(!username);
         return !!username;
     };
+
+    useEffect(() => {
+        if (username && showUsernameError) {
+            setShowUsernameError(false);
+        }
+    }, [username, showUsernameError]);
 
     return (
         <LobbyLayoutWrapper>
@@ -56,6 +78,13 @@ const WelcomePage = () => {
                             value={username}
                             onChange={(e) => setUsername(e.target.value)}
                             placeholder="Tofu, Dinger, Wasu, or etc."
+                            animate={controls}
+                            variants={inputVariants}
+                            style={{
+                                border: showUsernameError
+                                    ? "solid 0.125rem #FF9A61"
+                                    : "none",
+                            }}
                         />
                     </LabelWrapper>
                     <ButtonContainer>
@@ -92,14 +121,6 @@ const WelcomePage = () => {
                     </LabelWrapper>
                 </ExperimentalZone> */}
             </Container>
-            {showUsernameAlert && (
-                <>
-                    <Backdrop onClick={() => setShowUsernameAlert(false)} />
-                    <UsernameAlertModal>
-                        You need to enter a username
-                    </UsernameAlertModal>
-                </>
-            )}
         </LobbyLayoutWrapper>
     );
 };
@@ -167,20 +188,5 @@ const ButtonContainer = styled.div`
 
 //     padding: 1.1875rem 2rem 1.75rem;
 // `;
-
-const UsernameAlertModal = styled.div`
-    z-index: 4;
-    position: absolute;
-    background: ${(props) => props.theme.colors.lobby.backdrop.light};
-
-    width: 20rem;
-    height: 8rem;
-
-    border-radius: 0.75rem;
-
-    display: flex;
-    justify-content: center;
-    align-items: center;
-`;
 
 export default WelcomePage;

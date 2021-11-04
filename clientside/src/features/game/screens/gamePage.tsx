@@ -46,6 +46,7 @@ import { Backdrop } from "../../lobby/components/base.styled";
 import VolumeMute from "../components/volumeMute";
 import VolumeUp from "../components/volumeUp";
 import useStickyState from "../functions/useStickyState";
+import { useOnAdminSpectate } from "../functions/useOnAdminSpectate";
 
 const GamePage = () => {
     const [yourTurn, setYourTurn] = useState(false);
@@ -204,6 +205,12 @@ const GamePage = () => {
         }
     );
 
+    useOnAdminSpectate(({ responseStatus, room }) => {
+        if (responseStatus === "Connection Not Verified") {
+            return history.push("/");
+        }
+    });
+
     useOnAvatar(({ hostAvatar, guestAvatar, hostUsername, guestUsername }) => {
         setEnemyAvatarSeed(isHost ? guestAvatar : hostAvatar);
         setEnemyUsername(isHost ? guestUsername : hostUsername);
@@ -309,7 +316,7 @@ const GamePage = () => {
         stopVictory,
     ]);
 
-    if (phase === Phase.Welcome)
+    if (phase === Phase.Welcome && !spectatorMode)
         return (
             <>
                 <HostWelcome
@@ -404,7 +411,7 @@ const GamePage = () => {
                     {avatar}
                     {phase !== Phase.Finish && board}
                     {phase === Phase.Finish && result}
-                    <Chatbox />
+                    {!spectatorMode && <Chatbox />}
                     {phase === Phase.Finish && footer}
                     {phase === Phase.Setup && <Backdrop />}
                     {phase === Phase.Setup && (

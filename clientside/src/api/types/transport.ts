@@ -11,6 +11,24 @@ export interface AdminSpectateRoom extends Room {
     guestAvatar?: string;
 }
 
+export interface AdminRoomObserver {
+    roomID: string;
+    hostUsername: string;
+    guestUsername: string;
+    hostScore: number;
+    guestScore: number;
+    hostHitCount: number;
+    guestHitCount: number;
+    turnCount: number;
+    turn: string;
+    guestShips: string[][];
+    hostShips: string[][];
+    guestShot: string[];
+    hostShot: string[];
+    hostAvatar: string;
+    guestAvatar: string;
+}
+
 export interface GetRoomListResponse {
     responseStatus: "Completed";
     roomList: Room[];
@@ -19,6 +37,21 @@ export interface GetRoomListResponse {
 export interface AdminGetRoomListResponse {
     responseStatus: "Completed" | "Connection Not Verified";
     roomList: AdminSpectateRoom[];
+}
+
+export interface AdminSpectateResponse {
+    responseStatus:
+        | "Completed"
+        | "Connection Not Verified"
+        | "Already Watching";
+    room: AdminRoomObserver;
+}
+
+export interface AdminStopSpectateResponse {
+    responseStatus:
+        | "Completed"
+        | "Connection Not Verified"
+        | "Already Watching";
 }
 
 export interface CreateRoomResponse {

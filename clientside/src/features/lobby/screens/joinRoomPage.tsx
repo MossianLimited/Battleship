@@ -24,16 +24,10 @@ const JoinRoomPage = () => {
         (roomId: string) => {
             history.push({
                 pathname: "/room",
-                search:
-                    "?" +
-                    new URLSearchParams(
-                        spectatorMode
-                            ? { roomId, spectator: "true" }
-                            : { roomId }
-                    ),
+                search: "?" + new URLSearchParams({ roomId }),
             });
         },
-        [history, spectatorMode]
+        [history]
     );
 
     useEffect(() => {

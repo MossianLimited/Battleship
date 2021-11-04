@@ -83,7 +83,7 @@ const PublicRoomsList: React.FC<Props> = ({ onRoomJoinHandler }) => {
         return (
             <SingleRoom
                 key={roomID}
-                onClick={() => onRoomJoinHandler(roomID)}
+                onClick={() => !spectatorMode && onRoomJoinHandler(roomID)}
                 onHoverStart={() => setHoveredRoom(room)}
                 onHoverEnd={() => setHoveredRoom(undefined)}
                 variants={listItem}
@@ -117,7 +117,7 @@ const PublicRoomsList: React.FC<Props> = ({ onRoomJoinHandler }) => {
                             : ""}
                     </span>
                 </div>
-                <span>{spectatorMode ? "Spectate" : "Join"}</span>
+                <span>{spectatorMode ? "" : "Join"}</span>
             </SingleRoom>
         );
     });

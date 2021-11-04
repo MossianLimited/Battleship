@@ -35,6 +35,8 @@ export enum SocketEvent {
     AdminGetRoomListResponse = "adminGetRoomListResponse",
     AdminSpectate = "adminSpectate",
     AdminSpectateResponse = "adminSpectateResponse",
+    AdminStopSpectate = "adminStopSpectate",
+    AdminStopSpectateResponse = "adminStopSpectateResponse",
 }
 
 export enum SetupResponseStatus {

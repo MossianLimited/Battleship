@@ -8,6 +8,9 @@ import {
 import {
     AdminGetRoomListResponse,
     AdminLoginResponse,
+    AdminRoomObserver,
+    AdminSpectateResponse,
+    AdminSpectateRoom,
     AvatarResponse,
     ChangeLockResponse,
     CreateRoomResponse,
@@ -295,6 +298,24 @@ class SocketClient {
     ////////////////////
     // Subscriber API //
     ////////////////////
+
+    public subscribeAdminSpectate(
+        callback: (res: AdminSpectateResponse) => void
+    ): void {
+        if (!this.socket) return;
+        this.socket.on(
+            SocketEvent.AdminSpectate,
+            (
+                responseStatus: AdminSpectateResponse["responseStatus"],
+                room: AdminRoomObserver
+            ) => {
+                callback({
+                    responseStatus,
+                    room,
+                });
+            }
+        );
+    }
 
     public subscribeShipDestroyed(
         callback: (res: ShipDestroyedResponse) => void
