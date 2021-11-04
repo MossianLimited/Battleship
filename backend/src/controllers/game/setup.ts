@@ -54,9 +54,12 @@ export const setup = (
 		room.hostShot = [];
 
 		// Random Starting Player
-		const randomInt = Math.floor(Math.random() * 2);
-		if (randomInt === 0) room.turn = 'Host';
-		else room.turn = 'Guest';
+		console.log("last WInner: " + room.lastWin)
+		if (room.lastWin === undefined) {
+			const randomInt = Math.floor(Math.random() * 2);
+			if (randomInt === 0) room.turn = 'Host';
+			else room.turn = 'Guest';
+		} else room.turn = room.lastWin;
 
 		// Notify both players that the game has started and whose turn it is
 		socket
