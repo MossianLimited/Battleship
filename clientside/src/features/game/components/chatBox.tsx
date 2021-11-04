@@ -1,4 +1,10 @@
-import { useCallback, useState, useEffect, useRef } from "react";
+import {
+    useCallback,
+    useState,
+    useEffect,
+    useRef,
+    useLayoutEffect,
+} from "react";
 import styled from "styled-components";
 import socketClient from "../../../api/socketClient";
 import { Tag } from "../../lobby/components/base.styled";
@@ -7,70 +13,54 @@ import { useChatContext } from "../contexts/chatContext";
 
 const Chatbox = () => {
     const inputRef = useRef<HTMLInputElement>(null);
-    const [inputFocused, setInputFocused] = useState<boolean>(false);
-
     const chatContext = useChatContext();
 
     const { addMessage } = chatContext[chatContext.chatSide];
 
-    const sendChat = useCallback(() => {
-        if (inputRef.current?.value) {
-            const message = inputRef.current?.value;
-            socketClient.sendChat(message);
-            addMessage(message);
-            inputRef.current.value = "";
-        }
-    }, [addMessage]);
+    const [inputFocused, setInputFocused] = useState<boolean>(false);
+    const [message, setMessage] = useState("");
 
-    const onKeyDownCallback = useCallback(
-        (e: KeyboardEvent) => {
-            if (e.key === "Enter") {
-                sendChat();
-            } else if (e.key === "t") {
-                setInputFocused(true);
-                setTimeout(() => {
-                    inputRef.current?.focus();
-                }, 100);
-            } else if (e.key === "Escape") {
-                setInputFocused(false);
-                inputRef.current?.blur();
-            }
-        },
-        [sendChat]
+    const sendChat = useCallback(() => {
+        if (!message) return;
+        socketClient.sendChat(message);
+        addMessage(message);
+        setMessage("");
+    }, [message, addMessage]);
+
+    useOnKeyDown(
+        useCallback(
+            (e: KeyboardEvent) => {
+                if (e.key === "Enter") sendChat();
+                else if (e.key === "Escape") setInputFocused(false);
+                else if (e.key === "t" && !inputFocused) {
+                    e.preventDefault(); 
+                    setInputFocused(true);
+                }
+            },
+            [sendChat, inputFocused]
+        )
     );
 
-    // listen to keypress events for t and enter
-    useEffect(() => {
-        document.addEventListener("keydown", onKeyDownCallback);
-        return () => {
-            document.removeEventListener("keydown", onKeyDownCallback);
-        };
-    }, [onKeyDownCallback]);
+    useLayoutEffect(() => {
+        if (inputFocused) inputRef.current?.focus();
+        else inputRef.current?.blur();
+    }, [inputFocused]);
 
     return (
         <Container
             className="chatParent"
             onClick={() => {
-                // if (!inputFocused) {
-                    setInputFocused(true);
-                    inputRef.current?.focus();
-                // }
+                setInputFocused(true);
+                inputRef.current?.focus();
             }}
         >
-            {inputFocused ? (
-                <StyledInput
-                    ref={inputRef}
-                    onBlur={(e) => {
-                        if (
-                            !e.relatedTarget?.className.endsWith(
-                                "chatSendBtn"
-                            ) &&
-                            !e.relatedTarget?.className.endsWith("chatParent")
-                        )
-                            setInputFocused(false);
-                    }}
-                />
-            ) : (
+            <StyledInput
+                ref={inputRef}
+                value={message}
+                onChange={(e) => setMessage(e.target.value)}
+                onBlur={(e) => setInputFocused(false)}
+            />
+            {!inputFocused && !message && (
                 <HintBox>
                     Press <Tag>t</Tag> to type in chat and <Tag>Enter</Tag> to
                     send
@@ -82,6 +72,17 @@ const Chatbox = () => {
         </Container>
     );
 };
+
+export default Chatbox;
+
+function useOnKeyDown(callback: (e: KeyboardEvent) => void) {
+    useEffect(() => {
+        document.addEventListener("keydown", callback);
+        return () => {
+            document.removeEventListener("keydown", callback);
+        };
+    }, [callback]);
+}
 
 const Container = styled.div`
     width: 38.9375rem;
@@ -102,11 +103,15 @@ const StyledInput = styled.input`
     height: 100%;
     flex: 1;
     font-family: DM Sans;
+    font-size: 1rem; 
+    
 `;
 
 const HintBox = styled.div`
     margin-left: 1.75rem;
     user-select: none;
+    pointer-events: none;
+    position: absolute;
 `;
 
 const SendButton = styled(BasicButton)`
@@ -114,5 +119,3 @@ const SendButton = styled(BasicButton)`
     width: 4.875rem;
     margin-right: 0.5rem;
 `;
-
-export default Chatbox;

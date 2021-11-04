@@ -4,6 +4,8 @@ import socket from "../../../api/socketClient";
 export const useOnChat = (callback: (msg: string) => void) => {
     const ref = useRef(callback);
 
+    ref.current = callback; 
+
     useEffect(() => {
         socket.subscribeChat((msg) => {
             ref.current(msg);

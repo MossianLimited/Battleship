@@ -5,6 +5,8 @@ import { EndResponse } from "../../../api/types/transport";
 export const useOnEnd = (callback: (res: EndResponse) => void) => {
     const ref = useRef(callback);
 
+    ref.current = callback; 
+
     useEffect(() => {
         socket.subscribeEndResponse((res) => {
             ref.current(res);

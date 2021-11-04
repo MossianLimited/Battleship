@@ -5,6 +5,8 @@ import socket from "../../../api/socketClient";
 export const useOnStart = (callback: (res: StartResponse) => void) => {
     const ref = useRef(callback);
 
+    ref.current = callback; 
+
     useEffect(() => {
         socket.subscribeStartResponse((res) => {
             ref.current(res);

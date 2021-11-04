@@ -110,7 +110,7 @@ const UserAvatar: React.FC<Props> = ({
             whileHover={isRounded ? { scale: 1.05, opacity: 1 } : undefined}
         >
             <AnimatePresence>
-                {username && <motion.span>{username}</motion.span>}
+                {username && <Username>{username}</Username>}
             </AnimatePresence>
             <motion.svg
                 {...variants[variant ?? (isRounded ? "fadeIn" : "none")]}
@@ -147,19 +147,6 @@ const Container = styled(motion.div)<{
     display: flex;
     justify-content: center;
 
-    & > span {
-        position: absolute;
-        top: -1.25rem;
-
-        user-select: none;
-
-        font-weight: 500;
-        font-size: 1rem;
-        line-height: 1.3125rem;
-
-        color: ${(props) => props.theme.colors.lobby.avatar.text.name};
-    }
-
     & > svg,
     & > svg > image {
         width: inherit;
@@ -172,6 +159,19 @@ const Container = styled(motion.div)<{
     }
 
     ${(props) => props.isRounded && "overflow: hidden"};
+`;
+
+const Username = styled(motion.span)`
+    position: absolute;
+    top: -1rem;
+
+    user-select: none;
+
+    font-weight: 500;
+    font-size: 1rem;
+    line-height: 1.3125rem;
+
+    color: ${(props) => props.theme.colors.lobby.avatar.text.name};
 `;
 
 export default UserAvatar;

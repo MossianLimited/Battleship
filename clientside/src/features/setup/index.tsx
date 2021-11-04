@@ -1,4 +1,4 @@
-import { FC, MouseEvent, useState, useEffect } from "react";
+import { FC, MouseEvent, useState, useEffect, useMemo } from "react";
 import { Position, Side } from "../board/types/utility";
 import { PlacementList, PlacementStatus } from "./types/placement";
 import { INIT_PLACEMENT_LIST } from "./constants/list";
@@ -16,13 +16,33 @@ import {
     BattleshipDirection,
     BattleshipStatus,
 } from "../board/types/battleship";
+import getAvailableSquares from "../board/functions/getAvailableSquares";
 
 interface Props {
-    onSubmit: (shipyard: BattleshipAllyYard) => void; 
+    onSubmit: (shipyard: BattleshipAllyYard) => void;
 }
 
 const SetupModal: FC<Props> = ({ onSubmit }) => {
     const [placements, setPlacements] = useState(INIT_PLACEMENT_LIST);
+    const [direction, setDirection] = useState(BattleshipDirection.Vertical);
+
+    const shipyard = placements
+        .filter(
+            (p) =>
+                p.battleship.status === BattleshipStatus.Default ||
+                p.battleship.status === BattleshipStatus.Placeholder
+        )
+        .map((p) => p.battleship) as BattleshipAllyYard;
+
+    const availableSquares = useMemo(() => {
+        const selected = placements.find((p) => p.selected);
+        if (!selected) return undefined;
+        return getAvailableSquares(
+            selected.battleship.length,
+            direction,
+            shipyard.filter((s) => s.status !== BattleshipStatus.Placeholder)
+        );
+    }, [placements, shipyard, direction]);
 
     const onShipClick = (battleship: BattleshipBase, _e: MouseEvent) => {
         const index = placements.findIndex((p) => p.battleship === battleship);
@@ -42,17 +62,12 @@ const SetupModal: FC<Props> = ({ onSubmit }) => {
         const nextPlacements: PlacementList = placements.map((p, i) => {
             if (i !== index) return p;
 
-            const direction =
-                p.status === PlacementStatus.Placing
-                    ? p.battleship.direction
-                    : BattleshipDirection.Vertical;
-
             return {
                 battleship: {
                     ...p.battleship,
                     position,
                     direction,
-                    status: BattleshipStatus.Default,
+                    status: BattleshipStatus.Placeholder,
                 },
                 selected: p.selected,
                 status: PlacementStatus.Placing,
@@ -132,8 +147,8 @@ const SetupModal: FC<Props> = ({ onSubmit }) => {
 
         if (hostReady && guestReady) return onSubmit(shipyard);
 
-        await socketClient.waitReady(); 
-        return onSubmit(shipyard); 
+        await socketClient.waitReady();
+        return onSubmit(shipyard);
     };
 
     const renderedShip = placements.map((p) => (
@@ -145,10 +160,6 @@ const SetupModal: FC<Props> = ({ onSubmit }) => {
             onClick={(e) => onShipClick(p.battleship, e)}
         />
     ));
-
-    const renderedShipyard = placements
-        .filter((p) => p.battleship.status === BattleshipStatus.Default)
-        .map((p) => p.battleship) as BattleshipAllyYard;
 
     useEffect(() => {
         const fn = (e: KeyboardEvent) => {
@@ -170,13 +181,14 @@ const SetupModal: FC<Props> = ({ onSubmit }) => {
                     };
                 });
 
+                setDirection((direction + 1) % 4);
                 setPlacements(nextPlacements);
             }
         };
 
         document.addEventListener("keypress", fn);
         return () => document.removeEventListener("keypress", fn);
-    }, [placements]);
+    }, [placements, direction]);
 
     return (
         <Wrapper>
@@ -198,7 +210,8 @@ const SetupModal: FC<Props> = ({ onSubmit }) => {
                         validate={false}
                         selectable={false}
                         boardType={Side.Ally}
-                        shipYard={renderedShipyard}
+                        shipYard={shipyard}
+                        availability={availableSquares}
                         onSquareHoverStart={onSquareHoverStart}
                         onSquareHoverEnd={onSquareHoverEnd}
                         onSquareClick={onSquareClick}
@@ -225,10 +238,11 @@ const Wrapper = styled.div`
     height: auto;
     position: absolute;
     background: #674def;
+    z-index: 99;
 `;
 
 const HeaderWrapper = styled.div`
-    border-radius: 12px;
+    border-radius: 0.75rem;
     display: flex;
     background: #7b61ff;
     flex-flow: row;

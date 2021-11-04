@@ -16,6 +16,7 @@ interface Props {
     onClick?: MouseEventHandler;
     onHoverStart?: MouseEventHandler;
     onHoverEnd?: MouseEventHandler;
+    [key: string]: any; 
 }
 
 const Square: React.FC<Props> = ({
@@ -26,6 +27,7 @@ const Square: React.FC<Props> = ({
     onHoverStart,
     onHoverEnd,
     selectable = true,
+    ...delegated
 }) => {
     const { state, dispatch } = useGameStateContext();
 
@@ -53,6 +55,7 @@ const Square: React.FC<Props> = ({
             onMouseEnter={onHoverStart}
             onMouseLeave={onHoverEnd}
             onClick={onClick || handleSelectClick}
+            {...delegated}
         >
             {position?.row === 1 && (
                 <ColumnAlphabet className="positional">

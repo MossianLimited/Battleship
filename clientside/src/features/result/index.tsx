@@ -55,7 +55,7 @@ const Wrapper = styled.div`
     height: min-content; 
     min-width: 38.9375rem;
     background: white;
-    border-radius: 0 0 12px 12px;
+    border-radius: 0 0 0.75rem 0.75rem;
     overflow: auto; 
     margin-bottom: 1rem; 
 `;
@@ -99,6 +99,6 @@ const RoundInfo = styled.span`
 
 const RoundTime = styled.span`
     color: #584f86;
-    font-size: 16px;
+    font-size: 1rem;
     font-weight: 500; 
 `;
