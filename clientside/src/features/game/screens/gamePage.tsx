@@ -1,14 +1,9 @@
-import {
-    useLayoutEffect,
-    useReducer,
-    useState,
-    MouseEvent,
-} from "react";
+import { useLayoutEffect, useReducer, useState, MouseEvent } from "react";
 import { useHistory } from "react-router";
 import { Position, Side } from "../../board/types/utility";
 import { initialGameState } from "../constants/state";
 import { GameStateContext } from "../contexts/gameStateContext";
-import { MetaPhase } from "../types/state";
+import { Phase } from "../types/state";
 import Board from "../../board";
 import Result from "../../result";
 import styled from "styled-components";
@@ -36,24 +31,28 @@ import useChatQueue from "../../avatar/hooks/useChatQueue";
 import { AvatarProperties, AvatarSide } from "../../avatar/types/avatar";
 import { ChatContext } from "../contexts/chatContext";
 import Chatbox from "../components/chatBox";
+import { useOnStatistics } from "../functions/useOnStatistics";
+import { StatResponse } from "../../../api/types/transport";
 
 const GamePage = () => {
     const [yourTurn, setYourTurn] = useState(false);
-    const [phase, setPhase] = useState(MetaPhase.Welcome);
+    const [phase, setPhase] = useState(Phase.Welcome);
     const [state, dispatch] = useReducer(gameStateReducer, initialGameState);
 
-    const [, setRoundWinner] = useState<"Host" | "Guest" | undefined>();
+    const [, setEndReason] = useState<string>();
+    const [winners, setWinners] = useState<("Host" | "Guest")[]>([]);
     const [allyScore, setAllyScore] = useState(0);
     const [enemyScore, setEnemyScore] = useState(0);
     const [enemyAvatarSeed, setEnemyAvatarSeed] = useState<string>("");
     const [enemyUsername, setEnemyUsername] = useState<string>("");
+    const [statistic, setStatistic] = useState<StatResponse[]>([]);
 
     const { battleship } = state;
     const { username, userAvatarSeed } = useUserContext();
 
+    useAutoWithdraw()
     const query = useQuery();
     const history = useHistory();
-    const forceWithdraw = useAutoWithdraw()[1];
     const playerChatQueue = useChatQueue();
     const enemyChatQueue = useChatQueue();
 
@@ -61,26 +60,16 @@ const GamePage = () => {
     const isHost = query.get("isHost") === "true";
     const yourSide = isHost ? "Host" : "Guest";
 
-    const combinedAvatarProps: Record<AvatarSide, AvatarProperties> = {
+    const avatarProps: Record<AvatarSide, AvatarProperties> = {
         left: {
             seed: isHost ? userAvatarSeed : enemyAvatarSeed,
             username: isHost ? username : enemyUsername,
-            score:
-                phase !== MetaPhase.Welcome
-                    ? isHost
-                        ? allyScore
-                        : enemyScore
-                    : undefined,
+            score: phase !== Phase.Welcome ? (isHost ? allyScore : enemyScore) : undefined,
         },
         right: {
             seed: isHost ? enemyAvatarSeed : userAvatarSeed,
             username: isHost ? enemyUsername : username,
-            score:
-                phase !== MetaPhase.Welcome
-                    ? isHost
-                        ? enemyScore
-                        : allyScore
-                    : undefined,
+            score: phase !== Phase.Welcome ? (isHost ? enemyScore : allyScore) : undefined,
         },
     };
 
@@ -92,30 +81,36 @@ const GamePage = () => {
 
     const onSubmit = (shipyard: BattleshipAllyYard) => {
         dispatch({ type: "GAME_START", payload: { shipyard } });
-        setPhase(MetaPhase.Playing);
+        setPhase(Phase.Playing);
     };
 
-    useOnStartSingle((r) => r.firstPlayer === yourSide && setYourTurn(true));
+    const onOneMoreRound = (_e: MouseEvent) => {
+        if (phase !== Phase.Finish) return;
+        dispatch({ type: "RESET_BOARD" });
+        if (winners[winners.length - 1] === yourSide) setYourTurn(true);
+        setPhase(Phase.Setup);
+    };
+
+    const onWithdraw = (_e: MouseEvent) => {
+        socket.withdraw(); 
+    };
+
+    useOnStartSingle((r) => {
+        r.firstPlayer === yourSide && setYourTurn(true);
+    });
 
     useOnEndSingle(
         ({ responseStatus, previousRoundWinner, hostScore, guestScore }) => {
-            console.log({
-                responseStatus,
-                previousRoundWinner,
-                hostScore,
-                guestScore,
-            });
             switch (responseStatus) {
                 case "Withdrew":
-                    return forceWithdraw();
                 case "Abandoned":
                 case "Destroyed":
-                    setRoundWinner(previousRoundWinner as any);
+                default: 
+                    setEndReason(responseStatus);
+                    setPhase(Phase.Finish);
                     setAllyScore(isHost ? hostScore : guestScore);
                     setEnemyScore(isHost ? guestScore : hostScore);
-                    return setPhase(MetaPhase.Finish);
-                default:
-                    console.log({ responseStatus });
+                    return setWinners([...winners, previousRoundWinner as any]);
             }
         }
     );
@@ -160,6 +155,7 @@ const GamePage = () => {
     });
 
     useOnShipDestroyed(({ side, ship }) => {
+        console.log({ side, ship });
         dispatch({
             type: "SUNK_SHIP",
             payload: {
@@ -167,6 +163,10 @@ const GamePage = () => {
                 side: side === yourSide ? Side.Ally : Side.Enemy,
             },
         });
+    });
+
+    useOnStatistics((r) => {
+        setStatistic((prev) => [...prev, r]);
     });
 
     useLayoutEffect(() => {
@@ -181,21 +181,23 @@ const GamePage = () => {
         }
     }, [history, isHost, roomId, username, userAvatarSeed]);
 
-    if (phase === MetaPhase.Welcome)
+    if (phase === Phase.Welcome)
         return (
             <HostWelcome
-                onHostStartCallback={() => setPhase(MetaPhase.Setup)}
-                avatarVersusComponent={
-                    <AvatarVersus
-                        {...combinedAvatarProps}
-                    />
-                }
+                onHostStartCallback={() => setPhase(Phase.Setup)}
+                avatarVersusComponent={<AvatarVersus {...avatarProps} />}
             />
         );
 
-    const avatar = (
-        <AvatarVersus {...combinedAvatarProps} />
-    );
+    const borderRadius = phase === Phase.Finish ? "12px 12px 0 0" : "12px";
+    const avatar = <AvatarVersus style={{ borderRadius }} {...avatarProps} />;
+    const result = <Result winners={winners} stats={statistic} />;
+
+    const chat = {
+        chatSide: yourSide === "Host" ? AvatarSide.Left : AvatarSide.Right,
+        left: isHost ? playerChatQueue : enemyChatQueue,
+        right: isHost ? enemyChatQueue : playerChatQueue,
+    };
 
     const board = isHost ? (
         <BoardContainer>
@@ -226,29 +228,30 @@ const GamePage = () => {
             />
         </BoardContainer>
     );
-    
+
+    const footer = (
+        <Footer>
+            <Withdraw onClick={onWithdraw}>Withdraw</Withdraw>
+            <OneMoreRound onClick={onOneMoreRound}>One More Round</OneMoreRound>
+        </Footer>
+    );
+
     return (
-        <ChatContext.Provider
-            value={{
-                chatSide:
-                    yourSide === "Host" ? AvatarSide.Left : AvatarSide.Right,
-                left: isHost ? playerChatQueue : enemyChatQueue,
-                right: isHost ? enemyChatQueue : playerChatQueue,
-            }}
-        >
+        <ChatContext.Provider value={chat}>
             <GameStateContext.Provider value={{ state, dispatch }}>
                 {avatar}
-                <Result />
-                {phase !== MetaPhase.Finish && board}
-                {phase === MetaPhase.Finish && <Result />}
-                {phase === MetaPhase.Setup && <Backdrop />}
-                {phase === MetaPhase.Setup && <SetupModal onSubmit={onSubmit} />}
+                {phase !== Phase.Finish && board}
+                {phase === Phase.Finish && result}
                 <Chatbox />
+                {phase === Phase.Finish && footer}
+                {phase === Phase.Setup && <Backdrop />}
+                {phase === Phase.Setup && <SetupModal onSubmit={onSubmit} />}
             </GameStateContext.Provider>
-
         </ChatContext.Provider>
     );
 };
+
+export default GamePage;
 
 const BoardContainer = styled.div`
     display: flex;
@@ -269,4 +272,40 @@ const Backdrop = styled.div`
     background-color: rgba(0, 0, 0, 0.6);
 `;
 
-export default GamePage;
+const Footer = styled.div`
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: 1rem;
+    min-width: 38.9375rem;
+`;
+
+const OneMoreRound = styled.button`
+    outline: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.375rem 0.5rem;
+    background: #ffdbb4;
+    color: #674def;
+    text-transform: uppercase;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    transform: scale(1, 1);
+
+    &:hover {
+        transform: scale(1.03, 1.06);
+    }
+
+    &:active {
+        transform: scale(0.97, 0.94);
+    }
+`;
+
+const Withdraw = styled(OneMoreRound)`
+    background: #8972ff;
+    color: white;
+    font-weight: 500;
+    letter-spacing: 0.5px;
+`;

@@ -71,3 +71,18 @@ export interface ShipDestroyedResponse {
     side: 'Host' | 'Guest'; 
     ship: string[]; 
 }
+
+export interface Stats {
+    total: number; 
+    hit: number; 
+    miss: number; 
+    acc: number; 
+}
+
+export interface StatResponse {
+    responseStatus: InfallibleResponse; 
+    host: Stats; 
+    guest: Stats; 
+    time: number; 
+    turnCount: number; 
+}

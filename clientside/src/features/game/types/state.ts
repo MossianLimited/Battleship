@@ -10,11 +10,11 @@ export interface GameState {
 export interface MetaState {
     round: number; 
     turn: number; 
-    phase: MetaPhase; 
+    phase: Phase; 
     isHost: boolean, 
 }
 
-export enum MetaPhase {
+export enum Phase {
     Welcome = 0, 
     Setup, 
     Playing, 

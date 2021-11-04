@@ -2,7 +2,7 @@ import styled from "styled-components";
 import { AvatarProperties, AvatarSide } from "../types/avatar";
 import AvatarContainer from "./avatarContainer";
 
-const AvatarVersus: React.FC<Partial<Record<AvatarSide, AvatarProperties>>> = ({
+const AvatarVersus: React.FC<Partial<Record<AvatarSide, AvatarProperties>> & { style?: any }> = ({
     left,
     right,
     ...delegated
@@ -14,16 +14,19 @@ const AvatarVersus: React.FC<Partial<Record<AvatarSide, AvatarProperties>>> = ({
         throw new Error("Both players need scores");
 
     return (
-        <Container isExpanded={hasLeftScore && hasRightScore !== undefined}>
+        <Container
+            isExpanded={hasLeftScore && hasRightScore !== undefined}
+            {...delegated}
+        >
             <AvatarContainer {...left} side={AvatarSide.Left} />
             {left?.seed && right?.seed && (
                 <VS>
                     {hasLeftScore && (
-                        <span className="score">{left.score}</span>
+                        <span className="score-left">{left.score}</span>
                     )}
                     <span className="vs-text">vs</span>
                     {hasRightScore && (
-                        <span className="score">{right.score}</span>
+                        <span className="score-right">{right.score}</span>
                     )}
                 </VS>
             )}
@@ -48,9 +51,14 @@ const Container = styled.div<{ isExpanded?: boolean }>`
 
 const VS = styled.div`
     display: flex;
+    flex-flow: row; 
     align-items: center;
     align-self: center;
+    justify-content: center;
     gap: 2.75rem;
+    position: relative; 
+    width: 10rem; 
+
 
     & > .vs-text {
         font-weight: 500;
@@ -60,10 +68,24 @@ const VS = styled.div`
         color: ${(props) => props.theme.colors.lobby.avatar.text.versus};
     }
 
-    & > .score {
+    & > .score-left {
         font-weight: 500;
         font-size: 4.5rem;
         line-height: 5.875rem;
+        position: absolute; 
+        transform-origin: center center;
+        transform: translateX(-6rem); 
+        
+        color: ${(props) => props.theme.colors.lobby.avatar.text.score};
+    }
+    
+    & > .score-right {
+        font-weight: 500;
+        font-size: 4.5rem;
+        line-height: 5.875rem;
+        position: absolute;
+        transform-origin: center center;
+        transform: translateX(6rem); 
 
         color: ${(props) => props.theme.colors.lobby.avatar.text.score};
     }
