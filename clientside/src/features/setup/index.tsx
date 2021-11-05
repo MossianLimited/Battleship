@@ -26,6 +26,7 @@ interface Props {
 const SetupModal: FC<Props> = ({ onSubmit }) => {
     const [placements, setPlacements] = useState(INIT_PLACEMENT_LIST);
     const [direction, setDirection] = useState(BattleshipDirection.Vertical);
+    const [waiting, setWaiting] = useState(false);
 
     const shipyard = placements
         .filter(
@@ -148,6 +149,7 @@ const SetupModal: FC<Props> = ({ onSubmit }) => {
 
         if (hostReady && guestReady) return onSubmit(shipyard);
 
+        setWaiting(true);
         await socketClient.waitReady();
         return onSubmit(shipyard);
     };
@@ -228,7 +230,7 @@ const SetupModal: FC<Props> = ({ onSubmit }) => {
                 </BoardWrapper>
             </BodyWrapper>
             <Spacer />
-            <ReadyButton onClick={onReady}>Ready!</ReadyButton>
+            <ReadyButton onClick={onReady}>{waiting ? "Waiting for another player..." : "Ready!"}</ReadyButton>
         </Wrapper>
     );
 };
