@@ -12,7 +12,7 @@ export const TUTORIAL_INFO_LIST: TutorialInfoList = [
         imgAlt: "Random Ships",
     },
     {
-        text: "Your goal is to destroy all of enemy shps before they destroy all of yours. (You have to shoot within 10s of a turn, otherwise the game will auto-shoot for you.",
+        text: "Your goal is to destroy all of enemy shps before they destroy all of yours. ",
         imgSrc: "/images/cannon-fire.gif",
         imgAlt: "Destroy Enemy Ships ",
     },

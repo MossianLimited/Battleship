@@ -11,6 +11,7 @@ const HostWelcome: React.FC<Props> = ({
 }) => {
     return (
         <Container>
+            <Welcome>Welcome!</Welcome>
             {avatarVersusComponent}
             <StartGameContainer onClick={onHostStartCallback}>
                 Start Game
@@ -19,13 +20,28 @@ const HostWelcome: React.FC<Props> = ({
     );
 };
 
+const Welcome = styled.span`
+    font-weight: 600; 
+    font-size: 1rem; 
+    color: white; 
+    height: min-content; 
+    width: 100%; 
+    display: flex; 
+    align-items: center; 
+    justify-content: center;
+    padding: 0.5rem 0.75rem; 
+    width: min-content; 
+    border-radius: 8px; 
+    background: #947EFF; 
+`;
+
 const Container = styled.div`
     display: flex;
     flex-flow: column;
     align-items: center;
     gap: 1.4375rem;
 
-    & > *:first-child {
+    & > *:nth-child(2) {
         width: 28.6875rem;
         height: 8.125rem;
     }
