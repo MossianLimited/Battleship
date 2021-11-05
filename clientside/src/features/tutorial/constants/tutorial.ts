@@ -2,13 +2,18 @@ import { TutorialInfoList } from "../types/info";
 
 export const TUTORIAL_INFO_LIST: TutorialInfoList = [
     {
-        text: "Your goal is to destroy all of enemy shps before they destroy all of yours",
-        imgSrc: "https://www.ship-technology.com/wp-content/uploads/sites/16/2019/02/Featured-Image-Scarlet-Lady-Cruise-Ship-900x506.jpg",
-        imgAlt: "Scarlet Lady Cruise Ship",
+        text: "Your goal is to destroy all of enemy shps before they destroy all of yours. (You have to shoot within 10s of a turn, otherwise the game will auto-shoot for you.",
+        imgSrc: "/images/cannon-fire.gif",
+        imgAlt: "Destroy Enemy Ships ",
     },
     {
-        text: "This is the second page of the tutorial",
-        imgSrc: "https://upload.wikimedia.org/wikipedia/commons/thumb/1/1a/French_battleship_Richelieu_colorized.jpg/1200px-French_battleship_Richelieu_colorized.jpg",
-        imgAlt: "French Battleship Richelieu Colorized",
+        text: "You can simply select a ship to place, then click on the available square to place. You can also use spacebar or rotate button to rotate.",
+        imgSrc: "/images/place-ships.gif",
+        imgAlt: "Placing Ships",
+    },
+    {
+        text: "For you sake, our game also lets you randomize your ship placement to save time.",
+        imgSrc: "/images/randomize-ships.gif",
+        imgAlt: "Random Ships",
     },
 ];
