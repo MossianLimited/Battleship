@@ -431,13 +431,15 @@ const GamePage = () => {
     );
 
     return (
+            <TutorialWrapper>
         <Wrapper>
+
             <MuteButton onClick={onToggleMute}>
                 {mute ? (
                     <VolumeMute size={26} color="#b3a3ff" />
-                ) : (
-                    <VolumeUp size={26} color="#b3a3ff" />
-                )}
+                    ) : (
+                        <VolumeUp size={26} color="#b3a3ff" />
+                        )}
             </MuteButton>
             <ChatContext.Provider value={chat}>
                 <GameStateContext.Provider value={{ state, dispatch }}>
@@ -456,6 +458,7 @@ const GamePage = () => {
                 </GameStateContext.Provider>
             </ChatContext.Provider>
         </Wrapper>
+        </TutorialWrapper>
     );
 };
 

@@ -170,10 +170,10 @@ const BackdropGradient = styled.div`
     z-index: 1;
 
     width: 100%;
-    height: 6.25rem;
+    height: 10rem;
     background: linear-gradient(
         360deg,
-        rgba(0, 0, 0, 0.4) 1.4%,
+        rgba(0, 0, 0, 0.7) 1.4%,
         rgba(0, 0, 0, 0) 98.46%
     );
 `;
