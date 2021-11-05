@@ -2,11 +2,6 @@ import { TutorialInfoList } from "../types/info";
 
 export const TUTORIAL_INFO_LIST: TutorialInfoList = [
     {
-        text: "Your goal is to destroy all of enemy shps before they destroy all of yours. (You have to shoot within 10s of a turn, otherwise the game will auto-shoot for you.",
-        imgSrc: "/images/cannon-fire.gif",
-        imgAlt: "Destroy Enemy Ships ",
-    },
-    {
         text: "You can simply select a ship to place, then click on the available square to place. You can also use spacebar or rotate button to rotate.",
         imgSrc: "/images/place-ships.gif",
         imgAlt: "Placing Ships",
@@ -15,5 +10,10 @@ export const TUTORIAL_INFO_LIST: TutorialInfoList = [
         text: "For you sake, our game also lets you randomize your ship placement to save time.",
         imgSrc: "/images/randomize-ships.gif",
         imgAlt: "Random Ships",
+    },
+    {
+        text: "Your goal is to destroy all of enemy shps before they destroy all of yours. (You have to shoot within 10s of a turn, otherwise the game will auto-shoot for you.",
+        imgSrc: "/images/cannon-fire.gif",
+        imgAlt: "Destroy Enemy Ships ",
     },
 ];
