@@ -21,8 +21,8 @@ const useAutoWithdraw = (): [() => boolean, () => void] => {
     const forceWithdraw = () => {
         if (guarded()) return;
         duplicateGuard.current = true;
-        socketClient.withdraw(); 
-        history.push("/welcome");
+        socketClient.withdraw();
+        history.push("/");
     };
 
     return [guarded, forceWithdraw];

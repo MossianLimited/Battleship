@@ -30,7 +30,7 @@ const CreateRoomPage = () => {
 
         const link =
             window.location.href.split("/").slice(0, -1).join("/") +
-            "/room?roomId=" +
+            "/rooms?roomId=" +
             roomId;
         navigator.clipboard.writeText(link);
         if (!linkCopied) {
@@ -59,7 +59,7 @@ const CreateRoomPage = () => {
     }, [userAvatarSeed, username]);
 
     useOnJoinSingle(({ responseStatus }) => {
-        if (!roomId) return; 
+        if (!roomId) return;
         switch (responseStatus) {
             case "Completed":
                 roomComplete.current = true;
@@ -76,7 +76,7 @@ const CreateRoomPage = () => {
             default:
                 alert(responseStatus);
         }
-    }); 
+    });
 
     return (
         <Container>

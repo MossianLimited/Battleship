@@ -28,7 +28,10 @@ const inputVariants: Variants = {
 const WelcomePage = () => {
     const history = useHistory();
     const query = useQuery();
+
     const roomId = query.get("roomId");
+
+    console.log("Roomid", roomId);
 
     const controls = useAnimation();
 
@@ -53,6 +56,16 @@ const WelcomePage = () => {
         return !!username;
     };
 
+    const handleEnterRoom = () => {
+        if (!validateUsername()) return;
+        if (roomId) {
+            history.push({
+                pathname: "/room",
+                search: "?" + new URLSearchParams({ roomId }),
+            });
+        } else history.push("/rooms" + (roomId ? `?roomId=${roomId}` : ""));
+    };
+
     useEffect(() => {
         if (username && showUsernameError) {
             setShowUsernameError(false);
@@ -68,11 +81,7 @@ const WelcomePage = () => {
                     <span>Battleship</span>
                 </Title>
                 <AvatarSelector />
-                <FormBox
-                    onSubmit={() =>
-                        validateUsername() && history.push("/rooms")
-                    }
-                >
+                <FormBox onSubmit={() => handleEnterRoom()}>
                     <LabelWrapper label="Enter your display name">
                         <BasicInput
                             value={username}
@@ -87,7 +96,7 @@ const WelcomePage = () => {
                             }}
                         />
                     </LabelWrapper>
-                    <ButtonContainer>
+                    <ButtonContainer fullButton={!!roomId}>
                         {!roomId && (
                             <BasicButton
                                 type="button"
@@ -100,14 +109,11 @@ const WelcomePage = () => {
                                 Create Room
                             </BasicButton>
                         )}
-
                         <BasicButton
                             type="button"
                             variant="primary"
                             name="rooms"
-                            onClick={() =>
-                                validateUsername() && history.push("/rooms")
-                            }
+                            onClick={() => handleEnterRoom()}
                         >
                             Join Room
                         </BasicButton>
@@ -167,7 +173,7 @@ const Title = styled(HeaderText)`
     line-height: 2.9375rem;
 `;
 
-const ButtonContainer = styled.div`
+const ButtonContainer = styled.div<{ fullButton?: boolean }>`
     display: flex;
     gap: 0.9375rem;
 
@@ -178,7 +184,7 @@ const ButtonContainer = styled.div`
             flex: 0.452;
         }
         &:last-child {
-            flex: 0.548;
+            flex: ${(props) => (props.fullButton ? 1 : 0.548)};
         }
     }
 `;

@@ -40,26 +40,20 @@ const PublicRoomsList: React.FC<Props> = ({ onRoomJoinHandler }) => {
     const query = useQuery();
     const spectatorMode = query.get("spectator") === "true" && isAdmin;
 
-    const history = useHistory();
-
     const [roomList, setRoomList] = useState<(Room | AdminSpectateRoom)[]>([]);
     const [allowOverflowY, setOverflowY] = useState<boolean>(false);
 
     const handleFetchRoomList = useCallback(async () => {
         let fetchedRoomList: (Room | AdminSpectateRoom)[] = [];
         if (spectatorMode) {
-            const { roomList: adminFetchedRoomList, responseStatus } =
+            const { roomList: adminFetchedRoomList } =
                 await socketClient.adminGetRooms();
-            if (responseStatus !== "Completed") {
-                history.push("/");
-                return;
-            }
             fetchedRoomList = adminFetchedRoomList;
         } else {
             fetchedRoomList = (await socketClient.getRooms()).roomList;
         }
         setRoomList(fetchedRoomList);
-    }, [history, spectatorMode]);
+    }, [spectatorMode]);
 
     useEffect(() => {
         let interval: ReturnType<typeof setInterval>;

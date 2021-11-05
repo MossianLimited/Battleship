@@ -15,19 +15,27 @@ const JoinRoomPage = () => {
     const history = useHistory();
     const query = useQuery();
 
-    const [privateRoomId, setPrivateRoomId] = useState<string>("");
+    const [privateRoomId, setPrivateRoomId] = useState<string>(
+        query.get("roomId") || ""
+    );
     const [hoveredRoom, setHoveredRoom] = useState<Room | undefined>();
 
     const spectatorMode = query.get("spectator") === "true" && isAdmin;
 
     const handleJoinRoom = useCallback(
         (roomId: string) => {
-            history.push({
-                pathname: "/room",
-                search: "?" + new URLSearchParams({ roomId }),
-            });
+            if (username && roomId)
+                history.push({
+                    pathname: "/room",
+                    search: "?" + new URLSearchParams({ roomId }),
+                });
+            else
+                history.push({
+                    pathname: "/",
+                    search: "?" + new URLSearchParams({ roomId }),
+                });
         },
-        [history]
+        [history, username]
     );
 
     useEffect(() => {

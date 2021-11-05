@@ -300,7 +300,7 @@ const GamePage = () => {
 
     useLayoutEffect(() => {
         if (!roomId) {
-            history.push("/welcome");
+            history.push("/");
             return;
         }
 

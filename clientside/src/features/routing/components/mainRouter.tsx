@@ -15,7 +15,7 @@ const MainRouter = () => {
                 <LobbyRoute path="/new" userRequired>
                     <CreateRoomPage />
                 </LobbyRoute>
-                <LobbyRoute path="/rooms" userRequired>
+                <LobbyRoute path="/rooms">
                     <JoinRoomPage />
                 </LobbyRoute>
                 <LobbyRoute path="/">
@@ -27,5 +27,3 @@ const MainRouter = () => {
 };
 
 export default MainRouter;
-
-
